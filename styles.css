@@ -507,3 +507,86 @@ input:focus,select:focus,textarea:focus {
   to   { background:transparent; }
 }
 .row-new { animation:rowHighlight 1.5s ease forwards; }
+
+/* ═══════════════════════════════════════════════════════════════
+   NUEVOS BADGES v4
+════════════════════════════════════════════════════════════════ */
+.badge-credito-rec  { background: #dcfce7; color: #15803d; }
+.badge-credito-dad  { background: #ede9fe; color: #6d28d9; }
+.badge-ingreso-credito { background: #dcfce7; color: #15803d; }
+.badge-compra-credito  { background: #ede9fe; color: #6d28d9; }
+.row-ingreso-crédito   { border-left: 3px solid #15803d; }
+.row-compra-crédito    { border-left: 3px solid #6d28d9; }
+.badge-anticipo        { background: var(--warning-bg); color: var(--warning); }
+
+/* ═══════════════════════════════════════════════════════════════
+   ALERTAS DEL RESUMEN
+════════════════════════════════════════════════════════════════ */
+.alerta-item {
+  padding: .55rem .75rem;
+  background: #fff7ed;
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius-sm);
+  font-size: .875rem;
+  margin-bottom: .4rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOTTOM NAV MÓVIL (acceso rápido en celular)
+════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  body { padding-bottom: 60px; }
+
+  /* Ocultar topbar-nav en móvil — se usa bottom nav */
+  .topbar-nav { display: none; }
+  .topbar { justify-content: space-between; }
+
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 58px; background: white;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center;
+    z-index: 90; box-shadow: 0 -2px 8px rgba(0,0,0,.1);
+    overflow-x: auto; scrollbar-width: none;
+    padding: 0 .25rem;
+    gap: .1rem;
+  }
+  .bottom-nav::-webkit-scrollbar { display: none; }
+  .bottom-nav-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-width: 56px; height: 50px; padding: .2rem .3rem;
+    background: none; border: none; cursor: pointer;
+    border-radius: var(--radius-sm); color: var(--text-muted);
+    font-size: .62rem; font-weight: 600; gap: .15rem;
+    transition: background .15s, color .15s; white-space: nowrap;
+  }
+  .bottom-nav-btn .bn-icon { font-size: 1.2rem; line-height: 1; }
+  .bottom-nav-btn.active { color: var(--primary); background: var(--primary-light); }
+  .bottom-nav-btn:active { background: var(--neutral-bg); }
+
+  /* Ocultar las acciones de topbar menos esenciales */
+  .topbar-actions .btn-icon { display: none; }
+  #btnInstalarPWA, #btnLogout { display: flex !important; }
+  .topbar-user { gap: .2rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRESUPUESTO
+════════════════════════════════════════════════════════════════ */
+.pres-ok   { color: var(--success); font-weight: 700; }
+.pres-warn { color: var(--warning); font-weight: 700; }
+.pres-over { color: var(--danger);  font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMACIONES ENTRADA
+════════════════════════════════════════════════════════════════ */
+.tab-content:not(.hidden) { animation: fadeIn .2s ease; }
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes rowHighlight {
+  from { background: #dbeafe; }
+  to   { background: transparent; }
+}
+.row-new { animation: rowHighlight 1.5s ease forwards; }
