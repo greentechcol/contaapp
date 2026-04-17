@@ -14,11 +14,16 @@
 
   <!-- ═══ FIREBASE SDK ═══ -->
   <script type="module">
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  PASO 1 — Pega aquí tu configuración de Firebase            ║
-    // ║  (la obtienes en: Firebase Console → Tu proyecto →          ║
-    // ║   Configuración ⚙️ → Tus apps → Configuración del SDK)      ║
-    // ╚══════════════════════════════════════════════════════════════╝
+ <script type="module">
+    const firebaseConfig = {
+  apiKey: "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
+  authDomain: "contaappgreentech.firebaseapp.com",
+  projectId: "contaappgreentech",
+  storageBucket: "contaappgreentech.firebasestorage.app",
+  messagingSenderId: "672661191582",
+  appId: "1:672661191582:web:babf8b97b69925028eb48f"
+};
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
       getAuth, GoogleAuthProvider, signInWithPopup,
