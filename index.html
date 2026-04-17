@@ -13,16 +13,12 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- ═══ FIREBASE SDK ═══ -->
- <script type="module">
-    const firebaseConfig = {
-  apiKey: "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
-  authDomain: "contaappgreentech.firebaseapp.com",
-  projectId: "contaappgreentech",
-  storageBucket: "contaappgreentech.firebasestorage.app",
-  messagingSenderId: "672661191582",
-  appId: "1:672661191582:web:babf8b97b69925028eb48f"
-};
-
+  <script type="module">
+    // ╔══════════════════════════════════════════════════════════════╗
+    // ║  PASO 1 — Pega aquí tu configuración de Firebase            ║
+    // ║  (la obtienes en: Firebase Console → Tu proyecto →          ║
+    // ║   Configuración ⚙️ → Tus apps → Configuración del SDK)      ║
+    // ╚══════════════════════════════════════════════════════════════╝
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
       getAuth, GoogleAuthProvider, signInWithPopup,
@@ -36,12 +32,12 @@
 
     // ▼▼▼ REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO ▼▼▼
     const firebaseConfig = {
-      apiKey:            "PEGA_TU_apiKey_AQUI",
-      authDomain:        "PEGA_TU_authDomain_AQUI",
-      projectId:         "PEGA_TU_projectId_AQUI",
-      storageBucket:     "PEGA_TU_storageBucket_AQUI",
-      messagingSenderId: "PEGA_TU_messagingSenderId_AQUI",
-      appId:             "PEGA_TU_appId_AQUI"
+      apiKey:            "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
+      authDomain:        "contaappgreentech.firebaseapp.com",
+      projectId:         "contaappgreentech",
+      storageBucket:     "contaappgreentech.firebasestorage.app",
+      messagingSenderId: "672661191582",
+      appId:             "1:672661191582:web:babf8b97b69925028eb48f"
     };
     // ▲▲▲ ─────────────────────────────────────────────── ▲▲▲
 
