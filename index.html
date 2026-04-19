@@ -308,54 +308,140 @@
 
 <!-- ══════════════════════ CRÉDITOS ══════════════════════ -->
 <main class="tab-content hidden" id="tab-creditos">
+
+  <!-- Tarjetas resumen -->
   <section class="section-block">
     <h2 class="section-title">Créditos Dados y Recibidos</h2>
     <p class="section-desc">
-      <strong>Crédito dado:</strong> vendiste pero aún no recibes el dinero (registra el ingreso pero la cuenta no se afecta hasta que paguen).<br>
-      <strong>Crédito recibido:</strong> compraste a crédito, la cuenta no sale dinero todavía.
+      <strong>🟢 Crédito dado (venta a crédito):</strong> vendiste pero el cliente aún no paga — el ingreso se registra pero la cuenta no recibe dinero todavía.<br>
+      <strong>🔴 Crédito recibido (compra a crédito):</strong> compraste a crédito — el costo se registra pero tu cuenta no pierde dinero todavía.
     </p>
-    <div class="cards-grid" style="margin-bottom:1rem">
-      <div class="card card-total" style="background:linear-gradient(135deg,#065f46,#059669)">
-        <div class="card-label">Por Cobrar (créditos dados)</div>
+    <div class="cards-grid">
+      <div class="card" style="background:linear-gradient(135deg,#065f46,#059669);color:white">
+        <div class="card-label">💚 Por Cobrar — créditos dados</div>
         <div class="card-value" id="totalCreditosDados">$0.00</div>
       </div>
-      <div class="card card-total" style="background:linear-gradient(135deg,#7f1d1d,#dc2626)">
-        <div class="card-label">Por Pagar (créditos recibidos)</div>
+      <div class="card" style="background:linear-gradient(135deg,#7f1d1d,#dc2626);color:white">
+        <div class="card-label">❤️ Por Pagar — créditos recibidos</div>
         <div class="card-value" id="totalCreditosRecibidos">$0.00</div>
       </div>
     </div>
-    <h3 class="section-title" style="font-size:.9rem">Créditos Dados (ventas a crédito pendientes de cobro)</h3>
+  </section>
+
+  <!-- Formulario para registrar crédito NUEVO -->
+  <section class="section-block">
+    <h2 class="section-title">➕ Registrar Nuevo Crédito</h2>
+    <form id="formCredito" autocomplete="off">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" id="crdFecha" required />
+        </div>
+        <div class="form-group">
+          <label>Tipo de crédito *</label>
+          <select id="crdTipo" required>
+            <option value="">— Seleccionar —</option>
+            <option value="dado">🟢 Crédito DADO — vendí a crédito (me deben)</option>
+            <option value="recibido">🔴 Crédito RECIBIDO — compré a crédito (debo yo)</option>
+          </select>
+        </div>
+        <div class="form-group" id="crdGrupoTercero">
+          <label id="crdTerceroLabel">Cliente / Proveedor *</label>
+          <input type="text" id="crdTercero" placeholder="Nombre de quien me debe o a quien le debo..." maxlength="100" required />
+        </div>
+        <div class="form-group">
+          <label>Categoría / Concepto *</label>
+          <select id="crdCategoria" required>
+            <option value="">— Seleccionar —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Monto *</label>
+          <input type="number" id="crdMonto" placeholder="0.00" step="0.01" min="0.01" required />
+        </div>
+        <div class="form-group">
+          <label>Fecha límite de pago</label>
+          <input type="date" id="crdVence" />
+        </div>
+        <div class="form-group form-group-wide">
+          <label>Descripción / Observación</label>
+          <input type="text" id="crdDescripcion" placeholder="Detalles del crédito..." maxlength="200" />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">💾 Registrar Crédito</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Tabla créditos dados -->
+  <section class="section-block">
+    <h2 class="section-title">🟢 Créditos Dados — Ventas a crédito (clientes que me deben)</h2>
     <div class="table-responsive">
       <table class="data-table">
-        <thead><tr><th>Fecha</th><th>Cliente</th><th>Descripción</th><th>Monto</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <thead><tr>
+          <th>Fecha</th><th>Cliente</th><th>Concepto</th>
+          <th>Monto</th><th>Vence</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
         <tbody id="tbodyCreditosDados"></tbody>
       </table>
     </div>
-    <h3 class="section-title" style="font-size:.9rem;margin-top:1.5rem">Créditos Recibidos (compras a crédito pendientes de pago)</h3>
+    <div id="emptyCreditosDados" class="empty-state">No hay créditos dados registrados.</div>
+  </section>
+
+  <!-- Tabla créditos recibidos -->
+  <section class="section-block">
+    <h2 class="section-title">🔴 Créditos Recibidos — Compras a crédito (lo que debo yo)</h2>
     <div class="table-responsive">
       <table class="data-table">
-        <thead><tr><th>Fecha</th><th>Proveedor</th><th>Descripción</th><th>Monto</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <thead><tr>
+          <th>Fecha</th><th>Proveedor</th><th>Concepto</th>
+          <th>Monto</th><th>Vence</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
         <tbody id="tbodyCreditosRecibidos"></tbody>
       </table>
     </div>
+    <div id="emptyCreditosRecibidos" class="empty-state">No hay créditos recibidos registrados.</div>
   </section>
+
+  <!-- Formulario cobro/pago -->
   <section class="section-block">
-    <h2 class="section-title">Registrar Cobro / Pago de Crédito</h2>
-    <p class="section-desc">Cuando el cliente paga o tú pagas al proveedor, registra aquí el cobro/pago y selecciona la cuenta donde entra o sale el dinero.</p>
+    <h2 class="section-title">✅ Registrar Cobro o Pago de Crédito</h2>
+    <p class="section-desc">Cuando el cliente paga o tú pagas al proveedor, registra aquí el movimiento real de dinero en la cuenta.</p>
     <form id="formPagoCredito" autocomplete="off">
       <div class="form-grid">
-        <div class="form-group"><label>Fecha *</label><input type="date" id="pcFecha" required /></div>
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" id="pcFecha" required />
+        </div>
         <div class="form-group">
           <label>Crédito a saldar *</label>
-          <select id="pcCreditoId" required><option value="">— Seleccionar crédito pendiente —</option></select>
+          <select id="pcCreditoId" required>
+            <option value="">— Seleccionar crédito pendiente —</option>
+          </select>
         </div>
-        <div class="form-group"><label>Cuenta *</label><select id="pcCuenta" required><option value="">— Seleccionar —</option></select></div>
-        <div class="form-group"><label>Monto cobrado/pagado *</label><input type="number" id="pcMonto" placeholder="0.00" step="0.01" min="0.01" required /></div>
-        <div class="form-group form-group-wide"><label>Nota</label><input type="text" id="pcNota" placeholder="Observación..." maxlength="200" /></div>
+        <div class="form-group">
+          <label>Cuenta donde entra/sale el dinero *</label>
+          <select id="pcCuenta" required>
+            <option value="">— Seleccionar —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Monto cobrado/pagado *</label>
+          <input type="number" id="pcMonto" placeholder="0.00" step="0.01" min="0.01" required />
+        </div>
+        <div class="form-group form-group-wide">
+          <label>Nota</label>
+          <input type="text" id="pcNota" placeholder="Observación..." maxlength="200" />
+        </div>
       </div>
-      <button type="submit" class="btn-primary">✅ Registrar Cobro/Pago</button>
+      <div id="pcInfo" class="anticipo-info hidden"></div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">✅ Registrar Cobro/Pago</button>
+      </div>
     </form>
   </section>
+
 </main>
 
 <!-- ══════════════════════ PRÉSTAMOS ══════════════════════ -->
@@ -911,34 +997,37 @@ const CM={green:'linear-gradient(135deg,#065f46,#059669)',blue:'linear-gradient(
 // ── SALDO POR CUENTA ─────────────────────────────────────────────
 function getSaldo(cid){
   let s=Number(DB.saldosIniciales[cid]||0);
+  // Movimientos normales (Ingreso, Gasto, Compra — los créditos no mueven cuenta)
   DB.movimientos.forEach(m=>{
-    if(m.metodo!==cid)return;
-    const t=m.tipo;
-    if(t==='Ingreso'||t==='Ingreso Crédito'&&false)s+=m.monto; // Crédito no mueve cuenta
-    else if(t==='Ingreso')s+=m.monto;
-    else if(t==='Gasto'||t==='Compra')s-=m.monto;
-    // Compra Crédito e Ingreso Crédito NO mueven cuenta
+    if(m.metodo!==cid) return;
+    if(m.tipo==='Ingreso') s+=m.monto;
+    else if(m.tipo==='Gasto'||m.tipo==='Compra') s-=m.monto;
+    // Ingreso Crédito y Compra Crédito NO mueven la cuenta
   });
-  DB.transferencias.forEach(t=>{if(t.origen===cid)s-=t.monto;if(t.destino===cid)s+=t.monto;});
-  DB.anticipos.forEach(a=>{if(a.metodo===cid)s+=a.monto;});
+  // Transferencias
+  DB.transferencias.forEach(t=>{
+    if(t.origen===cid)  s-=t.monto;
+    if(t.destino===cid) s+=t.monto;
+  });
+  // Anticipos recibidos (sí mueven la cuenta)
+  DB.anticipos.forEach(a=>{ if(a.metodo===cid) s+=a.monto; });
+  // Devoluciones
   DB.devoluciones.forEach(d=>{
-    if(d.cuenta!==cid)return;
-    if(d.tipo==='DevCompra')s+=d.monto;   // devuelven plata
-    if(d.tipo==='DevVenta')s-=d.monto;    // devuelves plata al cliente
-    if(d.tipo==='DevAnticipo')s-=d.monto; // devuelves anticipo
+    if(d.cuenta!==cid) return;
+    if(d.tipo==='DevCompra')   s+=d.monto;  // proveedor devuelve dinero
+    if(d.tipo==='DevVenta')    s-=d.monto;  // devuelves dinero al cliente
+    if(d.tipo==='DevAnticipo') s-=d.monto;  // devuelves anticipo
   });
+  // Préstamos
   DB.prestamos.forEach(p=>{
-    if(p.cuenta!==cid)return;
-    if(p.tipo==='dado')s-=p.monto;
-    if(p.tipo==='recibido')s+=p.monto;
-    if(p.tipo==='cobro')s+=p.monto;
-    if(p.tipo==='pago')s-=p.monto;
+    if(p.cuenta!==cid) return;
+    if(p.tipo==='dado')     s-=p.monto;
+    if(p.tipo==='recibido') s+=p.monto;
+    if(p.tipo==='cobro')    s+=p.monto;
+    if(p.tipo==='pago')     s-=p.monto;
   });
-  // Cobros/pagos de crédito sí mueven la cuenta
-  DB.creditos.forEach(c=>{
-    if(c.cuentaCobro===cid&&c.estado==='cobrado')s+=c.monto;
-    if(c.cuentaCobro===cid&&c.tipo==='recibido'&&c.estado==='pagado')s-=c.monto;
-  });
+  // Nota: cobros/pagos de crédito ya quedan como movimientos normales (Ingreso/Gasto)
+  // por eso no se necesita lógica extra aquí
   return s;
 }
 
@@ -1376,48 +1465,165 @@ function renderAnticipos(){
 }
 
 // ── CRÉDITOS ─────────────────────────────────────────────────────
+// ── CRÉDITOS ─────────────────────────────────────────────────────
+
+// Cambiar label según tipo
+$('crdTipo').onchange=()=>{
+  const t=$('crdTipo').value;
+  $('crdTerceroLabel').textContent = t==='dado' ? 'Cliente (quien me debe) *' : t==='recibido' ? 'Proveedor (a quien le debo) *' : 'Cliente / Proveedor *';
+  // Filtrar categorías según tipo
+  const sc=$('crdCategoria'); sc.innerHTML='<option value="">— Seleccionar —</option>';
+  const tipoBase = t==='dado' ? 'Ingreso' : t==='recibido' ? 'Compra' : null;
+  DB.categorias.filter(c=> tipoBase ? (c.tipo===tipoBase||c.tipo==='General') : true).forEach(c=>{
+    const o=document.createElement('option'); o.value=c.nombre; o.textContent=(c.icono||'')+' '+c.nombre; sc.appendChild(o);
+  });
+};
+
+// Mostrar info del crédito seleccionado al cobrar/pagar
+$('pcCreditoId').onchange=()=>{
+  const id=$('pcCreditoId').value, info=$('pcInfo');
+  if(!id){info.classList.add('hidden');return;}
+  const c=DB.creditos.find(x=>x.id===id);
+  if(!c){info.classList.add('hidden');return;}
+  info.classList.remove('hidden');
+  const accion = c.tipo==='dado' ? 'cobrar al cliente' : 'pagar al proveedor';
+  info.innerHTML=`<strong>${c.tipo==='dado'?'Cliente':'Proveedor'}:</strong> ${c.tercero} — Monto total: <strong>${fmt(c.monto)}</strong>${c.vence?' — Vence: '+c.vence:''}<br><em>Acción: ${accion} — el dinero ${c.tipo==='dado'?'entra':'sale'} de la cuenta seleccionada.</em>`;
+  // Sugerir el monto pendiente
+  $('pcMonto').value = c.monto;
+};
+
+$('formCredito').onsubmit=async e=>{
+  e.preventDefault();
+  const fecha=$('crdFecha').value, tipo=$('crdTipo').value;
+  const tercero=$('crdTercero').value.trim(), cat=$('crdCategoria').value;
+  const monto=parseFloat($('crdMonto').value), vence=$('crdVence').value||null;
+  const desc=$('crdDescripcion').value.trim();
+
+  if(!fecha||!tipo||!tercero||!cat||!monto||monto<=0){
+    showToast('Completa todos los campos obligatorios.','error'); return;
+  }
+
+  const cred={
+    id:uid(), fecha, tipo, tercero, categoria:cat,
+    monto, vence, descripcion:desc, estado:'pendiente'
+  };
+  await fsSet('creditos', cred);
+  $('formCredito').reset();
+  $('crdCategoria').innerHTML='<option value="">— Seleccionar —</option>';
+  renderCreditos();
+  showToast(`Crédito ${tipo==='dado'?'dado (venta a crédito)':'recibido (compra a crédito)'} registrado. ☁️`, 'success');
+};
+
 function renderCreditos(){
   populateSelect($('pcCuenta'));
-  const dados=DB.creditos.filter(c=>c.tipo==='dado');
-  const recibidos=DB.creditos.filter(c=>c.tipo==='recibido');
-  $('totalCreditosDados').textContent=fmt(dados.filter(c=>c.estado==='pendiente').reduce((a,c)=>a+c.monto,0));
-  $('totalCreditosRecibidos').textContent=fmt(recibidos.filter(c=>c.estado==='pendiente').reduce((a,c)=>a+c.monto,0));
 
-  function renderTablaCredito(tbody,lista){
+  // Inicializar categorías del form
+  if($('crdTipo').value) $('crdTipo').dispatchEvent(new Event('change'));
+
+  const dados    = DB.creditos.filter(c=>c.tipo==='dado');
+  const recibidos= DB.creditos.filter(c=>c.tipo==='recibido');
+  const hoyStr   = hoy();
+
+  $('totalCreditosDados').textContent    = fmt(dados.filter(c=>c.estado==='pendiente').reduce((a,c)=>a+c.monto,0));
+  $('totalCreditosRecibidos').textContent= fmt(recibidos.filter(c=>c.estado==='pendiente').reduce((a,c)=>a+c.monto,0));
+
+  function renderTabla(tbody, emptyId, lista, esDado){
     tbody.innerHTML='';
-    lista.forEach(c=>{
+    if(!lista.length){ $(emptyId).style.display='block'; return; }
+    $(emptyId).style.display='none';
+    const sorted=[...lista].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+    sorted.forEach(c=>{
+      const vencida = c.vence && c.vence < hoyStr && c.estado==='pendiente';
+      const estadoBadge = c.estado!=='pendiente'
+        ? `<span class="badge badge-anticipo-aplic">✅ ${esDado?'Cobrado':'Pagado'}</span>`
+        : vencida
+          ? `<span class="badge" style="background:#fee2e2;color:#dc2626">🔴 Vencida</span>`
+          : `<span class="badge badge-anticipo-pend">⏳ Pendiente</span>`;
       const tr=document.createElement('tr');
-      const est=c.estado==='pendiente'?'<span class="badge badge-anticipo-pend">⏳ Pendiente</span>':'<span class="badge badge-anticipo-aplic">✅ Cobrado/Pagado</span>';
-      tr.innerHTML=`<td>${c.fecha}</td><td>${c.tercero||'—'}</td><td>${c.descripcion||'—'}</td><td class="monto-ingreso">${fmt(c.monto)}</td><td>${est}</td>
-        <td>${c.estado==='pendiente'?`<button class="btn-sm btn-delete" data-id="${c.id}">🗑</button>`:''}</td>`;
+      tr.style.borderLeft = vencida ? '3px solid var(--danger)' : c.estado!=='pendiente' ? '3px solid var(--success)' : '3px solid var(--warning)';
+      tr.innerHTML=`
+        <td>${c.fecha}</td>
+        <td><strong>${c.tercero}</strong></td>
+        <td>${c.categoria||c.descripcion||'—'}</td>
+        <td class="${esDado?'monto-ingreso':'monto-egreso'}">${fmt(c.monto)}</td>
+        <td>${c.vence||'—'}</td>
+        <td>${estadoBadge}</td>
+        <td><div class="action-btns">
+          ${c.estado==='pendiente'?`<button class="btn-sm btn-primary crd-cobrar" data-id="${c.id}" title="${esDado?'Registrar cobro':'Registrar pago'}">💵</button>`:''}
+          <button class="btn-sm btn-delete crd-del" data-id="${c.id}">🗑</button>
+        </div></td>`;
       tbody.appendChild(tr);
     });
-    tbody.querySelectorAll('.btn-delete').forEach(b=>b.onclick=()=>openModal('Eliminar crédito','¿Eliminar?',async()=>{await fsDel('creditos',b.dataset.id);showToast('Eliminado.','success');}));
-  }
-  renderTablaCredito($('tbodyCreditosDados'),dados);
-  renderTablaCredito($('tbodyCreditosRecibidos'),recibidos);
 
-  // Poblar selector de créditos pendientes para cobrar/pagar
-  const sel=$('pcCreditoId'); sel.innerHTML='<option value="">— Seleccionar crédito pendiente —</option>';
-  DB.creditos.filter(c=>c.estado==='pendiente').forEach(c=>{
+    // Botón cobrar/pagar rápido: lleva el crédito al selector de abajo
+    tbody.querySelectorAll('.crd-cobrar').forEach(b=>b.onclick=()=>{
+      $('pcCreditoId').value=b.dataset.id;
+      $('pcCreditoId').dispatchEvent(new Event('change'));
+      $('formPagoCredito').scrollIntoView({behavior:'smooth'});
+    });
+    tbody.querySelectorAll('.crd-del').forEach(b=>b.onclick=()=>{
+      openModal('Eliminar crédito','¿Eliminar este crédito? Si ya afectó el Estado de Resultados, considera solo marcarlo como pagado.',async()=>{
+        await fsDel('creditos',b.dataset.id); renderCreditos(); showToast('Eliminado.','success');
+      });
+    });
+  }
+
+  renderTabla($('tbodyCreditosDados'),    'emptyCreditosDados',    dados,     true);
+  renderTabla($('tbodyCreditosRecibidos'),'emptyCreditosRecibidos',recibidos, false);
+
+  // Selector de créditos pendientes para cobrar/pagar
+  const prevVal=$('pcCreditoId').value;
+  const sel=$('pcCreditoId');
+  sel.innerHTML='<option value="">— Seleccionar crédito pendiente —</option>';
+  DB.creditos.filter(c=>c.estado==='pendiente').sort((a,b)=>b.fecha.localeCompare(a.fecha)).forEach(c=>{
     const o=document.createElement('option'); o.value=c.id;
-    o.textContent=`${c.tipo==='dado'?'Cobrar':'Pagar'}: ${c.tercero} — ${fmt(c.monto)} (${c.fecha})`;
+    o.textContent=`${c.tipo==='dado'?'🟢 Cobrar de':'🔴 Pagar a'} ${c.tercero} — ${fmt(c.monto)} (${c.fecha})`;
     sel.appendChild(o);
   });
+  if(prevVal) sel.value=prevVal;
 }
 
 $('formPagoCredito').onsubmit=async e=>{
   e.preventDefault();
-  const fecha=$('pcFecha').value,cid=$('pcCreditoId').value,cuenta=$('pcCuenta').value;
-  const monto=parseFloat($('pcMonto').value),nota=$('pcNota').value.trim();
-  if(!fecha||!cid||!cuenta||!monto){showToast('Completa todos los campos.','error');return;}
+  const fecha=$('pcFecha').value, cid=$('pcCreditoId').value;
+  const cuenta=$('pcCuenta').value, monto=parseFloat($('pcMonto').value);
+  const nota=$('pcNota').value.trim();
+
+  if(!fecha||!cid||!cuenta||!monto||monto<=0){
+    showToast('Completa todos los campos.','error'); return;
+  }
+
   const cred=DB.creditos.find(x=>x.id===cid);
   if(!cred){showToast('Crédito no encontrado.','error');return;}
-  if(cred.tipo==='recibido'&&monto>getSaldo(cuenta)){showToast(`Saldo insuficiente en ${DB.cuentas.find(c=>c.id===cuenta)?.nombre}.`,'error');return;}
-  cred.estado=cred.tipo==='dado'?'cobrado':'pagado';
-  cred.cuentaCobro=cuenta; cred.fechaCobro=fecha;
-  await fsSet('creditos',cred);
-  $('formPagoCredito').reset(); showToast('Cobro/Pago registrado. ☁️','success');
+
+  // Validar saldo solo si es pago (sale dinero)
+  if(cred.tipo==='recibido' && monto>getSaldo(cuenta)){
+    showToast(`Saldo insuficiente en ${DB.cuentas.find(c=>c.id===cuenta)?.nombre}. Disponible: ${fmt(getSaldo(cuenta))}`,'error');
+    return;
+  }
+
+  // Marcar como cobrado/pagado
+  cred.estado  = cred.tipo==='dado' ? 'cobrado' : 'pagado';
+  cred.cuentaCobro = cuenta;
+  cred.fechaCobro  = fecha;
+  cred.montoCobrado= monto;
+  cred.nota        = nota;
+  await fsSet('creditos', cred);
+
+  // Registrar el movimiento real en la cuenta
+  const movReal={
+    id: uid(), fecha, tipo: cred.tipo==='dado' ? 'Ingreso' : 'Gasto',
+    categoria: cred.categoria||'Cobro de crédito',
+    metodo: cuenta,
+    descripcion: `${cred.tipo==='dado'?'Cobro':'Pago'} crédito — ${cred.tercero}${nota?' ('+nota+')':''}`,
+    monto, anticipoAplicadoId:null, anticipoAplicadoMonto:0
+  };
+  await fsSet('movimientos', movReal);
+
+  $('formPagoCredito').reset();
+  $('pcInfo').classList.add('hidden');
+  renderCreditos();
+  showToast(`${cred.tipo==='dado'?'Cobro':'Pago'} registrado — el dinero ya se reflejó en la cuenta. ☁️`, 'success');
 };
 
 // ── PRÉSTAMOS ────────────────────────────────────────────────────
@@ -1782,7 +1988,7 @@ fbPromise.then(fb=>{FB=fb;initAuth();});
 function initApp(){
   const h=hoy(); $('movFecha').value=h; $('antFecha').value=h; $('trFecha').value=h;
   $('devFecha').value=h; $('cxcFecha').value=h; $('cxpFecha').value=h;
-  $('preFecha').value=h; $('pcFecha').value=h;
+  $('preFecha').value=h; $('pcFecha').value=h; $('crdFecha').value=h;
   initTabs(); populateMovMetodos(); populateTrCuentas();
   renderResumen(); renderMovimientos(); renderCategorias();
 }
