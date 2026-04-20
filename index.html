@@ -621,10 +621,9 @@
           <label>Tipo *</label>
           <select id="catTipo" required>
             <option value="">— Seleccionar —</option>
-            <option value="Ingreso">Ingreso</option>
-            <option value="Gasto">Gasto</option>
-            <option value="Compra">Compra</option>
-            <option value="General">General</option>
+            <option value="Ingreso">💰 Ingreso</option>
+            <option value="Gasto">💸 Gasto</option>
+            <option value="Compra">🛒 Compra</option>
           </select>
         </div>
         <div class="form-group"><label>Icono (emoji)</label><input type="text" id="catIcono" placeholder="🛒" maxlength="4" /></div>
@@ -634,10 +633,9 @@
   </section>
   <section class="section-block">
     <div class="cat-columns">
-      <div class="cat-col"><h3 class="cat-col-title green-title">Ingresos</h3><ul id="listaCatIngresos" class="cat-list"></ul></div>
-      <div class="cat-col"><h3 class="cat-col-title red-title">Gastos</h3><ul id="listaCatGastos" class="cat-list"></ul></div>
-      <div class="cat-col"><h3 class="cat-col-title orange-title">Compras</h3><ul id="listaCatCompras" class="cat-list"></ul></div>
-      <div class="cat-col"><h3 class="cat-col-title gray-title">General</h3><ul id="listaCatGeneral" class="cat-list"></ul></div>
+      <div class="cat-col"><h3 class="cat-col-title green-title">💰 Ingresos</h3><ul id="listaCatIngresos" class="cat-list"></ul></div>
+      <div class="cat-col"><h3 class="cat-col-title red-title">💸 Gastos</h3><ul id="listaCatGastos" class="cat-list"></ul></div>
+      <div class="cat-col"><h3 class="cat-col-title orange-title">🛒 Compras</h3><ul id="listaCatCompras" class="cat-list"></ul></div>
     </div>
   </section>
 </main>
@@ -666,6 +664,32 @@
   <section class="section-block">
     <h2 class="section-title">Cuentas Configuradas</h2>
     <div id="listaCuentas" class="cuentas-grid"></div>
+  </section>
+
+  <!-- ZONA DE PELIGRO -->
+  <section class="section-block danger-zone">
+    <h2 class="section-title" style="color:var(--danger)">⚠️ Zona de Peligro</h2>
+    <p class="section-desc">Estas acciones son <strong>irreversibles</strong>. Úsalas solo si quieres empezar desde cero. Se recomienda exportar a Excel antes de continuar.</p>
+
+    <div class="danger-actions">
+
+      <div class="danger-item">
+        <div class="danger-info">
+          <strong>Limpiar solo movimientos</strong>
+          <span>Borra todos los movimientos, anticipos, transferencias, devoluciones, créditos, préstamos, CxC y CxP. Conserva las cuentas, categorías y saldos iniciales.</span>
+        </div>
+        <button class="btn-danger" id="btnLimpiarMovimientos">🗑 Limpiar movimientos</button>
+      </div>
+
+      <div class="danger-item">
+        <div class="danger-info">
+          <strong>Restablecer todo</strong>
+          <span>Borra absolutamente todo: movimientos, cuentas personalizadas, categorías personalizadas y saldos iniciales. Vuelve al estado de instalación.</span>
+        </div>
+        <button class="btn-danger" id="btnRestablecerTodo">💣 Restablecer todo</button>
+      </div>
+
+    </div>
   </section>
 </main>
 
@@ -1243,7 +1267,7 @@ function populateMovCats(){
   const t=$('movTipo').value,s=$('movCategoria'),p=s.value;
   s.innerHTML='<option value="">— Seleccionar —</option>';
   const tipoBase=t==='Ingreso Crédito'?'Ingreso':t==='Compra Crédito'?'Compra':t;
-  DB.categorias.filter(c=>c.tipo===tipoBase||c.tipo==='General').forEach(c=>{const o=document.createElement('option');o.value=c.nombre;o.textContent=(c.icono||'')+' '+c.nombre;s.appendChild(o);});
+  DB.categorias.filter(c=>c.tipo===tipoBase).forEach(c=>{const o=document.createElement('option');o.value=c.nombre;o.textContent=(c.icono||'')+' '+c.nombre;s.appendChild(o);});
   s.value=p;
 }
 $('movTipo').addEventListener('change',populateMovCats);
@@ -1474,7 +1498,7 @@ $('crdTipo').onchange=()=>{
   // Filtrar categorías según tipo
   const sc=$('crdCategoria'); sc.innerHTML='<option value="">— Seleccionar —</option>';
   const tipoBase = t==='dado' ? 'Ingreso' : t==='recibido' ? 'Compra' : null;
-  DB.categorias.filter(c=> tipoBase ? (c.tipo===tipoBase||c.tipo==='General') : true).forEach(c=>{
+  DB.categorias.filter(c=> tipoBase ? c.tipo===tipoBase : true).forEach(c=>{
     const o=document.createElement('option'); o.value=c.nombre; o.textContent=(c.icono||'')+' '+c.nombre; sc.appendChild(o);
   });
 };
@@ -1807,27 +1831,114 @@ $('formCategoria').onsubmit=async e=>{
   e.preventDefault();
   const nombre=$('catNombre').value.trim(),tipo=$('catTipo').value,icono=$('catIcono').value.trim();
   if(!nombre||!tipo){showToast('Nombre y tipo requeridos.','error');return;}
-  if(DB.categorias.some(c=>c.nombre.toLowerCase()===nombre.toLowerCase()&&c.tipo===tipo)){showToast('Ya existe.','error');return;}
+  if(DB.categorias.some(c=>c.nombre.toLowerCase()===nombre.toLowerCase()&&c.tipo===tipo)){showToast('Ya existe esa categoría.','error');return;}
   DB.categorias.push({id:uid(),nombre,tipo,icono});
   await saveConfig(); $('formCategoria').reset(); renderCategorias(); showToast('Categoría agregada.','success');
 };
+
 function renderCategorias(){
-  ['Ingresos','Gastos','Compras','General'].forEach(t=>{
-    const key=t==='Ingresos'?'Ingreso':t==='Gastos'?'Gasto':t==='Compras'?'Compra':'General';
+  ['Ingresos','Gastos','Compras'].forEach(t=>{
+    const key=t==='Ingresos'?'Ingreso':t==='Gastos'?'Gasto':'Compra';
     const ul=$('listaCat'+t); ul.innerHTML='';
-    DB.categorias.filter(c=>c.tipo===key).forEach(c=>{
+    const cats=DB.categorias.filter(c=>c.tipo===key);
+    if(!cats.length){
+      ul.innerHTML=`<li class="cat-item" style="color:var(--text-muted);font-style:italic;font-size:.82rem">Sin categorías de ${key.toLowerCase()}</li>`;
+      return;
+    }
+    cats.forEach(c=>{
       const li=document.createElement('li'); li.className='cat-item';
-      li.innerHTML=`<span class="cat-item-name">${c.icono||''} ${c.nombre}</span><button class="cat-item-del" data-id="${c.id}">✖</button>`;
+      li.innerHTML=`<span class="cat-item-name">${c.icono||''} ${c.nombre}</span><button class="cat-item-del" data-id="${c.id}" title="Eliminar">✖</button>`;
       ul.appendChild(li);
     });
   });
   document.querySelectorAll('.cat-item-del').forEach(btn=>btn.onclick=async()=>{
-    const id=btn.dataset.id,cat=DB.categorias.find(c=>c.id===id);
-    if(DB.movimientos.some(m=>m.categoria===cat?.nombre)){showToast('No se puede eliminar: en uso.','error');return;}
+    const id=btn.dataset.id, cat=DB.categorias.find(c=>c.id===id);
+    if(DB.movimientos.some(m=>m.categoria===cat?.nombre)){showToast('No se puede eliminar: categoría en uso en movimientos.','error');return;}
+    if(DB.creditos.some(c=>c.categoria===cat?.nombre)){showToast('No se puede eliminar: categoría en uso en créditos.','error');return;}
     DB.categorias=DB.categorias.filter(c=>c.id!==id);
     await saveConfig(); renderCategorias(); showToast('Categoría eliminada.','success');
   });
+  // Limpiar categorías General que puedan existir de versiones anteriores
+  const tenia=DB.categorias.some(c=>c.tipo==='General');
+  if(tenia){DB.categorias=DB.categorias.filter(c=>c.tipo!=='General');saveConfig();}
 }
+
+// ── ZONA DE PELIGRO ──────────────────────────────────────────────
+$('btnLimpiarMovimientos').onclick=()=>{
+  openModal(
+    '⚠️ Limpiar movimientos',
+    'Se borrarán TODOS los movimientos, anticipos, transferencias, devoluciones, créditos, préstamos, CxC y CxP. Las cuentas y categorías se conservan. Esta acción NO se puede deshacer. ¿Continuar?',
+    async()=>{
+      // Confirmar segunda vez con texto
+      const confirmTxt=prompt('Escribe CONFIRMAR para continuar:');
+      if(confirmTxt!=='CONFIRMAR'){showToast('Operación cancelada.'); return;}
+
+      showToast('Limpiando registros…');
+      const colsALimpiar=['movimientos','anticipos','transferencias','devoluciones','creditos','prestamos','cxc','cxp'];
+
+      // Limpiar en Firebase si hay conexión
+      if(isOnline && currentUser){
+        try{
+          for(const col of colsALimpiar){
+            const items=[...DB[col]];
+            const batch=FB.writeBatch(FB.db);
+            items.forEach(item=>batch.delete(userDoc(col,item.id)));
+            if(items.length) await batch.commit();
+          }
+        }catch(e){console.warn('Error limpiando Firebase:',e);}
+      }
+
+      // Limpiar en memoria y localStorage
+      colsALimpiar.forEach(col=>{ DB[col]=[]; });
+      DB.saldosIniciales={};
+      saveSnap();
+      lSave(QUEUE_KEY,[]);
+
+      renderResumen(); renderMovimientos();
+      showToast('✅ Todos los movimientos han sido eliminados.','success');
+    }
+  );
+};
+
+$('btnRestablecerTodo').onclick=()=>{
+  openModal(
+    '💣 Restablecer todo',
+    'Se borrará ABSOLUTAMENTE TODO: movimientos, cuentas personalizadas, categorías y saldos. La app vuelve al estado inicial. Esta acción NO se puede deshacer. ¿Continuar?',
+    async()=>{
+      const confirmTxt=prompt('Escribe RESTABLECER para confirmar:');
+      if(confirmTxt!=='RESTABLECER'){showToast('Operación cancelada.'); return;}
+
+      showToast('Restableciendo…');
+      const todasLasCols=['movimientos','anticipos','transferencias','devoluciones','creditos','prestamos','cxc','cxp'];
+
+      // Limpiar Firebase
+      if(isOnline && currentUser){
+        try{
+          for(const col of todasLasCols){
+            const items=[...DB[col]];
+            const batch=FB.writeBatch(FB.db);
+            items.forEach(item=>batch.delete(userDoc(col,item.id)));
+            if(items.length) await batch.commit();
+          }
+          // Borrar config
+          await FB.setDoc(configDoc(),{cuentas:DEFAULT_CUENTAS,saldosIniciales:{},categorias:DEFAULT_CATS,presupuestos:{},updatedAt:Date.now()});
+        }catch(e){console.warn('Error restableciendo Firebase:',e);}
+      }
+
+      // Resetear en memoria
+      todasLasCols.forEach(col=>{ DB[col]=[]; });
+      DB.cuentas         = [...DEFAULT_CUENTAS];
+      DB.categorias      = DEFAULT_CATS.map(c=>({...c,id:uid()})); // nuevos IDs
+      DB.saldosIniciales = {};
+      DB.presupuestos    = {};
+      saveSnap(); saveConfig();
+      lSave(QUEUE_KEY,[]);
+
+      renderResumen(); renderMovimientos(); renderCategorias(); renderCuentas();
+      showToast('✅ App restablecida al estado inicial.','success');
+    }
+  );
+};
 
 // ── REPORTES ─────────────────────────────────────────────────────
 let chartReporte=null;
