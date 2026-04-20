@@ -1122,11 +1122,13 @@ function populateSelect(el,placeholder='— Seleccionar —'){
   el.value=v;
 }
 function populateMovMetodos(){
-  populateSelect($('movMetodo')); populateSelect($('antMetodo'));
-  populateSelect($('devCuenta')); populateSelect($('pcCuenta'));
+  // Solo reconstruye los selects del FORMULARIO de registro
+  // filtroMetodo lo maneja renderMovimientos para conservar la selección
+  populateSelect($('movMetodo'));
+  populateSelect($('antMetodo'));
+  populateSelect($('devCuenta'));
+  populateSelect($('pcCuenta'));
   populateSelect($('preCuenta'));
-  const fm=$('filtroMetodo'); fm.innerHTML='<option value="">Todos los métodos</option>';
-  DB.cuentas.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.nombre;fm.appendChild(o);});
 }
 function populateTrCuentas(){populateSelect($('trOrigen'));populateSelect($('trDestino'));}
 
@@ -1316,37 +1318,100 @@ $('formMovimiento').onsubmit=async e=>{
 $('btnCancelarEdicion').onclick=()=>{editandoId=null;$('formMovimiento').reset();$('grupoAnticipo').style.display='none';$('btnCancelarEdicion').style.display='none';$('grupoMetodoPago').style.display='';};
 
 function renderMovimientos(){
-  populateMovMetodos(); populateMovCats();
-  const txt=$('filtroTexto').value.toLowerCase(),tipo=$('filtroTipo').value,met=$('filtroMetodo').value,mes=$('filtroMes').value;
+  // ── 1. Leer los valores de los filtros ANTES de tocar los selects ──
+  const txt  = $('filtroTexto').value.toLowerCase();
+  const tipo = $('filtroTipo').value;
+  const met  = $('filtroMetodo').value;
+  const mes  = $('filtroMes').value;
+
+  // ── 2. Reconstruir solo los selects de FORMULARIO (no los filtros) ──
+  populateMovCats();
+  // Reconstruir filtroMetodo conservando la selección
+  const fm = $('filtroMetodo');
+  const fmPrev = fm.value;
+  fm.innerHTML = '<option value="">Todos los métodos</option>';
+  DB.cuentas.forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id; o.textContent=c.nombre;
+    fm.appendChild(o);
+  });
+  fm.value = fmPrev; // restaurar
+
+  // ── 3. Reconstruir filtroMes conservando la selección ──
   const MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const prevM=$('filtroMes').value; $('filtroMes').innerHTML='<option value="">Todos los meses</option>';
-  const ym=new Set(); DB.movimientos.forEach(m=>{const d=new Date(m.fecha+'T00:00:00');ym.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);});
-  [...ym].sort().reverse().forEach(v=>{const[y,m]=v.split('-');const o=document.createElement('option');o.value=v;o.textContent=`${MN[parseInt(m)-1]} ${y}`;$('filtroMes').appendChild(o);});
-  $('filtroMes').value=prevM;
+  $('filtroMes').innerHTML='<option value="">Todos los meses</option>';
+  const ym=new Set();
+  DB.movimientos.forEach(m=>{
+    const d=new Date(m.fecha+'T00:00:00');
+    ym.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+  });
+  [...ym].sort().reverse().forEach(v=>{
+    const[y,mo]=v.split('-');
+    const o=document.createElement('option');
+    o.value=v; o.textContent=`${MN[parseInt(mo)-1]} ${y}`;
+    $('filtroMes').appendChild(o);
+  });
+  $('filtroMes').value = mes; // restaurar
+
+  // ── 4. Aplicar filtros ──
   let lista=[...DB.movimientos];
-  if(txt)lista=lista.filter(m=>(m.descripcion||'').toLowerCase().includes(txt)||m.categoria.toLowerCase().includes(txt));
-  if(tipo)lista=lista.filter(m=>m.tipo===tipo);
-  if(met)lista=lista.filter(m=>m.metodo===met);
-  if(mes)lista=lista.filter(m=>m.fecha.startsWith(mes));
-  lista.sort((a,b)=>{let va=a[sortCol],vb=b[sortCol];if(typeof va==='string')return va.localeCompare(vb)*sortDir;return(va-vb)*sortDir;});
+  if(txt)  lista=lista.filter(m=>(m.descripcion||'').toLowerCase().includes(txt)||m.categoria.toLowerCase().includes(txt)||(m.tercero||'').toLowerCase().includes(txt));
+  if(tipo) lista=lista.filter(m=>m.tipo===tipo);
+  if(met)  lista=lista.filter(m=>m.metodo===met);
+  if(mes)  lista=lista.filter(m=>m.fecha.startsWith(mes));
+
+  lista.sort((a,b)=>{
+    let va=a[sortCol],vb=b[sortCol];
+    if(typeof va==='string') return va.localeCompare(vb)*sortDir;
+    return (va-vb)*sortDir;
+  });
+
+  // ── 5. Renderizar tabla ──
   const tbody=$('tbodyMovimientos'); tbody.innerHTML='';
   let tot=0;
   lista.forEach(m=>{
-    const cn=DB.cuentas.find(c=>c.id===m.metodo)?.nombre||'Crédito';
+    const cn=DB.cuentas.find(c=>c.id===m.metodo)?.nombre||'— Crédito —';
     const esIng=m.tipo==='Ingreso'||m.tipo==='Ingreso Crédito';
     tot+=esIng?m.monto:-m.monto;
-    const ant=m.anticipoAplicadoMonto?`<span class="badge" style="background:#fef3c7;color:#d97706;font-size:.7rem">-${fmt(m.anticipoAplicadoMonto)}</span>`:'';
-    const badgeCls=m.tipo==='Ingreso'?'badge-ingreso':m.tipo==='Ingreso Crédito'?'badge-credito-rec':m.tipo==='Compra'?'badge-compra':m.tipo==='Compra Crédito'?'badge-credito-dad':'badge-gasto';
-    const tr=document.createElement('tr'); tr.className=`row-${m.tipo.replace(' ','-').toLowerCase()} row-new`;
-    tr.innerHTML=`<td>${m.fecha}</td><td><span class="badge ${badgeCls}">${m.tipo}</span></td><td>${m.categoria}</td><td>${m.descripcion||'—'} ${ant}</td><td>${cn}</td><td class="${esIng?'monto-ingreso':'monto-egreso'}">${esIng?'+':'-'}${fmt(m.monto)}</td>
-      <td><div class="action-btns"><button class="btn-sm btn-edit" data-id="${m.id}">✏️</button><button class="btn-sm btn-delete" data-id="${m.id}">🗑</button></div></td>`;
-    setTimeout(()=>tr.classList.remove('row-new'),1600); tbody.appendChild(tr);
+    const ant=m.anticipoAplicadoMonto
+      ?`<span class="badge" style="background:#fef3c7;color:#d97706;font-size:.7rem">-${fmt(m.anticipoAplicadoMonto)} anticipo</span>`:'';
+    const badgeMap={
+      'Ingreso':         'badge-ingreso',
+      'Ingreso Crédito': 'badge-credito-rec',
+      'Compra':          'badge-compra',
+      'Compra Crédito':  'badge-credito-dad',
+      'Gasto':           'badge-gasto',
+    };
+    const badgeCls=badgeMap[m.tipo]||'badge-gasto';
+    const tr=document.createElement('tr');
+    tr.className=`row-${m.tipo.replace(/ /g,'-').toLowerCase()} row-new`;
+    tr.innerHTML=`
+      <td>${m.fecha}</td>
+      <td><span class="badge ${badgeCls}">${m.tipo}</span></td>
+      <td>${m.categoria}</td>
+      <td>${m.descripcion||'—'} ${ant}</td>
+      <td>${cn}</td>
+      <td class="${esIng?'monto-ingreso':'monto-egreso'}">${esIng?'+':'-'}${fmt(m.monto)}</td>
+      <td><div class="action-btns">
+        <button class="btn-sm btn-edit" data-id="${m.id}" title="Editar">✏️</button>
+        <button class="btn-sm btn-delete" data-id="${m.id}" title="Eliminar">🗑</button>
+      </div></td>`;
+    setTimeout(()=>tr.classList.remove('row-new'),1600);
+    tbody.appendChild(tr);
   });
+
   $('totalFiltrado').innerHTML=`<strong>${fmt(tot)}</strong>`;
   $('emptyState').style.display=lista.length?'none':'block';
+
   tbody.querySelectorAll('.btn-edit').forEach(b=>b.onclick=()=>editarMov(b.dataset.id));
   tbody.querySelectorAll('.btn-delete').forEach(b=>b.onclick=()=>eliminarMov(b.dataset.id));
-  document.querySelectorAll('#tablaMovimientos th[data-sort]').forEach(th=>{th.onclick=()=>{if(sortCol===th.dataset.sort)sortDir*=-1;else{sortCol=th.dataset.sort;sortDir=-1;}renderMovimientos();};});
+  document.querySelectorAll('#tablaMovimientos th[data-sort]').forEach(th=>{
+    th.onclick=()=>{
+      if(sortCol===th.dataset.sort) sortDir*=-1;
+      else { sortCol=th.dataset.sort; sortDir=-1; }
+      renderMovimientos();
+    };
+  });
 }
 
 function editarMov(id){
@@ -1993,14 +2058,75 @@ $('btnGenerarReporte').onclick=()=>{
 
 // ── EXPORTAR ─────────────────────────────────────────────────────
 $('btnExportExcel').onclick=()=>{
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,'Movimientos',XLSX.utils.json_to_sheet(DB.movimientos.map(m=>({Fecha:m.fecha,Tipo:m.tipo,Categoría:m.categoria,Cuenta:DB.cuentas.find(c=>c.id===m.metodo)?.nombre||m.metodo||'Crédito',Descripción:m.descripcion||'',Monto:m.monto}))));
-  XLSX.utils.book_append_sheet(wb,'Devoluciones',XLSX.utils.json_to_sheet(DB.devoluciones.map(d=>({Fecha:d.fecha,Tipo:d.tipo,Cuenta:DB.cuentas.find(c=>c.id===d.cuenta)?.nombre||d.cuenta,Monto:d.monto,Descripción:d.descripcion||''}))));
-  XLSX.utils.book_append_sheet(wb,'Créditos',XLSX.utils.json_to_sheet(DB.creditos.map(c=>({Fecha:c.fecha,Tipo:c.tipo,Tercero:c.tercero,Monto:c.monto,Estado:c.estado}))));
-  XLSX.utils.book_append_sheet(wb,'CxC',XLSX.utils.json_to_sheet(DB.cxc));
-  XLSX.utils.book_append_sheet(wb,'CxP',XLSX.utils.json_to_sheet(DB.cxp));
-  XLSX.utils.book_append_sheet(wb,'Préstamos',XLSX.utils.json_to_sheet(DB.prestamos));
-  XLSX.writeFile(wb,'ContaApp_Export.xlsx');
+  try {
+    const wb = XLSX.utils.book_new();
+
+    // Protege contra hojas vacías que crashean XLSX
+    const addSheet=(nombre,datos,cols)=>{
+      const filas = datos.length ? datos : [cols.reduce((o,k)=>{o[k]='Sin datos';return o;},{})];
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filas), nombre);
+    };
+
+    addSheet('Movimientos', DB.movimientos.map(m=>({
+      Fecha: m.fecha, Tipo: m.tipo, Categoria: m.categoria,
+      Cuenta: DB.cuentas.find(c=>c.id===m.metodo)?.nombre||(m.metodo||'Credito'),
+      Descripcion: m.descripcion||'', Monto: m.monto,
+      Anticipo_desc: m.anticipoAplicadoMonto||0
+    })),['Fecha','Tipo','Categoria','Cuenta','Descripcion','Monto','Anticipo_desc']);
+
+    addSheet('Devoluciones', DB.devoluciones.map(d=>({
+      Fecha: d.fecha, Tipo: d.tipo,
+      Cuenta: DB.cuentas.find(c=>c.id===d.cuenta)?.nombre||d.cuenta,
+      Monto: d.monto, Descripcion: d.descripcion||''
+    })),['Fecha','Tipo','Cuenta','Monto','Descripcion']);
+
+    addSheet('Creditos', DB.creditos.map(c=>({
+      Fecha: c.fecha,
+      Tipo: c.tipo==='dado'?'Credito dado (venta)':'Credito recibido (compra)',
+      Tercero: c.tercero, Categoria: c.categoria||'',
+      Monto: c.monto, Vence: c.vence||'', Estado: c.estado
+    })),['Fecha','Tipo','Tercero','Categoria','Monto','Vence','Estado']);
+
+    addSheet('Anticipos', DB.anticipos.map(a=>({
+      Fecha: a.fecha, Cliente: a.cliente,
+      Cuenta: DB.cuentas.find(c=>c.id===a.metodo)?.nombre||a.metodo,
+      Monto: a.monto, Descripcion: a.descripcion||'', Estado: a.estado
+    })),['Fecha','Cliente','Cuenta','Monto','Descripcion','Estado']);
+
+    addSheet('Transferencias', DB.transferencias.map(t=>({
+      Fecha: t.fecha,
+      Origen:  DB.cuentas.find(c=>c.id===t.origen)?.nombre||t.origen,
+      Destino: DB.cuentas.find(c=>c.id===t.destino)?.nombre||t.destino,
+      Monto: t.monto, Descripcion: t.descripcion||''
+    })),['Fecha','Origen','Destino','Monto','Descripcion']);
+
+    addSheet('CxC', DB.cxc.map(x=>({
+      Fecha: x.fecha, Cliente: x.cliente,
+      Descripcion: x.descripcion||'', Monto: x.monto,
+      Vence: x.vence||'', Estado: x.estado
+    })),['Fecha','Cliente','Descripcion','Monto','Vence','Estado']);
+
+    addSheet('CxP', DB.cxp.map(x=>({
+      Fecha: x.fecha, Proveedor: x.proveedor,
+      Descripcion: x.descripcion||'', Monto: x.monto,
+      Vence: x.vence||'', Estado: x.estado
+    })),['Fecha','Proveedor','Descripcion','Monto','Vence','Estado']);
+
+    addSheet('Prestamos', DB.prestamos.map(p=>({
+      Fecha: p.fecha,
+      Tipo: {dado:'Prestado',recibido:'Recibido',cobro:'Cobro',pago:'Pago'}[p.tipo]||p.tipo,
+      Tercero: p.tercero,
+      Cuenta: DB.cuentas.find(c=>c.id===p.cuenta)?.nombre||p.cuenta,
+      Monto: p.monto, Descripcion: p.descripcion||''
+    })),['Fecha','Tipo','Tercero','Cuenta','Monto','Descripcion']);
+
+    XLSX.writeFile(wb, 'ContaApp_Export.xlsx');
+    showToast('✅ Excel exportado correctamente.', 'success');
+
+  } catch(err) {
+    console.error('Export error:', err);
+    showToast('❌ Error al exportar: ' + err.message, 'error');
+  }
 };
 
 // ── IMPORTACIÓN ──────────────────────────────────────────────────
