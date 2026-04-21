@@ -282,14 +282,27 @@
 <main class="tab-content hidden" id="tab-anticipos">
   <section class="section-block">
     <h2 class="section-title">Registrar Anticipo</h2>
-    <p class="section-desc">Pago adelantado de un cliente. Al registrar la venta final podrás descontarlo para no duplicar el ingreso.</p>
+    <p class="section-desc">
+      Un anticipo es un pago adelantado que el cliente te hace <strong>antes</strong> de la venta.<br>
+      El dinero <strong>entra a tu cuenta</strong> cuando registras el anticipo.<br>
+      Cuando hagas la venta final, el sistema descuenta automáticamente el anticipo para que el ingreso no se duplique.
+    </p>
     <form id="formAnticipo" autocomplete="off">
       <div class="form-grid">
         <div class="form-group"><label>Fecha *</label><input type="date" id="antFecha" required /></div>
-        <div class="form-group"><label>Cliente / Referencia *</label><input type="text" id="antCliente" placeholder="Nombre del cliente..." maxlength="100" required /></div>
-        <div class="form-group"><label>Cuenta de Cobro *</label><select id="antMetodo" required><option value="">— Seleccionar —</option></select></div>
-        <div class="form-group"><label>Monto *</label><input type="number" id="antMonto" placeholder="0.00" step="0.01" min="0.01" required /></div>
-        <div class="form-group form-group-wide"><label>Descripción</label><input type="text" id="antDescripcion" placeholder="Concepto del anticipo..." maxlength="200" /></div>
+        <div class="form-group"><label>Cliente *</label><input type="text" id="antCliente" placeholder="Nombre del cliente..." maxlength="100" required /></div>
+        <div class="form-group">
+          <label>Cuenta donde entró el dinero *</label>
+          <select id="antMetodo" required><option value="">— Seleccionar —</option></select>
+        </div>
+        <div class="form-group"><label>Monto del anticipo *</label><input type="number" id="antMonto" placeholder="0.00" step="0.01" min="0.01" required /></div>
+        <div class="form-group form-group-wide"><label>Descripción / Concepto</label><input type="text" id="antDescripcion" placeholder="Ej: Anticipo pedido camisas, seña servicio..." maxlength="200" /></div>
+      </div>
+      <div class="anticipo-box" style="margin-bottom:1rem">
+        <div style="font-size:.85rem;color:var(--warning);font-weight:600">
+          ⚠️ Al guardar, el monto ingresará al saldo de la cuenta seleccionada.<br>
+          Cuando registres la venta, marca la opción <em>"Aplicar anticipo"</em> para descontarlo y evitar duplicar el ingreso.
+        </div>
       </div>
       <button type="submit" class="btn-primary">💰 Registrar Anticipo</button>
     </form>
@@ -1021,37 +1034,54 @@ const CM={green:'linear-gradient(135deg,#065f46,#059669)',blue:'linear-gradient(
 // ── SALDO POR CUENTA ─────────────────────────────────────────────
 function getSaldo(cid){
   let s=Number(DB.saldosIniciales[cid]||0);
-  // Movimientos normales (Ingreso, Gasto, Compra — los créditos no mueven cuenta)
+
+  // Movimientos: Ingreso suma, Gasto/Compra restan
+  // IMPORTANTE: cuando un ingreso tiene anticipo aplicado, solo suma la diferencia
+  // porque el anticipo ya entró antes a la cuenta
   DB.movimientos.forEach(m=>{
     if(m.metodo!==cid) return;
-    if(m.tipo==='Ingreso') s+=m.monto;
-    else if(m.tipo==='Gasto'||m.tipo==='Compra') s-=m.monto;
+    if(m.tipo==='Ingreso'){
+      // Si tiene anticipo aplicado, el dinero real que entra es monto - anticipo
+      const yaEntro = m.anticipoAplicadoMonto || 0;
+      s += (m.monto - yaEntro);
+    }
+    else if(m.tipo==='Gasto'||m.tipo==='Compra') s -= m.monto;
     // Ingreso Crédito y Compra Crédito NO mueven la cuenta
   });
+
   // Transferencias
   DB.transferencias.forEach(t=>{
-    if(t.origen===cid)  s-=t.monto;
-    if(t.destino===cid) s+=t.monto;
+    if(t.origen===cid)  s -= t.monto;
+    if(t.destino===cid) s += t.monto;
   });
-  // Anticipos recibidos (sí mueven la cuenta)
-  DB.anticipos.forEach(a=>{ if(a.metodo===cid) s+=a.monto; });
+
+  // Anticipos: solo los pendientes han entrado a la cuenta y aún no se han
+  // reflejado en un ingreso. Los aplicados ya se descuentan en el ingreso arriba.
+  // Los devueltos se manejan en DevAnticipo.
+  DB.anticipos.forEach(a=>{
+    if(a.metodo !== cid) return;
+    if(a.estado === 'pendiente') s += a.monto;   // dinero recibido, sin venta aún
+    if(a.estado === 'aplicado')  s += a.monto;   // dinero recibido en su momento
+    // 'devuelto' no suma porque ya se restó via DevAnticipo
+  });
+
   // Devoluciones
   DB.devoluciones.forEach(d=>{
     if(d.cuenta!==cid) return;
-    if(d.tipo==='DevCompra')   s+=d.monto;  // proveedor devuelve dinero
-    if(d.tipo==='DevVenta')    s-=d.monto;  // devuelves dinero al cliente
-    if(d.tipo==='DevAnticipo') s-=d.monto;  // devuelves anticipo
+    if(d.tipo==='DevCompra')   s += d.monto;  // proveedor devuelve dinero
+    if(d.tipo==='DevVenta')    s -= d.monto;  // devuelves dinero al cliente
+    if(d.tipo==='DevAnticipo') s -= d.monto;  // devuelves anticipo al cliente
   });
+
   // Préstamos
   DB.prestamos.forEach(p=>{
     if(p.cuenta!==cid) return;
-    if(p.tipo==='dado')     s-=p.monto;
-    if(p.tipo==='recibido') s+=p.monto;
-    if(p.tipo==='cobro')    s+=p.monto;
-    if(p.tipo==='pago')     s-=p.monto;
+    if(p.tipo==='dado')     s -= p.monto;
+    if(p.tipo==='recibido') s += p.monto;
+    if(p.tipo==='cobro')    s += p.monto;
+    if(p.tipo==='pago')     s -= p.monto;
   });
-  // Nota: cobros/pagos de crédito ya quedan como movimientos normales (Ingreso/Gasto)
-  // por eso no se necesita lógica extra aquí
+
   return s;
 }
 
