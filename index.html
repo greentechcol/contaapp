@@ -763,7 +763,7 @@
     <h3 class="section-title" style="margin-top:1.5rem;font-size:.9rem">Detalle por Cuenta</h3>
     <div class="table-responsive">
       <table class="data-table">
-        <thead><tr><th>Cuenta</th><th>Ingresos</th><th>Egresos</th><th>Neto</th></tr></thead>
+        <thead><tr><th>Cuenta</th><th>Entradas del período</th><th>Salidas del período</th><th>Saldo al cierre</th></tr></thead>
         <tbody id="tbodyReporteCuentas"></tbody>
       </table>
     </div>
@@ -2283,51 +2283,213 @@ $('btnRestablecerTodo').onclick=()=>{
 // ── REPORTES ─────────────────────────────────────────────────────
 let chartReporte=null;
 $('btnGenerarReporte').onclick=()=>{
-  const desde=$('repDesde').value,hasta=$('repHasta').value;
-  if(!desde||!hasta){showToast('Selecciona el rango.','error');return;}
-  const lista=DB.movimientos.filter(m=>m.fecha>=desde&&m.fecha<=hasta);
-  let ing=0,gas=0,com=0,ingCred=0,comCred=0;
-  const catMap={},cuentaMap={};
+  const desde=$('repDesde').value, hasta=$('repHasta').value;
+  if(!desde||!hasta){ showToast('Selecciona el rango.','error'); return; }
+
+  // ── Movimientos del período ──────────────────────────────────────
+  const lista = DB.movimientos.filter(m=>m.fecha>=desde&&m.fecha<=hasta);
+  let ing=0, gas=0, com=0, ingCred=0, comCred=0;
+  const catMap={};
+
   lista.forEach(m=>{
-    if(m.tipo==='Ingreso')ing+=m.monto;
-    if(m.tipo==='Ingreso Crédito')ingCred+=m.monto;
-    if(m.tipo==='Gasto')gas+=m.monto;
-    if(m.tipo==='Compra')com+=m.monto;
-    if(m.tipo==='Compra Crédito')comCred+=m.monto;
-    catMap[m.categoria]=catMap[m.categoria]||{tipo:m.tipo,total:0,count:0};
-    catMap[m.categoria].total+=m.monto; catMap[m.categoria].count++;
-    if(m.metodo){cuentaMap[m.metodo]=cuentaMap[m.metodo]||{ing:0,eg:0};
-      if(m.tipo==='Ingreso')cuentaMap[m.metodo].ing+=m.monto;
-      else cuentaMap[m.metodo].eg+=m.monto;}
+    if(m.tipo==='Ingreso')        ing     += m.monto;
+    if(m.tipo==='Ingreso Crédito')ingCred += m.monto;
+    if(m.tipo==='Gasto')          gas     += m.monto;
+    if(m.tipo==='Compra')         com     += m.monto;
+    if(m.tipo==='Compra Crédito') comCred += m.monto;
+    // Mapa de categorías
+    if(!catMap[m.categoria]) catMap[m.categoria]={tipo:m.tipo,total:0,count:0};
+    catMap[m.categoria].total  += m.monto;
+    catMap[m.categoria].count  += 1;
   });
-  const devV=DB.devoluciones.filter(d=>d.fecha>=desde&&d.fecha<=hasta&&d.tipo==='DevVenta').reduce((a,d)=>a+d.monto,0);
-  const devC=DB.devoluciones.filter(d=>d.fecha>=desde&&d.fecha<=hasta&&d.tipo==='DevCompra').reduce((a,d)=>a+d.monto,0);
-  const bal=ing+ingCred-devV-(gas+com+comCred-devC);
 
+  // Devoluciones del período
+  const devV = DB.devoluciones.filter(d=>d.fecha>=desde&&d.fecha<=hasta&&d.tipo==='DevVenta')
+                               .reduce((a,d)=>a+d.monto, 0);
+  const devC = DB.devoluciones.filter(d=>d.fecha>=desde&&d.fecha<=hasta&&d.tipo==='DevCompra')
+                               .reduce((a,d)=>a+d.monto, 0);
+  const devAnt = DB.devoluciones.filter(d=>d.fecha>=desde&&d.fecha<=hasta&&d.tipo==='DevAnticipo')
+                                 .reduce((a,d)=>a+d.monto, 0);
+
+  // Anticipos del período
+  const antPend = DB.anticipos.filter(a=>a.fecha>=desde&&a.fecha<=hasta&&a.estado==='pendiente')
+                               .reduce((a,x)=>a+x.monto, 0);
+  const antApli = DB.anticipos.filter(a=>a.fecha>=desde&&a.fecha<=hasta&&a.estado==='aplicado')
+                               .reduce((a,x)=>a+x.monto, 0);
+
+  // Transferencias del período (informativo)
+  const transTotal = DB.transferencias.filter(t=>t.fecha>=desde&&t.fecha<=hasta)
+                                       .reduce((a,t)=>a+t.monto, 0);
+
+  // Préstamos del período
+  const prestDado   = DB.prestamos.filter(p=>p.fecha>=desde&&p.fecha<=hasta&&p.tipo==='dado')   .reduce((a,p)=>a+p.monto,0);
+  const prestRec    = DB.prestamos.filter(p=>p.fecha>=desde&&p.fecha<=hasta&&p.tipo==='recibido').reduce((a,p)=>a+p.monto,0);
+  const prestCobro  = DB.prestamos.filter(p=>p.fecha>=desde&&p.fecha<=hasta&&p.tipo==='cobro')  .reduce((a,p)=>a+p.monto,0);
+  const prestPago   = DB.prestamos.filter(p=>p.fecha>=desde&&p.fecha<=hasta&&p.tipo==='pago')   .reduce((a,p)=>a+p.monto,0);
+
+  // Balance neto de P&L
+  const ingReal = ing - (lista.reduce((a,m)=>a+(m.tipo==='Ingreso'?m.anticipoAplicadoMonto||0:0),0)) - devV;
+  const egReal  = gas + com - devC;
+  const bal     = ingReal + ingCred - egReal - comCred;
+
+  // ── Tarjetas resumen ─────────────────────────────────────────────
   const gc=$('repCardsGrid'); gc.innerHTML=`
-    <div class="card" style="background:linear-gradient(135deg,#065f46,#059669);color:white"><div class="card-label">Ingresos efectivo</div><div class="card-value">${fmt(ing)}</div></div>
-    <div class="card" style="background:linear-gradient(135deg,#1e3a5f,#0284c7);color:white"><div class="card-label">Ingresos crédito</div><div class="card-value">${fmt(ingCred)}</div></div>
-    <div class="card" style="background:linear-gradient(135deg,#7f1d1d,#dc2626);color:white"><div class="card-label">Gastos + Compras</div><div class="card-value">${fmt(gas+com)}</div></div>
-    <div class="card" style="background:linear-gradient(135deg,#78350f,#d97706);color:white"><div class="card-label">Compras crédito</div><div class="card-value">${fmt(comCred)}</div></div>
-    <div class="card" style="background:${bal>=0?'linear-gradient(135deg,#065f46,#059669)':'linear-gradient(135deg,#7f1d1d,#dc2626)'};color:white"><div class="card-label">Balance neto</div><div class="card-value">${fmt(bal)}</div></div>
-    <div class="card" style="background:linear-gradient(135deg,#134e4a,#0d9488);color:white"><div class="card-label">Dev. Ventas / Compras</div><div class="card-value">${fmt(devV)} / ${fmt(devC)}</div></div>`;
+    <div class="card" style="background:linear-gradient(135deg,#065f46,#059669);color:white">
+      <div class="card-label">💰 Ingresos contado</div>
+      <div class="card-value">${fmt(ing)}</div>
+      <div class="card-sub">Dev. ventas: -${fmt(devV)}</div>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,#1e3a5f,#0284c7);color:white">
+      <div class="card-label">💳 Ingresos a crédito</div>
+      <div class="card-value">${fmt(ingCred)}</div>
+      <div class="card-sub">No afectan saldo de cuentas</div>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,#7f1d1d,#dc2626);color:white">
+      <div class="card-label">💸 Gastos + Compras contado</div>
+      <div class="card-value">${fmt(gas+com)}</div>
+      <div class="card-sub">Dev. compras: +${fmt(devC)}</div>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,#4c1d95,#7c3aed);color:white">
+      <div class="card-label">🏷️ Compras a crédito</div>
+      <div class="card-value">${fmt(comCred)}</div>
+      <div class="card-sub">No afectan saldo de cuentas</div>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,#78350f,#d97706);color:white">
+      <div class="card-label">⏳ Anticipos recibidos</div>
+      <div class="card-value">${fmt(antPend+antApli)}</div>
+      <div class="card-sub">Dev. anticipos: -${fmt(devAnt)}</div>
+    </div>
+    <div class="card" style="background:${bal>=0?'linear-gradient(135deg,#1e40af,#2563eb)':'linear-gradient(135deg,#7f1d1d,#dc2626)'};color:white">
+      <div class="card-label">📊 Utilidad neta del período</div>
+      <div class="card-value">${fmt(bal)}</div>
+      <div class="card-sub">Ing. - Eg. (excl. créditos)</div>
+    </div>`;
 
-  const total=ing+ingCred+gas+com+comCred;
-  const tbody=$('tbodyReporte'); tbody.innerHTML='';
+  // ── Tabla por categoría ──────────────────────────────────────────
+  const total = ing+ingCred+gas+com+comCred;
+  const tbody = $('tbodyReporte'); tbody.innerHTML='';
   Object.entries(catMap).sort((a,b)=>b[1].total-a[1].total).forEach(([cat,v])=>{
-    const tr=document.createElement('tr'); const pct=total?((v.total/total)*100).toFixed(1)+'%':'—';
-    tr.innerHTML=`<td>${cat}</td><td><span class="badge badge-${v.tipo.toLowerCase().replace(' ','-')}">${v.tipo}</span></td><td>${v.count}</td><td>${fmt(v.total)}</td><td>${pct}</td>`;
+    const pct = total ? ((v.total/total)*100).toFixed(1)+'%' : '—';
+    const tr  = document.createElement('tr');
+    const badgeCls = v.tipo==='Ingreso'?'badge-ingreso':v.tipo==='Ingreso Crédito'?'badge-credito-rec':v.tipo==='Compra'?'badge-compra':v.tipo==='Compra Crédito'?'badge-credito-dad':'badge-gasto';
+    tr.innerHTML=`<td>${cat}</td><td><span class="badge ${badgeCls}">${v.tipo}</span></td><td>${v.count}</td><td>${fmt(v.total)}</td><td>${pct}</td>`;
     tbody.appendChild(tr);
   });
-  const tbC=$('tbodyReporteCuentas'); tbC.innerHTML='';
-  Object.entries(cuentaMap).forEach(([cid,v])=>{
-    const cn=DB.cuentas.find(c=>c.id===cid)?.nombre||cid;
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${cn}</td><td class="monto-ingreso">${fmt(v.ing)}</td><td class="monto-egreso">${fmt(v.eg)}</td><td class="${v.ing-v.eg>=0?'monto-ingreso':'monto-egreso'}">${fmt(v.ing-v.eg)}</td>`;
+
+  // ── Tabla saldo por cuenta — IGUAL que el Resumen ───────────────
+  // Calcula el saldo de cada cuenta SOLO con transacciones hasta "hasta"
+  // para que coincida exactamente con getSaldo() si se elige todo el período
+  const tbC = $('tbodyReporteCuentas'); tbC.innerHTML='';
+
+  DB.cuentas.forEach(c=>{
+    // Saldo inicial
+    let saldo = Number(DB.saldosIniciales[c.id]||0);
+
+    // Movimientos hasta la fecha fin
+    DB.movimientos.filter(m=>m.fecha<=hasta).forEach(m=>{
+      if(m.metodo!==c.id) return;
+      if(m.tipo==='Ingreso'){
+        const yaEntro = m.anticipoAplicadoMonto||0;
+        saldo += (m.monto - yaEntro);
+      } else if(m.tipo==='Gasto'||m.tipo==='Compra'){
+        saldo -= m.monto;
+      }
+    });
+
+    // Transferencias hasta la fecha fin
+    DB.transferencias.filter(t=>t.fecha<=hasta).forEach(t=>{
+      if(t.origen===c.id)  saldo -= t.monto;
+      if(t.destino===c.id) saldo += t.monto;
+    });
+
+    // Anticipos hasta la fecha fin
+    DB.anticipos.filter(a=>a.fecha<=hasta).forEach(a=>{
+      if(a.metodo!==c.id) return;
+      if(a.estado==='pendiente'||a.estado==='aplicado') saldo += a.monto;
+    });
+
+    // Devoluciones hasta la fecha fin
+    DB.devoluciones.filter(d=>d.fecha<=hasta).forEach(d=>{
+      if(d.cuenta!==c.id) return;
+      if(d.tipo==='DevCompra')   saldo += d.monto;
+      if(d.tipo==='DevVenta')    saldo -= d.monto;
+      if(d.tipo==='DevAnticipo') saldo -= d.monto;
+    });
+
+    // Préstamos hasta la fecha fin
+    DB.prestamos.filter(p=>p.fecha<=hasta).forEach(p=>{
+      if(p.cuenta!==c.id) return;
+      if(p.tipo==='dado')     saldo -= p.monto;
+      if(p.tipo==='recibido') saldo += p.monto;
+      if(p.tipo==='cobro')    saldo += p.monto;
+      if(p.tipo==='pago')     saldo -= p.monto;
+    });
+
+    // Solo movimientos DEL período para columnas ing/eg
+    let ingPer=0, egPer=0;
+    DB.movimientos.filter(m=>m.fecha>=desde&&m.fecha<=hasta&&m.metodo===c.id).forEach(m=>{
+      if(m.tipo==='Ingreso') ingPer += m.monto-(m.anticipoAplicadoMonto||0);
+      else if(m.tipo==='Gasto'||m.tipo==='Compra') egPer += m.monto;
+    });
+    DB.transferencias.filter(t=>t.fecha>=desde&&t.fecha<=hasta).forEach(t=>{
+      if(t.destino===c.id) ingPer += t.monto;
+      if(t.origen===c.id)  egPer  += t.monto;
+    });
+    DB.anticipos.filter(a=>a.fecha>=desde&&a.fecha<=hasta&&(a.estado==='pendiente'||a.estado==='aplicado')&&a.metodo===c.id)
+               .forEach(a=>{ ingPer += a.monto; });
+    DB.devoluciones.filter(d=>d.fecha>=desde&&d.fecha<=hasta&&d.cuenta===c.id).forEach(d=>{
+      if(d.tipo==='DevCompra')   ingPer += d.monto;
+      if(d.tipo==='DevVenta'||d.tipo==='DevAnticipo') egPer += d.monto;
+    });
+    DB.prestamos.filter(p=>p.fecha>=desde&&p.fecha<=hasta&&p.cuenta===c.id).forEach(p=>{
+      if(p.tipo==='recibido'||p.tipo==='cobro') ingPer += p.monto;
+      if(p.tipo==='dado'||p.tipo==='pago')      egPer  += p.monto;
+    });
+
+    const tr = document.createElement('tr');
+    tr.innerHTML=`
+      <td><strong>${c.icono||''} ${c.nombre}</strong></td>
+      <td class="monto-ingreso">${fmt(ingPer)}</td>
+      <td class="monto-egreso">${fmt(egPer)}</td>
+      <td class="${saldo>=0?'monto-ingreso':'monto-egreso'}"><strong>${fmt(saldo)}</strong></td>`;
     tbC.appendChild(tr);
   });
-  if(chartReporte)chartReporte.destroy();
-  chartReporte=new Chart($('chartReporte').getContext('2d'),{type:'bar',data:{labels:Object.keys(catMap),datasets:[{label:'Total',data:Object.values(catMap).map(v=>v.total),backgroundColor:'rgba(37,99,235,.7)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false}});
+
+  // Fila de totales
+  const trTot = document.createElement('tr');
+  trTot.style.fontWeight='700'; trTot.style.background='var(--neutral-bg)';
+  const totSaldo = DB.cuentas.reduce((a,c)=>{
+    // Usar getSaldo() para el total — es la fuente de verdad
+    return a + getSaldo(c.id);
+  }, 0);
+  trTot.innerHTML=`<td>TOTAL CUENTAS</td><td colspan="2"></td><td class="${totSaldo>=0?'monto-ingreso':'monto-egreso'}"><strong>${fmt(totSaldo)}</strong></td>`;
+  tbC.appendChild(trTot);
+
+  // ── Gráfico ──────────────────────────────────────────────────────
+  if(chartReporte) chartReporte.destroy();
+  const labCat = Object.keys(catMap);
+  if(labCat.length){
+    chartReporte = new Chart($('chartReporte').getContext('2d'),{
+      type:'bar',
+      data:{
+        labels: labCat,
+        datasets:[{
+          label:'Total por categoría',
+          data: Object.values(catMap).map(v=>v.total),
+          backgroundColor: Object.values(catMap).map(v=>
+            v.tipo==='Ingreso'||v.tipo==='Ingreso Crédito' ? 'rgba(22,163,74,.7)' : 'rgba(220,38,38,.7)'
+          ),
+          borderRadius:4
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{y:{ticks:{callback:v=>'$'+v.toLocaleString('es-CO')}}}
+      }
+    });
+  }
+
   $('seccionReporte').style.display='';
 };
 
