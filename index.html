@@ -761,9 +761,13 @@
       </table>
     </div>
     <h3 class="section-title" style="margin-top:1.5rem;font-size:.9rem">Detalle por Cuenta</h3>
+    <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem">
+      📌 <strong>Entradas/Salidas:</strong> solo del período seleccionado &nbsp;|&nbsp;
+      <strong>Saldo actual:</strong> igual al mostrado en el Resumen (incluye todo el historial)
+    </p>
     <div class="table-responsive">
       <table class="data-table">
-        <thead><tr><th>Cuenta</th><th>Entradas del período</th><th>Salidas del período</th><th>Saldo al cierre</th></tr></thead>
+        <thead><tr><th>Cuenta</th><th>Entradas del período</th><th>Salidas del período</th><th>Saldo actual ☁️</th></tr></thead>
         <tbody id="tbodyReporteCuentas"></tbody>
       </table>
     </div>
@@ -2376,93 +2380,69 @@ $('btnGenerarReporte').onclick=()=>{
     tbody.appendChild(tr);
   });
 
-  // ── Tabla saldo por cuenta — IGUAL que el Resumen ───────────────
-  // Calcula el saldo de cada cuenta SOLO con transacciones hasta "hasta"
-  // para que coincida exactamente con getSaldo() si se elige todo el período
+  // ── Tabla saldo por cuenta ──────────────────────────────────────
+  // Saldo final = getSaldo() — misma fuente que el Resumen (siempre coincide)
+  // Entradas/Salidas = solo las del período seleccionado
   const tbC = $('tbodyReporteCuentas'); tbC.innerHTML='';
+  let totIngPer=0, totEgPer=0;
 
   DB.cuentas.forEach(c=>{
-    // Saldo inicial
-    let saldo = Number(DB.saldosIniciales[c.id]||0);
+    // Entradas y salidas SOLO del período
+    let ingPer=0, egPer=0;
 
-    // Movimientos hasta la fecha fin
-    DB.movimientos.filter(m=>m.fecha<=hasta).forEach(m=>{
-      if(m.metodo!==c.id) return;
+    DB.movimientos.filter(m=>m.fecha>=desde&&m.fecha<=hasta&&m.metodo===c.id).forEach(m=>{
       if(m.tipo==='Ingreso'){
-        const yaEntro = m.anticipoAplicadoMonto||0;
-        saldo += (m.monto - yaEntro);
+        const real = m.monto - (m.anticipoAplicadoMonto||0);
+        ingPer += real;
       } else if(m.tipo==='Gasto'||m.tipo==='Compra'){
-        saldo -= m.monto;
+        egPer += m.monto;
       }
     });
 
-    // Transferencias hasta la fecha fin
-    DB.transferencias.filter(t=>t.fecha<=hasta).forEach(t=>{
-      if(t.origen===c.id)  saldo -= t.monto;
-      if(t.destino===c.id) saldo += t.monto;
-    });
-
-    // Anticipos hasta la fecha fin
-    DB.anticipos.filter(a=>a.fecha<=hasta).forEach(a=>{
-      if(a.metodo!==c.id) return;
-      if(a.estado==='pendiente'||a.estado==='aplicado') saldo += a.monto;
-    });
-
-    // Devoluciones hasta la fecha fin
-    DB.devoluciones.filter(d=>d.fecha<=hasta).forEach(d=>{
-      if(d.cuenta!==c.id) return;
-      if(d.tipo==='DevCompra')   saldo += d.monto;
-      if(d.tipo==='DevVenta')    saldo -= d.monto;
-      if(d.tipo==='DevAnticipo') saldo -= d.monto;
-    });
-
-    // Préstamos hasta la fecha fin
-    DB.prestamos.filter(p=>p.fecha<=hasta).forEach(p=>{
-      if(p.cuenta!==c.id) return;
-      if(p.tipo==='dado')     saldo -= p.monto;
-      if(p.tipo==='recibido') saldo += p.monto;
-      if(p.tipo==='cobro')    saldo += p.monto;
-      if(p.tipo==='pago')     saldo -= p.monto;
-    });
-
-    // Solo movimientos DEL período para columnas ing/eg
-    let ingPer=0, egPer=0;
-    DB.movimientos.filter(m=>m.fecha>=desde&&m.fecha<=hasta&&m.metodo===c.id).forEach(m=>{
-      if(m.tipo==='Ingreso') ingPer += m.monto-(m.anticipoAplicadoMonto||0);
-      else if(m.tipo==='Gasto'||m.tipo==='Compra') egPer += m.monto;
-    });
     DB.transferencias.filter(t=>t.fecha>=desde&&t.fecha<=hasta).forEach(t=>{
       if(t.destino===c.id) ingPer += t.monto;
       if(t.origen===c.id)  egPer  += t.monto;
     });
-    DB.anticipos.filter(a=>a.fecha>=desde&&a.fecha<=hasta&&(a.estado==='pendiente'||a.estado==='aplicado')&&a.metodo===c.id)
-               .forEach(a=>{ ingPer += a.monto; });
-    DB.devoluciones.filter(d=>d.fecha>=desde&&d.fecha<=hasta&&d.cuenta===c.id).forEach(d=>{
-      if(d.tipo==='DevCompra')   ingPer += d.monto;
-      if(d.tipo==='DevVenta'||d.tipo==='DevAnticipo') egPer += d.monto;
+
+    DB.anticipos.filter(a=>a.fecha>=desde&&a.fecha<=hasta&&a.metodo===c.id&&
+                           (a.estado==='pendiente'||a.estado==='aplicado')).forEach(a=>{
+      ingPer += a.monto;
     });
+
+    DB.devoluciones.filter(d=>d.fecha>=desde&&d.fecha<=hasta&&d.cuenta===c.id).forEach(d=>{
+      if(d.tipo==='DevCompra')                          ingPer += d.monto;
+      if(d.tipo==='DevVenta'||d.tipo==='DevAnticipo')   egPer  += d.monto;
+    });
+
     DB.prestamos.filter(p=>p.fecha>=desde&&p.fecha<=hasta&&p.cuenta===c.id).forEach(p=>{
       if(p.tipo==='recibido'||p.tipo==='cobro') ingPer += p.monto;
       if(p.tipo==='dado'||p.tipo==='pago')      egPer  += p.monto;
     });
+
+    // Saldo actual = getSaldo() — idéntico al Resumen
+    const saldoActual = getSaldo(c.id);
+
+    totIngPer += ingPer;
+    totEgPer  += egPer;
 
     const tr = document.createElement('tr');
     tr.innerHTML=`
       <td><strong>${c.icono||''} ${c.nombre}</strong></td>
       <td class="monto-ingreso">${fmt(ingPer)}</td>
       <td class="monto-egreso">${fmt(egPer)}</td>
-      <td class="${saldo>=0?'monto-ingreso':'monto-egreso'}"><strong>${fmt(saldo)}</strong></td>`;
+      <td class="${saldoActual>=0?'monto-ingreso':'monto-egreso'}"><strong>${fmt(saldoActual)}</strong></td>`;
     tbC.appendChild(tr);
   });
 
-  // Fila de totales
+  // Fila totales — usa getSaldo() para que coincida exactamente con el Resumen
+  const totSaldoActual = DB.cuentas.reduce((a,c)=>a+getSaldo(c.id), 0);
   const trTot = document.createElement('tr');
   trTot.style.fontWeight='700'; trTot.style.background='var(--neutral-bg)';
-  const totSaldo = DB.cuentas.reduce((a,c)=>{
-    // Usar getSaldo() para el total — es la fuente de verdad
-    return a + getSaldo(c.id);
-  }, 0);
-  trTot.innerHTML=`<td>TOTAL CUENTAS</td><td colspan="2"></td><td class="${totSaldo>=0?'monto-ingreso':'monto-egreso'}"><strong>${fmt(totSaldo)}</strong></td>`;
+  trTot.innerHTML=`
+    <td><strong>TOTAL CUENTAS</strong></td>
+    <td class="monto-ingreso"><strong>${fmt(totIngPer)}</strong></td>
+    <td class="monto-egreso"><strong>${fmt(totEgPer)}</strong></td>
+    <td class="${totSaldoActual>=0?'monto-ingreso':'monto-egreso'}"><strong>${fmt(totSaldoActual)}</strong></td>`;
   tbC.appendChild(trTot);
 
   // ── Gráfico ──────────────────────────────────────────────────────
