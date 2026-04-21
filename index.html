@@ -1882,7 +1882,7 @@ $('formPresupuesto').onsubmit = async e=>{
   showToast('Presupuesto guardado.','success');
 };
 
-function renderTablaPresupuesto(){
+async function renderTablaPresupuesto(){
   const mes  = parseInt($('mesPres').value);
   const anio = parseInt($('anioPres').value);
   if(!mes||!anio) return;
@@ -1924,18 +1924,28 @@ function renderTablaPresupuesto(){
     }
   });
 
-  // ── Separar presupuestos en ingresos y egresos ──
+  // ── Migrar y limpiar entradas viejas (formato número sin tipo) ──
+  const presLimpio = {};
+  let huboMigracion = false;
+  Object.entries(pres).forEach(([k,v])=>{
+    if(typeof v === 'number'){
+      // Formato viejo — eliminar silenciosamente; el usuario lo re-crea con tipo
+      huboMigracion = true;
+    } else if(typeof v === 'object' && v.tipo && v.cat && v.monto){
+      presLimpio[k] = v; // formato nuevo, conservar
+    }
+  });
+  if(huboMigracion){
+    DB.presupuestos[key] = presLimpio;
+    await saveConfig();
+    showToast('Se eliminaron presupuestos con formato antiguo. Por favor vuelve a registrarlos con el tipo correcto.', '');
+  }
+
   const presIngresos = {};
   const presEgresos  = {};
-  Object.entries(pres).forEach(([k,v])=>{
-    // Soportar formato viejo (solo string) y nuevo ({tipo,cat,monto})
-    if(typeof v === 'number'){
-      // formato viejo: asumir egreso
-      presEgresos[`Gasto::${k}`] = { tipo:'Gasto', cat:k, monto:v };
-    } else {
-      if(v.tipo==='Ingreso') presIngresos[k] = v;
-      else                   presEgresos[k]  = v;
-    }
+  Object.entries(presLimpio).forEach(([k,v])=>{
+    if(v.tipo==='Ingreso') presIngresos[k] = v;
+    else                   presEgresos[k]  = v;
   });
 
   // ── Unir con real (para mostrar categorías con real pero sin presupuesto) ──
