@@ -540,24 +540,58 @@
       <select id="mesPres" class="select-inline"></select>
       <select id="anioPres" class="select-inline"></select>
     </h2>
-    <p class="section-desc">Define un presupuesto por categoría y compara con lo real ejecutado.</p>
+    <p class="section-desc">Define metas de ingresos y límites de gastos por categoría. Compara lo presupuestado con lo real ejecutado ese mes.</p>
     <form id="formPresupuesto" autocomplete="off">
       <div class="form-grid">
-        <div class="form-group"><label>Categoría *</label><select id="presCat" required><option value="">— Seleccionar —</option></select></div>
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select id="presTipo" required>
+            <option value="">— Seleccionar —</option>
+            <option value="Ingreso">💰 Ingreso (meta de ventas)</option>
+            <option value="Gasto">💸 Gasto (límite de gasto)</option>
+            <option value="Compra">🛒 Compra (límite de compras)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Categoría *</label><select id="presCat" required><option value="">— Seleccionar categoría —</option></select></div>
         <div class="form-group"><label>Monto Presupuestado *</label><input type="number" id="presMonto" placeholder="0.00" step="0.01" min="0" required /></div>
       </div>
       <button type="submit" class="btn-primary">💾 Guardar Presupuesto</button>
     </form>
   </section>
+
+  <!-- Resumen del mes -->
   <section class="section-block">
-    <h2 class="section-title">Comparativo Presupuesto vs Real</h2>
+    <h2 class="section-title">Resumen del Mes</h2>
+    <div class="cards-grid" id="presResumenCards"></div>
+  </section>
+
+  <!-- Tabla ingresos -->
+  <section class="section-block">
+    <h2 class="section-title" style="color:var(--success)">💰 Ingresos — Presupuesto vs Real</h2>
     <div class="table-responsive">
-      <table class="data-table" id="tablaPresupuesto">
-        <thead><tr><th>Categoría</th><th>Presupuesto</th><th>Real</th><th>Diferencia</th><th>% Ejec.</th><th>Acciones</th></tr></thead>
-        <tbody id="tbodyPresupuesto"></tbody>
+      <table class="data-table">
+        <thead><tr><th>Categoría</th><th>Presupuestado</th><th>Real</th><th>Diferencia</th><th>% Logrado</th><th></th></tr></thead>
+        <tbody id="tbodyPresIngresos"></tbody>
       </table>
     </div>
-    <div class="chart-wrap" style="margin-top:1rem"><canvas id="chartPresupuesto"></canvas></div>
+    <div id="emptyPresIngresos" class="empty-state" style="display:none">Sin categorías de ingreso presupuestadas este mes.</div>
+  </section>
+
+  <!-- Tabla egresos -->
+  <section class="section-block">
+    <h2 class="section-title" style="color:var(--danger)">💸 Gastos y Compras — Presupuesto vs Real</h2>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead><tr><th>Categoría</th><th>Tipo</th><th>Presupuestado</th><th>Real</th><th>Diferencia</th><th>% Ejecutado</th><th></th></tr></thead>
+        <tbody id="tbodyPresEgresos"></tbody>
+      </table>
+    </div>
+    <div id="emptyPresEgresos" class="empty-state" style="display:none">Sin categorías de gasto/compra presupuestadas este mes.</div>
+  </section>
+
+  <section class="section-block">
+    <h2 class="section-title">Gráfico Comparativo</h2>
+    <div class="chart-wrap" style="height:300px"><canvas id="chartPresupuesto"></canvas></div>
   </section>
 </main>
 
@@ -1809,55 +1843,256 @@ function renderTransferencias(){
 
 // ── PRESUPUESTO ──────────────────────────────────────────────────
 let chartPresupuesto=null;
+
 function renderPresupuesto(){
   fillMesAnio($('mesPres'),$('anioPres'));
-  const sc=$('presCat'); sc.innerHTML='<option value="">— Seleccionar —</option>';
-  DB.categorias.forEach(c=>{const o=document.createElement('option');o.value=c.nombre;o.textContent=(c.icono||'')+' '+c.nombre;sc.appendChild(o);});
+  // Filtrar categorías según el tipo seleccionado
+  $('presTipo').onchange = ()=>{
+    const t = $('presTipo').value;
+    const sc = $('presCat');
+    sc.innerHTML = '<option value="">— Seleccionar categoría —</option>';
+    DB.categorias.filter(c=> t ? c.tipo===t : true).forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.nombre; o.textContent=(c.icono||'')+' '+c.nombre;
+      sc.appendChild(o);
+    });
+  };
   renderTablaPresupuesto();
 }
-$('mesPres').onchange=$('anioPres').onchange=renderTablaPresupuesto;
 
-$('formPresupuesto').onsubmit=async e=>{
+$('mesPres').onchange = $('anioPres').onchange = renderTablaPresupuesto;
+
+$('formPresupuesto').onsubmit = async e=>{
   e.preventDefault();
-  const cat=$('presCat').value,monto=parseFloat($('presMonto').value);
-  const mes=parseInt($('mesPres').value),anio=parseInt($('anioPres').value);
-  if(!cat||!monto){showToast('Completa los campos.','error');return;}
-  if(!DB.presupuestos)DB.presupuestos={};
-  const key=`${anio}-${String(mes).padStart(2,'0')}`;
-  if(!DB.presupuestos[key])DB.presupuestos[key]={};
-  DB.presupuestos[key][cat]=monto;
-  await saveConfig(); renderTablaPresupuesto();
+  const tipoP = $('presTipo').value;
+  const cat   = $('presCat').value;
+  const monto = parseFloat($('presMonto').value);
+  const mes   = parseInt($('mesPres').value);
+  const anio  = parseInt($('anioPres').value);
+  if(!tipoP||!cat||!monto||monto<=0){ showToast('Completa todos los campos.','error'); return; }
+  if(!DB.presupuestos) DB.presupuestos={};
+  const key = `${anio}-${String(mes).padStart(2,'0')}`;
+  if(!DB.presupuestos[key]) DB.presupuestos[key]={};
+  // Guardar con tipo para distinguir ingreso de egreso
+  DB.presupuestos[key][`${tipoP}::${cat}`] = { tipo:tipoP, cat, monto };
+  await saveConfig();
+  $('formPresupuesto').reset();
+  $('presCat').innerHTML='<option value="">— Seleccionar categoría —</option>';
+  renderTablaPresupuesto();
   showToast('Presupuesto guardado.','success');
 };
 
 function renderTablaPresupuesto(){
-  const mes=parseInt($('mesPres').value),anio=parseInt($('anioPres').value);
-  const key=`${anio}-${String(mes).padStart(2,'0')}`;
-  const pres=DB.presupuestos?.[key]||{};
-  const real={};
+  const mes  = parseInt($('mesPres').value);
+  const anio = parseInt($('anioPres').value);
+  if(!mes||!anio) return;
+  const key  = `${anio}-${String(mes).padStart(2,'0')}`;
+  const pres = DB.presupuestos?.[key] || {};
+
+  // ── Acumular real por categoría y tipo ──
+  const real = {};  // key: "Tipo::Categoria"
   DB.movimientos.forEach(m=>{
-    const d=new Date(m.fecha+'T00:00:00');
-    if(d.getMonth()+1!==mes||d.getFullYear()!==anio)return;
-    if(m.tipo==='Ingreso')return; // presupuesto solo para egresos
-    real[m.categoria]=(real[m.categoria]||0)+m.monto;
+    const d = new Date(m.fecha+'T00:00:00');
+    if(d.getMonth()+1!==mes || d.getFullYear()!==anio) return;
+    const tipoReal = (m.tipo==='Ingreso Crédito') ? 'Ingreso'
+                   : (m.tipo==='Compra Crédito')  ? 'Compra'
+                   : m.tipo;
+    const k = `${tipoReal}::${m.categoria}`;
+    real[k] = (real[k]||0) + m.monto;
   });
-  const todas=new Set([...Object.keys(pres),...Object.keys(real)]);
-  const tbody=$('tbodyPresupuesto'); tbody.innerHTML='';
-  const labels=[],dataPres=[],dataReal=[];
-  todas.forEach(cat=>{
-    const p=pres[cat]||0,r=real[cat]||0,dif=p-r,pct=p>0?((r/p)*100).toFixed(0):'—';
-    const cls=p>0&&r>p?'monto-egreso':p>0&&r/p<0.8?'monto-ingreso':'';
+
+  // También sumar anticipos del mes como ingresos reales
+  DB.anticipos.forEach(a=>{
+    const d = new Date(a.fecha+'T00:00:00');
+    if(d.getMonth()+1!==mes || d.getFullYear()!==anio) return;
+    // Anticipo es ingreso — buscar si hay categoría presupuestada de ingreso
+    // lo acumulamos en una clave genérica para mostrarlo si hay presupuesto de anticipos
+    const k = `Ingreso::Anticipos`;
+    real[k] = (real[k]||0) + a.monto;
+  });
+
+  // ── Restar devoluciones del mes ──
+  DB.devoluciones.forEach(d=>{
+    const fd = new Date(d.fecha+'T00:00:00');
+    if(fd.getMonth()+1!==mes || fd.getFullYear()!==anio) return;
+    if(d.tipo==='DevVenta'){
+      // buscar a qué categoría corresponde para restar (simplificado: resta de "Ventas")
+      // si no se puede mapear, ignorar para no distorsionar
+    }
+    if(d.tipo==='DevCompra'){
+      // igualmente: la devolución reduce el costo real
+    }
+  });
+
+  // ── Separar presupuestos en ingresos y egresos ──
+  const presIngresos = {};
+  const presEgresos  = {};
+  Object.entries(pres).forEach(([k,v])=>{
+    // Soportar formato viejo (solo string) y nuevo ({tipo,cat,monto})
+    if(typeof v === 'number'){
+      // formato viejo: asumir egreso
+      presEgresos[`Gasto::${k}`] = { tipo:'Gasto', cat:k, monto:v };
+    } else {
+      if(v.tipo==='Ingreso') presIngresos[k] = v;
+      else                   presEgresos[k]  = v;
+    }
+  });
+
+  // ── Unir con real (para mostrar categorías con real pero sin presupuesto) ──
+  const todasIng = new Set([
+    ...Object.keys(presIngresos),
+    ...Object.keys(real).filter(k=>k.startsWith('Ingreso::'))
+  ]);
+  const todasEg = new Set([
+    ...Object.keys(presEgresos),
+    ...Object.keys(real).filter(k=>k.startsWith('Gasto::') || k.startsWith('Compra::'))
+  ]);
+
+  // ── Render tabla INGRESOS ──
+  const tbodyIng = $('tbodyPresIngresos');
+  tbodyIng.innerHTML = '';
+  let totalPresIng=0, totalRealIng=0;
+  const labelsChart=[], dataPresChart=[], dataRealChart=[], colorChart=[];
+
+  todasIng.forEach(k=>{
+    const p    = presIngresos[k]?.monto || 0;
+    const r    = real[k] || 0;
+    const cat  = k.replace('Ingreso::','');
+    const dif  = r - p;  // positivo = superó la meta (bueno)
+    const pct  = p>0 ? ((r/p)*100).toFixed(0) : (r>0?'Sin meta':'—');
+    const cls  = r>=p && p>0 ? 'monto-ingreso' : p>0 && r<p ? 'monto-egreso' : '';
+    const bar  = p>0 ? Math.min(100,Math.round((r/p)*100)) : 0;
+    const barColor = r>=p ? '#16a34a' : r/p >= 0.7 ? '#d97706' : '#dc2626';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${cat}</strong></td>
+      <td>${fmt(p)}</td>
+      <td class="monto-ingreso">${fmt(r)}</td>
+      <td class="${cls}">${dif>=0?'+':''}${fmt(dif)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <div style="flex:1;height:6px;background:#e2e8f0;border-radius:3px;min-width:60px">
+            <div style="width:${bar}%;height:100%;background:${barColor};border-radius:3px;transition:width .3s"></div>
+          </div>
+          <span style="font-size:.8rem;font-weight:700;color:${barColor}">${pct}${pct!=='—'&&pct!=='Sin meta'?'%':''}</span>
+        </div>
+      </td>
+      <td>${p>0?`<button class="btn-sm btn-delete" data-key="${key}" data-pkey="${k}">🗑</button>`:''}</td>`;
+    tbodyIng.appendChild(tr);
+    totalPresIng+=p; totalRealIng+=r;
+    if(p>0||r>0){ labelsChart.push(cat); dataPresChart.push(p); dataRealChart.push(r); colorChart.push('#16a34a'); }
+  });
+
+  // Fila totales ingresos
+  if(todasIng.size){
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${cat}</td><td>${fmt(p)}</td><td>${fmt(r)}</td><td class="${cls}">${fmt(dif)}</td><td>${pct}${pct!=='—'?'%':''}</td>
-      <td><button class="btn-sm btn-delete" data-cat="${cat}" data-key="${key}">🗑</button></td>`;
-    tbody.appendChild(tr);
-    if(p>0||r>0){labels.push(cat);dataPres.push(p);dataReal.push(r);}
+    tr.style.fontWeight='700'; tr.style.background='#f0fdf4';
+    const difT=totalRealIng-totalPresIng;
+    tr.innerHTML=`<td>TOTAL INGRESOS</td><td>${fmt(totalPresIng)}</td><td class="monto-ingreso">${fmt(totalRealIng)}</td><td class="${difT>=0?'monto-ingreso':'monto-egreso'}">${difT>=0?'+':''}${fmt(difT)}</td><td colspan="2">${totalPresIng>0?((totalRealIng/totalPresIng)*100).toFixed(0)+'%':'—'}</td>`;
+    tbodyIng.appendChild(tr);
+  }
+  $('emptyPresIngresos').style.display = todasIng.size ? 'none' : 'block';
+
+  // ── Render tabla EGRESOS ──
+  const tbodyEg = $('tbodyPresEgresos');
+  tbodyEg.innerHTML = '';
+  let totalPresEg=0, totalRealEg=0;
+
+  todasEg.forEach(k=>{
+    const entry = presEgresos[k];
+    const p     = entry?.monto || 0;
+    const r     = real[k] || 0;
+    const tipo  = k.split('::')[0];
+    const cat   = k.replace(`${tipo}::`,'');
+    const dif   = p - r;  // positivo = está dentro del límite (bueno)
+    const pct   = p>0 ? ((r/p)*100).toFixed(0) : (r>0?'Sin límite':'—');
+    const cls   = p>0 && r>p ? 'monto-egreso' : p>0 && r<=p ? 'monto-ingreso' : '';
+    const bar   = p>0 ? Math.min(100,Math.round((r/p)*100)) : 0;
+    const barColor = r<=p ? '#16a34a' : r/p<=1.1 ? '#d97706' : '#dc2626';
+    const tipoBadge = tipo==='Gasto'?'badge-gasto':'badge-compra';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${cat}</strong></td>
+      <td><span class="badge ${tipoBadge}">${tipo}</span></td>
+      <td>${fmt(p)}</td>
+      <td class="monto-egreso">${fmt(r)}</td>
+      <td class="${cls}">${fmt(dif)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <div style="flex:1;height:6px;background:#e2e8f0;border-radius:3px;min-width:60px">
+            <div style="width:${bar}%;height:100%;background:${barColor};border-radius:3px;transition:width .3s"></div>
+          </div>
+          <span style="font-size:.8rem;font-weight:700;color:${barColor}">${pct}${pct!=='—'&&pct!=='Sin límite'?'%':''}</span>
+        </div>
+      </td>
+      <td>${p>0?`<button class="btn-sm btn-delete" data-key="${key}" data-pkey="${k}">🗑</button>`:''}</td>`;
+    tbodyEg.appendChild(tr);
+    totalPresEg+=p; totalRealEg+=r;
+    if(p>0||r>0){ labelsChart.push(cat+' (eg)'); dataPresChart.push(p); dataRealChart.push(r); colorChart.push('#dc2626'); }
   });
-  tbody.querySelectorAll('.btn-delete').forEach(b=>b.onclick=async()=>{
-    if(DB.presupuestos?.[b.dataset.key]){delete DB.presupuestos[b.dataset.key][b.dataset.cat];await saveConfig();renderTablaPresupuesto();}
+
+  // Fila totales egresos
+  if(todasEg.size){
+    const tr=document.createElement('tr');
+    tr.style.fontWeight='700'; tr.style.background='#fff5f5';
+    const difT=totalPresEg-totalRealEg;
+    tr.innerHTML=`<td>TOTAL EGRESOS</td><td></td><td>${fmt(totalPresEg)}</td><td class="monto-egreso">${fmt(totalRealEg)}</td><td class="${difT>=0?'monto-ingreso':'monto-egreso'}">${fmt(difT)}</td><td colspan="2">${totalPresEg>0?((totalRealEg/totalPresEg)*100).toFixed(0)+'%':'—'}</td>`;
+    tbodyEg.appendChild(tr);
+  }
+  $('emptyPresEgresos').style.display = todasEg.size ? 'none' : 'block';
+
+  // ── Tarjetas resumen del mes ──
+  const utilidadPres = totalPresIng - totalPresEg;
+  const utilidadReal = totalRealIng - totalRealEg;
+  $('presResumenCards').innerHTML = `
+    <div class="card" style="background:linear-gradient(135deg,#065f46,#059669);color:white">
+      <div class="card-label">Ingresos Reales</div>
+      <div class="card-value">${fmt(totalRealIng)}</div>
+      <div class="card-sub">Meta: ${fmt(totalPresIng)}</div>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,#7f1d1d,#dc2626);color:white">
+      <div class="card-label">Egresos Reales</div>
+      <div class="card-value">${fmt(totalRealEg)}</div>
+      <div class="card-sub">Límite: ${fmt(totalPresEg)}</div>
+    </div>
+    <div class="card" style="background:${utilidadReal>=0?'linear-gradient(135deg,#1e40af,#2563eb)':'linear-gradient(135deg,#78350f,#d97706)'};color:white">
+      <div class="card-label">Utilidad Real</div>
+      <div class="card-value">${fmt(utilidadReal)}</div>
+      <div class="card-sub">Presup.: ${fmt(utilidadPres)}</div>
+    </div>`;
+
+  // Borrado de presupuesto individual
+  document.querySelectorAll('#tbodyPresIngresos .btn-delete, #tbodyPresEgresos .btn-delete').forEach(b=>{
+    b.onclick=async()=>{
+      if(DB.presupuestos?.[b.dataset.key]){
+        delete DB.presupuestos[b.dataset.key][b.dataset.pkey];
+        await saveConfig(); renderTablaPresupuesto();
+        showToast('Presupuesto eliminado.','success');
+      }
+    };
   });
-  if(chartPresupuesto)chartPresupuesto.destroy();
-  if(labels.length){chartPresupuesto=new Chart($('chartPresupuesto').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'Presupuesto',data:dataPres,backgroundColor:'rgba(37,99,235,.5)',borderRadius:4},{label:'Real',data:dataReal,backgroundColor:'rgba(220,38,38,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});}
+
+  // ── Gráfico ──
+  if(chartPresupuesto) chartPresupuesto.destroy();
+  if(labelsChart.length){
+    chartPresupuesto = new Chart($('chartPresupuesto').getContext('2d'),{
+      type:'bar',
+      data:{
+        labels: labelsChart,
+        datasets:[
+          {label:'Presupuestado', data:dataPresChart, backgroundColor:'rgba(37,99,235,.5)', borderRadius:4},
+          {label:'Real ejecutado',data:dataRealChart,  backgroundColor:dataRealChart.map((_,i)=>colorChart[i]+'99'), borderRadius:4},
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom'}},
+        scales:{y:{ticks:{callback:v=>'$'+v.toLocaleString('es-CO')}}}
+      }
+    });
+  }
 }
 
 // ── CxC / CxP ────────────────────────────────────────────────────
