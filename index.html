@@ -1340,7 +1340,7 @@ function populateMovCats(){
   DB.categorias.filter(c=>c.tipo===tipoBase).forEach(c=>{const o=document.createElement('option');o.value=c.nombre;o.textContent=(c.icono||'')+' '+c.nombre;s.appendChild(o);});
   s.value=p;
 }
-$('movTipo').addEventListener('change',populateMovCats);
+// NOTA: populateMovCats ya se llama dentro de $('movTipo').onchange — no duplicar listener
 
 $('formMovimiento').onsubmit=async e=>{
   e.preventDefault();
@@ -1499,8 +1499,15 @@ async function eliminarMov(id){
   });
 }
 
-['filtroTexto','filtroTipo','filtroMetodo','filtroMes'].forEach(id=>{const el=$(id);if(el)el.addEventListener('input',renderMovimientos);});
-$('btnLimpiarFiltros').onclick=()=>{['filtroTexto','filtroTipo','filtroMetodo','filtroMes'].forEach(id=>$(id).value='');renderMovimientos();};
+// Filtros: 'change' para selects, 'input' solo para texto
+$('filtroTexto').addEventListener('input',  renderMovimientos);
+$('filtroTipo').addEventListener('change',  renderMovimientos);
+$('filtroMetodo').addEventListener('change', renderMovimientos);
+$('filtroMes').addEventListener('change',   renderMovimientos);
+$('btnLimpiarFiltros').onclick=()=>{
+  ['filtroTexto','filtroTipo','filtroMetodo','filtroMes'].forEach(id=>$(id).value='');
+  renderMovimientos();
+};
 
 // ── DEVOLUCIONES ─────────────────────────────────────────────────
 $('devTipo').onchange=()=>{
@@ -1621,7 +1628,6 @@ function renderAnticipos(){
   $('emptyAnticipos').style.display=sorted.length?'none':'block';
 }
 
-// ── CRÉDITOS ─────────────────────────────────────────────────────
 // ── CRÉDITOS ─────────────────────────────────────────────────────
 
 // Cambiar label según tipo
@@ -1848,19 +1854,22 @@ function renderTransferencias(){
 // ── PRESUPUESTO ──────────────────────────────────────────────────
 let chartPresupuesto=null;
 
+// Filtrar categorías según tipo — definido UNA vez fuera de render
+$('presTipo').onchange = ()=>{
+  const t = $('presTipo').value;
+  const sc = $('presCat');
+  sc.innerHTML = '<option value="">— Seleccionar categoría —</option>';
+  DB.categorias.filter(c=> t ? c.tipo===t : true).forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.nombre; o.textContent=(c.icono||'')+' '+c.nombre;
+    sc.appendChild(o);
+  });
+};
+
 function renderPresupuesto(){
   fillMesAnio($('mesPres'),$('anioPres'));
-  // Filtrar categorías según el tipo seleccionado
-  $('presTipo').onchange = ()=>{
-    const t = $('presTipo').value;
-    const sc = $('presCat');
-    sc.innerHTML = '<option value="">— Seleccionar categoría —</option>';
-    DB.categorias.filter(c=> t ? c.tipo===t : true).forEach(c=>{
-      const o=document.createElement('option');
-      o.value=c.nombre; o.textContent=(c.icono||'')+' '+c.nombre;
-      sc.appendChild(o);
-    });
-  };
+  // Refrescar categorías en el selector según tipo actual
+  $('presTipo').dispatchEvent(new Event('change'));
   renderTablaPresupuesto();
 }
 
