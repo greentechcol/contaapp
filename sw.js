@@ -3,8 +3,12 @@
 //  Estrategia: Network-first para HTML/CSS, Cache-first para CDN
 // ════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'contaapp-v4';  // ← cambiar versión fuerza limpieza del caché viejo
+const CACHE_NAME = 'contaapp-v5';  // ← cambiar versión fuerza limpieza del caché viejo
 const CDN_ASSETS = [
+  './index.html',
+  './negocio.html',
+  './personal.html',
+  './styles.css',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
 ];
