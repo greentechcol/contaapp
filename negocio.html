@@ -910,6 +910,7 @@
   <button class="bottom-nav-btn" data-tab="presupuesto"><span class="bn-icon">📊</span>Presup.</button>
   <button class="bottom-nav-btn" data-tab="cxc"><span class="bn-icon">📥</span>CxC</button>
   <button class="bottom-nav-btn" data-tab="cxp"><span class="bn-icon">📤</span>CxP</button>
+  <button class="bottom-nav-btn" data-tab="categorias"><span class="bn-icon">🏷️</span>Categ.</button>
   <button class="bottom-nav-btn" data-tab="cuentas"><span class="bn-icon">🏦</span>Cuentas</button>
   <button class="bottom-nav-btn" data-tab="reportes"><span class="bn-icon">📈</span>Reportes</button>
 </nav>
@@ -919,6 +920,8 @@
 //  CONTAAPP v4 — Offline-first + Firebase + Todas las funciones
 // ════════════════════════════════════════════════════════════════
 const $ = id => document.getElementById(id);
+// Sanitización XSS — usar esc() en todos los datos del usuario en innerHTML
+function esc(s){if(s==null)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
 const fmt = n => '$'+(n||0).toLocaleString('es-CO',{minimumFractionDigits:2,maximumFractionDigits:2});
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const hoy = () => new Date().toISOString().slice(0,10);
@@ -1578,7 +1581,7 @@ $('movAnticipoId').onchange=()=>{
   const a=DB.anticipos.find(x=>x.id===id);
   if(!a){info.classList.add('hidden');return;}
   info.classList.remove('hidden');
-  info.innerHTML=`Anticipo de <strong>${a.cliente}</strong>: ${fmt(a.monto)} — se descontará del ingreso.`;
+  info.innerHTML=`Anticipo de <strong>${esc(a.cliente)}</strong>: ${fmt(a.monto)} — se descontará del ingreso.`;
 };
 function populateAnticiposSelector(){
   const s=$('movAnticipoId'); s.innerHTML='<option value="">— Seleccionar anticipo —</option>';
@@ -1600,6 +1603,7 @@ $('formMovimiento').onsubmit=async e=>{
   const met=esCredito?null:$('movMetodo').value;
   const desc=$('movDescripcion').value.trim(),monto=parseFloat($('movMonto').value);
   if(!fecha||!tipo||!cat||(!met&&!esCredito)||!monto||monto<=0){showToast('Completa todos los campos requeridos.','error');return;}
+  if(monto>999999999){showToast('El monto ingresado parece incorrecto. Máximo $999.999.999','error');return;}
 
   // Validar saldo si es egreso y no es a crédito
   if((tipo==='Gasto'||tipo==='Compra')&&met){
@@ -1799,7 +1803,7 @@ $('devRef').onchange=()=>{
   if(!id){info.classList.add('hidden');return;}
   if(t==='DevCompra'){
     const m=DB.movimientos.find(x=>x.id===id);
-    if(m){info.classList.remove('hidden');info.innerHTML=`Compra original: <strong>${fmt(m.monto)}</strong> — ${m.descripcion||m.categoria} (${m.fecha}). Puedes devolver un monto parcial.`;}
+    if(m){info.classList.remove('hidden');info.innerHTML=`Compra original: <strong>${fmt(m.monto)}</strong> — ${esc(m.descripcion||m.categoria)} (${m.fecha}). Puedes devolver un monto parcial.`;}
   }else if(t==='DevAnticipo'){
     const a=DB.anticipos.find(x=>x.id===id);
     if(a){info.classList.remove('hidden');info.innerHTML=`Anticipo de <strong>${a.cliente}</strong>: ${fmt(a.monto)} (${a.fecha})`;}
@@ -1889,7 +1893,7 @@ function renderAnticipos(){
     const cn=DB.cuentas.find(c=>c.id===a.metodo)?.nombre||a.metodo;
     const estadoBadge=a.estado==='pendiente'?'<span class="badge badge-anticipo-pend">⏳ Pendiente</span>':a.estado==='devuelto'?'<span class="badge" style="background:#fee2e2;color:#dc2626">↩️ Devuelto</span>':'<span class="badge badge-anticipo-aplic">✅ Aplicado</span>';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${a.fecha}</td><td><strong>${a.cliente}</strong></td><td>${a.descripcion||'—'}</td><td>${cn}</td><td class="monto-ingreso">${fmt(a.monto)}</td><td>${estadoBadge}</td>
+    tr.innerHTML=`<td>${a.fecha}</td><td><strong>${esc(a.cliente)}</strong></td><td>${esc(a.descripcion)||'—'}</td><td>${cn}</td><td class="monto-ingreso">${fmt(a.monto)}</td><td>${estadoBadge}</td>
       <td>${a.estado==='pendiente'?`<button class="btn-sm btn-delete" data-id="${a.id}">🗑</button>`:''}</td>`;
     tbody.appendChild(tr);
   });
@@ -2085,7 +2089,7 @@ function renderPrestamos(){
     const cn=DB.cuentas.find(c=>c.id===p.cuenta)?.nombre||p.cuenta;
     const tl={dado:'💸 Prestado',recibido:'💰 Recibido',cobro:'✅ Cobrado',pago:'✅ Pagado'}[p.tipo]||p.tipo;
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${p.fecha}</td><td>${tl}</td><td>${p.tercero}</td><td>${cn}</td><td>${fmt(p.monto)}</td><td>${p.descripcion||'—'}</td>
+    tr.innerHTML=`<td>${p.fecha}</td><td>${tl}</td><td>${esc(p.tercero)}</td><td>${esc(cn)}</td><td>${fmt(p.monto)}</td><td>${esc(p.descripcion)||'—'}</td>
       <td><button class="btn-sm btn-delete" data-id="${p.id}">🗑</button></td>`;
     tbody.appendChild(tr);
   });
@@ -2114,7 +2118,7 @@ function renderTransferencias(){
     const no=DB.cuentas.find(c=>c.id===t.origen)?.nombre||t.origen;
     const nd=DB.cuentas.find(c=>c.id===t.destino)?.nombre||t.destino;
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${t.fecha}</td><td>📤 ${no}</td><td>📥 ${nd}</td><td>${t.descripcion||'—'}</td><td><strong>${fmt(t.monto)}</strong></td>
+    tr.innerHTML=`<td>${t.fecha}</td><td>📤 ${no}</td><td>📥 ${nd}</td><td>${esc(t.descripcion)||'—'}</td><td><strong>${fmt(t.monto)}</strong></td>
       <td><button class="btn-sm btn-delete" data-id="${t.id}">🗑</button></td>`;
     tbody.appendChild(tr);
   });
@@ -2532,13 +2536,9 @@ window.delSubcatNegocio = async function(catId,subId){
 // ── ZONA DE PELIGRO ──────────────────────────────────────────────
 $('btnLimpiarMovimientos').onclick=()=>{
   openModal(
-    '⚠️ Limpiar movimientos',
-    'Se borrarán TODOS los movimientos, anticipos, transferencias, devoluciones, créditos, préstamos, CxC y CxP. Las cuentas y categorías se conservan. Esta acción NO se puede deshacer. ¿Continuar?',
+    '⚠️ Limpiar movimientos — IRREVERSIBLE',
+    'Se borrarán TODOS los movimientos, anticipos, transferencias, devoluciones, créditos, préstamos, CxC y CxP. Las cuentas y categorías se conservan. ¿Confirmar?',
     async()=>{
-      // Confirmar segunda vez con texto
-      const confirmTxt=prompt('Escribe CONFIRMAR para continuar:');
-      if(confirmTxt!=='CONFIRMAR'){showToast('Operación cancelada.'); return;}
-
       showToast('Limpiando registros…');
       const colsALimpiar=['movimientos','anticipos','transferencias','devoluciones','creditos','prestamos','cxc','cxp'];
 
@@ -2568,12 +2568,9 @@ $('btnLimpiarMovimientos').onclick=()=>{
 
 $('btnRestablecerTodo').onclick=()=>{
   openModal(
-    '💣 Restablecer todo',
-    'Se borrará ABSOLUTAMENTE TODO: movimientos, cuentas personalizadas, categorías y saldos. La app vuelve al estado inicial. Esta acción NO se puede deshacer. ¿Continuar?',
+    '💣 Restablecer todo — IRREVERSIBLE',
+    'Se borrará ABSOLUTAMENTE TODO: movimientos, cuentas, categorías y saldos. La app vuelve al estado inicial. ¿Confirmar?',
     async()=>{
-      const confirmTxt=prompt('Escribe RESTABLECER para confirmar:');
-      if(confirmTxt!=='RESTABLECER'){showToast('Operación cancelada.'); return;}
-
       showToast('Restableciendo…');
       const todasLasCols=['movimientos','anticipos','transferencias','devoluciones','creditos','prestamos','cxc','cxp'];
 

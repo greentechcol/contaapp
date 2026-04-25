@@ -362,6 +362,8 @@ input:focus,select:focus,textarea:focus {
 @media (max-width:640px) {
   .topbar { padding:0 .75rem; gap:.5rem; }
   .brand-name { display:none; }
+  .cat-columns { grid-template-columns:1fr !important; }
+  .cat-col { min-width:0; }
   .tab-content { padding:.85rem .75rem 4rem; }
   .section-block { padding:1rem; }
   .cards-grid { grid-template-columns:1fr 1fr; }
