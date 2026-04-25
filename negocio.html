@@ -938,8 +938,8 @@ const DB={
 };
 let currentUser=null, FB=null;
 
-const userDoc  = (col,id)=>FB.doc(FB.db,'users',currentUser.uid,'negocio',col,id);
-const configDoc= ()=>FB.doc(FB.db,'users',currentUser.uid,'negocio_config','main');
+const userDoc  = (col,id)=>FB.doc(FB.db,'users',currentUser.uid,col,id);
+const configDoc= ()=>FB.doc(FB.db,'users',currentUser.uid,'config','main');
 
 // ════════════════════════════════════════════════════════════════
 //  SINCRONIZACIÓN — v5 corregida (sin orderBy, sin doble disparo)
@@ -1138,7 +1138,7 @@ function subscribeCol(colName){
     delete activeListeners[colName];
   }
   try{
-    const colRef = FB.collection(FB.db,'users',currentUser.uid,'negocio',colName);
+    const colRef = FB.collection(FB.db,'users',currentUser.uid,colName);
     // SIN includeMetadataChanges — evita doble disparo por cada escritura
     const unsubscribe = FB.onSnapshot(
       colRef,
