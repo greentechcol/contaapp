@@ -146,8 +146,21 @@
     </div>
   </section>
   <section class="section-block">
+    <h2 class="section-title">📊 Top 5 Categorías del Mes
+      <select id="mesTop" class="select-inline"></select>
+      <select id="anioTop" class="select-inline"></select>
+    </h2>
+    <div id="top5Content" style="display:grid;gap:.5rem"></div>
+  </section>
+  <section class="section-block">
     <h2 class="section-title">Flujo Mensual — Año <select id="anioGrafico" class="select-inline"></select></h2>
     <div class="chart-wrap"><canvas id="chartFlujo"></canvas></div>
+  </section>
+  <section class="section-block">
+    <h2 class="section-title">📈 Tendencia 12 meses
+      <select id="anioTendencia" class="select-inline"></select>
+    </h2>
+    <div class="chart-wrap"><canvas id="chartTendencia"></canvas></div>
   </section>
   <section class="section-block">
     <h2 class="section-title">Gastos por Categoría
@@ -177,12 +190,20 @@
           </select>
         </div>
         <div class="form-group"><label>Categoría *</label><select id="movCategoria" required><option value="">— Seleccionar —</option></select></div>
+        <div class="form-group" id="grupoSubcat" style="display:none">
+          <label>Subcategoría</label>
+          <select id="movSubcategoria"><option value="">— Sin subcategoría —</option></select>
+        </div>
         <div class="form-group" id="grupoMetodoPago">
           <label>Cuenta de Pago *</label>
           <select id="movMetodo" required><option value="">— Seleccionar —</option></select>
         </div>
         <div class="form-group"><label>Tercero / Descripción</label><input type="text" id="movDescripcion" placeholder="Cliente, proveedor o descripción..." maxlength="200" /></div>
         <div class="form-group"><label>Monto *</label><input type="number" id="movMonto" placeholder="0.00" step="0.01" min="0.01" required /></div>
+        <div class="form-group form-group-wide">
+          <label>Nota interna (opcional)</label>
+          <input type="text" id="movNota" placeholder="Ej: Factura #123, referencia pedido, observación..." maxlength="300" />
+        </div>
         <!-- Anticipo -->
         <div class="form-group form-group-wide" id="grupoAnticipo" style="display:none">
           <div class="anticipo-box">
@@ -197,9 +218,17 @@
       <div class="form-actions">
         <button type="submit" class="btn-primary">➕ Guardar</button>
         <button type="button" class="btn-secondary" id="btnCancelarEdicion" style="display:none">✖ Cancelar</button>
+        <button type="button" class="btn-secondary" id="btnRecurrente" style="display:none" title="Guardar como movimiento recurrente">🔄 Recurrente</button>
       </div>
     </form>
   </section>
+
+  <!-- RECURRENTES PENDIENTES -->
+  <section class="section-block" id="secRecurrentes" style="display:none">
+    <h2 class="section-title">🔄 Movimientos Recurrentes Pendientes <span class="badge-edit" id="toggleRecurrentes">Ver</span></h2>
+    <div id="recurrentesList" class="hidden"></div>
+  </section>
+
   <section class="section-block">
     <h2 class="section-title">Registro de Movimientos</h2>
     <div class="filtros-bar">
@@ -214,13 +243,15 @@
       </select>
       <select id="filtroMetodo" class="filtro-select"><option value="">Todos los métodos</option></select>
       <select id="filtroMes" class="filtro-select"></select>
-      <button class="btn-secondary" id="btnLimpiarFiltros">✖</button>
+      <input type="number" id="filtroMontoMin" placeholder="$ Mín" class="filtro-input" style="max-width:90px" step="0.01" min="0" />
+      <input type="number" id="filtroMontoMax" placeholder="$ Máx" class="filtro-input" style="max-width:90px" step="0.01" min="0" />
+      <button class="btn-secondary" id="btnLimpiarFiltros">✖ Limpiar</button>
     </div>
     <div class="table-responsive">
       <table class="data-table" id="tablaMovimientos">
         <thead><tr>
           <th data-sort="fecha">Fecha ↕</th><th data-sort="tipo">Tipo ↕</th>
-          <th data-sort="categoria">Categoría ↕</th><th>Tercero/Desc.</th>
+          <th data-sort="categoria">Categoría ↕</th><th>Tercero/Desc./Nota</th>
           <th data-sort="metodo">Cuenta ↕</th><th data-sort="monto">Monto ↕</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyMovimientos"></tbody>
@@ -684,6 +715,7 @@
     </form>
   </section>
   <section class="section-block">
+    <p class="section-desc">Haz clic en ▶ para expandir una categoría y agregar subcategorías. Ejemplo: <strong>Nómina → Vendedor / Contador / Administrador</strong></p>
     <div class="cat-columns">
       <div class="cat-col"><h3 class="cat-col-title green-title">💰 Ingresos</h3><ul id="listaCatIngresos" class="cat-list"></ul></div>
       <div class="cat-col"><h3 class="cat-col-title red-title">💸 Gastos</h3><ul id="listaCatGastos" class="cat-list"></ul></div>
@@ -753,6 +785,27 @@
       <label>Desde:</label><input type="date" id="repDesde" style="width:150px" />
       <label>Hasta:</label><input type="date" id="repHasta" style="width:150px" />
       <button class="btn-primary" id="btnGenerarReporte">Generar</button>
+    </div>
+  </section>
+  <section class="section-block">
+    <h2 class="section-title">🔄 Comparar Períodos</h2>
+    <p class="section-desc">Compara dos meses para ver la evolución de ingresos, gastos y utilidad.</p>
+    <div class="filtros-bar">
+      <label>Período A:</label>
+      <select id="cmpMesA" class="filtro-select"></select>
+      <select id="cmpAnioA" class="filtro-select"></select>
+      <label style="margin-left:.5rem">Período B:</label>
+      <select id="cmpMesB" class="filtro-select"></select>
+      <select id="cmpAnioB" class="filtro-select"></select>
+      <button class="btn-primary" id="btnComparar">Comparar</button>
+    </div>
+    <div id="cmpResult" style="display:none;margin-top:.85rem">
+      <div class="table-responsive">
+        <table class="data-table" id="tablaCmp">
+          <thead><tr><th>Concepto</th><th id="cmpHeaderA">Período A</th><th id="cmpHeaderB">Período B</th><th>Variación</th><th>%</th></tr></thead>
+          <tbody id="tbodyCmp"></tbody>
+        </table>
+      </div>
     </div>
   </section>
   <section class="section-block" id="seccionReporte" style="display:none">
@@ -979,12 +1032,17 @@ const DEFAULT_CUENTAS=[
   {id:'banco2',nombre:'Banco 2',icono:'🏦',color:'purple',fija:false},
 ];
 const DEFAULT_CATS=[
-  {id:uid(),nombre:'Ventas',tipo:'Ingreso',icono:'💰'},{id:uid(),nombre:'Servicios',tipo:'Ingreso',icono:'🛠'},
-  {id:uid(),nombre:'Otros ingresos',tipo:'Ingreso',icono:'➕'},{id:uid(),nombre:'Alimentación',tipo:'Gasto',icono:'🍽'},
-  {id:uid(),nombre:'Transporte',tipo:'Gasto',icono:'🚗'},{id:uid(),nombre:'Nómina',tipo:'Gasto',icono:'👷'},
-  {id:uid(),nombre:'Servicios públicos',tipo:'Gasto',icono:'💡'},{id:uid(),nombre:'Arriendo',tipo:'Gasto',icono:'🏠'},
-  {id:uid(),nombre:'Otros gastos',tipo:'Gasto',icono:'📦'},{id:uid(),nombre:'Mercancía',tipo:'Compra',icono:'🛒'},
-  {id:uid(),nombre:'Insumos',tipo:'Compra',icono:'🔧'},
+  {id:uid(),nombre:'Ventas',          tipo:'Ingreso',icono:'💰',subcats:[{id:uid(),nombre:'Productos'},{id:uid(),nombre:'Servicios'},{id:uid(),nombre:'Domicilios'}]},
+  {id:uid(),nombre:'Servicios',       tipo:'Ingreso',icono:'🛠',subcats:[]},
+  {id:uid(),nombre:'Otros ingresos',  tipo:'Ingreso',icono:'➕',subcats:[]},
+  {id:uid(),nombre:'Alimentación',    tipo:'Gasto',  icono:'🍽',subcats:[{id:uid(),nombre:'Mercado'},{id:uid(),nombre:'Restaurante'},{id:uid(),nombre:'Domicilio'}]},
+  {id:uid(),nombre:'Transporte',      tipo:'Gasto',  icono:'🚗',subcats:[{id:uid(),nombre:'Combustible'},{id:uid(),nombre:'Taxi/App'},{id:uid(),nombre:'Mantenimiento'}]},
+  {id:uid(),nombre:'Nómina',          tipo:'Gasto',  icono:'👷',subcats:[{id:uid(),nombre:'Salarios'},{id:uid(),nombre:'Prestaciones'},{id:uid(),nombre:'Comisiones'}]},
+  {id:uid(),nombre:'Servicios públicos',tipo:'Gasto',icono:'💡',subcats:[{id:uid(),nombre:'Agua'},{id:uid(),nombre:'Luz'},{id:uid(),nombre:'Internet'}]},
+  {id:uid(),nombre:'Arriendo',        tipo:'Gasto',  icono:'🏠',subcats:[]},
+  {id:uid(),nombre:'Otros gastos',    tipo:'Gasto',  icono:'📦',subcats:[]},
+  {id:uid(),nombre:'Mercancía',       tipo:'Compra', icono:'🛒',subcats:[]},
+  {id:uid(),nombre:'Insumos',         tipo:'Compra', icono:'🔧',subcats:[]},
 ];
 
 async function loadFromFirestore(){
@@ -992,6 +1050,8 @@ async function loadFromFirestore(){
   loadSnap();
   if(!DB.cuentas.length) DB.cuentas=DEFAULT_CUENTAS;
   if(!DB.categorias.length) DB.categorias=DEFAULT_CATS;
+  // Migrar categorías antiguas que no tienen subcats
+  DB.categorias.forEach(c=>{ if(!c.subcats) c.subcats=[]; });
   if(!DB.presupuestos) DB.presupuestos={};
   initApp();
   if(!isOnline){showSyncBadge('offline');updateQueueBadge();showToast('Modo offline — datos locales 📴');return;}
@@ -1222,13 +1282,41 @@ function renderResumen(){
   ct.innerHTML=`<div class="card-label">Saldo Total</div><div class="card-value">${fmt(total)}</div>`;
   grid.insertBefore(ct,grid.firstChild);
 
-  // Alertas
+  // ── Alertas CxC/CxP/Anticipos + Presupuesto 80% ──────────────
   const hoyStr=hoy(); const alertas=[];
   DB.cxc.filter(x=>x.estado==='pendiente'&&x.vence&&x.vence<hoyStr).forEach(x=>alertas.push(`🔴 CxC vencida: ${x.cliente} — ${fmt(x.monto)}`));
   DB.cxp.filter(x=>x.estado==='pendiente'&&x.vence&&x.vence<hoyStr).forEach(x=>alertas.push(`🔴 CxP vencida: ${x.proveedor} — ${fmt(x.monto)}`));
   DB.anticipos.filter(x=>x.estado==='pendiente').forEach(x=>alertas.push(`⏳ Anticipo pendiente: ${x.cliente} — ${fmt(x.monto)}`));
+
+  // Alertas de presupuesto al 80%
+  const now=new Date();
+  const presKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const presMes=DB.presupuestos?.[presKey]||{};
+  const realMes={};
+  DB.movimientos.forEach(m=>{
+    const d=new Date(m.fecha+'T00:00:00');
+    if(d.getMonth()!==now.getMonth()||d.getFullYear()!==now.getFullYear()) return;
+    if(m.tipo==='Gasto'||m.tipo==='Compra'||m.tipo==='Gasto Crédito'||m.tipo==='Compra Crédito'){
+      const pv=presMes[`${m.tipo==='Ingreso'?'Ingreso':'Gasto'}::${m.categoria}`]||presMes[`Compra::${m.categoria}`];
+      const k=`${m.tipo==='Compra'||m.tipo==='Compra Crédito'?'Compra':'Gasto'}::${m.categoria}`;
+      realMes[k]=(realMes[k]||0)+m.monto;
+    }
+  });
+  Object.entries(presMes).forEach(([k,v])=>{
+    const limite=typeof v==='object'?v.monto:v;
+    const real=realMes[k]||0;
+    const cat=k.includes('::')?k.split('::')[1]:k;
+    if(limite>0&&real>=limite*0.8){
+      const pct=Math.round((real/limite)*100);
+      alertas.push(`${pct>=100?'🔴':'🟡'} Presupuesto "${cat}": ${fmt(real)} de ${fmt(limite)} (${pct}%${pct>=100?' — ¡EXCEDIDO!':' — cerca del límite'})`);
+    }
+  });
+
   if(alertas.length){$('secAlertas').style.display='';$('alertasContent').innerHTML=alertas.map(a=>`<div class="alerta-item">${a}</div>`).join('');}
   else $('secAlertas').style.display='none';
+
+  // ── Top 5 categorías del mes ──────────────────────────────────
+  renderTop5();
 
   // Saldos iniciales form
   const si=$('saldosInicialesInputs'); si.innerHTML='';
@@ -1237,6 +1325,36 @@ function renderResumen(){
   fillERSelects(); calcER();
   fillAnioSelect($('anioGrafico')); renderChartFlujo();
   fillMesAnio($('mesDonut'),$('anioDonut')); renderChartDonut();
+}
+
+function renderTop5(){
+  const el=$('top5Content'); if(!el) return;
+  const now=new Date();
+  const map={};
+  DB.movimientos.forEach(m=>{
+    const d=new Date(m.fecha+'T00:00:00');
+    if(d.getMonth()!==now.getMonth()||d.getFullYear()!==now.getFullYear()) return;
+    if(m.tipo==='Ingreso'||m.tipo==='Ingreso Crédito') return;
+    map[m.categoria]=(map[m.categoria]||0)+m.monto;
+  });
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  if(!sorted.length){el.innerHTML='<div style="color:var(--text-muted);font-size:.83rem;text-align:center;padding:.75rem">Sin movimientos este mes.</div>';return;}
+  const max=sorted[0][1];
+  el.innerHTML=sorted.map(([cat,total],i)=>{
+    const pct=Math.round((total/max)*100);
+    const colors=['#2563eb','#dc2626','#d97706','#7c3aed','#0d9488'];
+    return `<div style="display:grid;grid-template-columns:1fr auto;gap:.4rem;align-items:center">
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:.2rem">
+          <span style="font-size:.83rem;font-weight:600">${i+1}. ${cat}</span>
+          <span style="font-size:.83rem;color:var(--danger);font-weight:700">${fmt(total)}</span>
+        </div>
+        <div style="height:6px;background:#e2e8f0;border-radius:3px">
+          <div style="width:${pct}%;height:100%;background:${colors[i]};border-radius:3px;transition:width .4s"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function fillMesAnio(mEl,aEl){
@@ -1321,7 +1439,49 @@ $('movTipo').onchange=()=>{
   if(t==='Ingreso')populateAnticiposSelector();
   if(t!=='Ingreso'){$('movAplicarAnticipo').checked=false;$('anticipoSelector').classList.add('hidden');}
   populateMovCats();
+  // Reset subcategoría al cambiar tipo
+  $('grupoSubcat').style.display='none';
+  if($('movSubcategoria')) $('movSubcategoria').innerHTML='<option value="">— Sin subcategoría —</option>';
 };
+
+// Subcategorías: poblar al cambiar categoría
+$('movCategoria').onchange=()=>{
+  const catNombre=$('movCategoria').value;
+  const cat=DB.categorias.find(c=>c.nombre===catNombre);
+  const grp=$('grupoSubcat'), sel=$('movSubcategoria');
+  if(!grp||!sel) return;
+  if(cat&&cat.subcats&&cat.subcats.length){
+    grp.style.display='';
+    sel.innerHTML='<option value="">— Sin subcategoría —</option>';
+    cat.subcats.forEach(s=>{const o=document.createElement('option');o.value=s.nombre;o.textContent=s.nombre;sel.appendChild(o);});
+  } else {
+    grp.style.display='none';
+    sel.innerHTML='<option value="">— Sin subcategoría —</option>';
+  }
+};
+
+// ── Copiar movimiento ──────────────────────────────────────────
+window.copiarMovimiento = function copiarMovimiento(id){
+  const m=DB.movimientos.find(x=>x.id===id); if(!m) return;
+  $('movFecha').value=hoy();
+  $('movTipo').value=m.tipo;
+  $('movTipo').dispatchEvent(new Event('change'));
+  setTimeout(()=>{
+    $('movCategoria').value=m.categoria;
+    $('movCategoria').dispatchEvent(new Event('change'));
+    setTimeout(()=>{
+      if(m.subcategoria&&$('movSubcategoria')) $('movSubcategoria').value=m.subcategoria;
+    },60);
+  },60);
+  populateMovMetodos();
+  $('movMetodo').value=m.metodo||'';
+  $('movDescripcion').value=m.descripcion||'';
+  $('movMonto').value=m.monto;
+  editandoId=null;
+  $('btnCancelarEdicion').style.display='';
+  showToast('📋 Datos copiados — ajusta lo necesario y guarda.','');
+  document.querySelector('[data-tab="movimientos"]')?.click();
+}
 $('movAplicarAnticipo').onchange=()=>{
   if($('movAplicarAnticipo').checked){$('anticipoSelector').classList.remove('hidden');populateAnticiposSelector();}
   else{$('anticipoSelector').classList.add('hidden');$('anticipoInfo').classList.add('hidden');}
@@ -1368,7 +1528,8 @@ $('formMovimiento').onsubmit=async e=>{
     if(aid){const a=DB.anticipos.find(x=>x.id===aid);if(a&&a.estado==='pendiente'){antId=aid;antMonto=a.monto;}}
   }
 
-  const mov={id:editandoId||uid(),fecha,tipo,categoria:cat,metodo:met||null,descripcion:desc,monto,anticipoAplicadoId:antId,anticipoAplicadoMonto:antMonto};
+  const subcat = $('movSubcategoria')?.value || null;
+  const mov={id:editandoId||uid(),fecha,tipo,categoria:cat,subcategoria:subcat,metodo:met||null,descripcion:desc,monto,anticipoAplicadoId:antId,anticipoAplicadoMonto:antMonto};
 
   if(editandoId){
     const prev=DB.movimientos.find(m=>m.id===editandoId);
@@ -1384,18 +1545,20 @@ $('formMovimiento').onsubmit=async e=>{
 
   editandoId=null; $('formMovimiento').reset();
   $('grupoAnticipo').style.display='none'; $('btnCancelarEdicion').style.display='none';
-  $('grupoMetodoPago').style.display='';
+  $('grupoMetodoPago').style.display=''; $('grupoSubcat').style.display='none';
   showToast('Movimiento guardado. ☁️','success');
 };
 
-$('btnCancelarEdicion').onclick=()=>{editandoId=null;$('formMovimiento').reset();$('grupoAnticipo').style.display='none';$('btnCancelarEdicion').style.display='none';$('grupoMetodoPago').style.display='';};
+$('btnCancelarEdicion').onclick=()=>{editandoId=null;$('formMovimiento').reset();$('grupoAnticipo').style.display='none';$('btnCancelarEdicion').style.display='none';$('grupoMetodoPago').style.display='';$('grupoSubcat').style.display='none';};
 
 function renderMovimientos(){
   // ── 1. Leer los valores de los filtros ANTES de tocar los selects ──
-  const txt  = $('filtroTexto').value.toLowerCase();
-  const tipo = $('filtroTipo').value;
-  const met  = $('filtroMetodo').value;
-  const mes  = $('filtroMes').value;
+  const txt    = $('filtroTexto').value.toLowerCase();
+  const tipo   = $('filtroTipo').value;
+  const met    = $('filtroMetodo').value;
+  const mes    = $('filtroMes').value;
+  const monMin = parseFloat($('filtroMontoMin').value)||0;
+  const monMax = parseFloat($('filtroMontoMax').value)||Infinity;
 
   // ── 2. Reconstruir solo los selects de FORMULARIO (no los filtros) ──
   populateMovCats();
@@ -1432,6 +1595,8 @@ function renderMovimientos(){
   if(tipo) lista=lista.filter(m=>m.tipo===tipo);
   if(met)  lista=lista.filter(m=>m.metodo===met);
   if(mes)  lista=lista.filter(m=>m.fecha.startsWith(mes));
+  if(monMin>0)       lista=lista.filter(m=>m.monto>=monMin);
+  if(monMax<Infinity) lista=lista.filter(m=>m.monto<=monMax);
 
   lista.sort((a,b)=>{
     let va=a[sortCol],vb=b[sortCol];
@@ -1456,17 +1621,21 @@ function renderMovimientos(){
       'Gasto':           'badge-gasto',
     };
     const badgeCls=badgeMap[m.tipo]||'badge-gasto';
+    const catLabel = m.subcategoria
+      ? `${m.categoria} <span style="font-size:.75rem;color:var(--text-muted)">↳ ${m.subcategoria}</span>`
+      : m.categoria;
     const tr=document.createElement('tr');
     tr.className=`row-${m.tipo.replace(/ /g,'-').toLowerCase()} row-new`;
     tr.innerHTML=`
       <td>${m.fecha}</td>
       <td><span class="badge ${badgeCls}">${m.tipo}</span></td>
-      <td>${m.categoria}</td>
+      <td>${catLabel}</td>
       <td>${m.descripcion||'—'} ${ant}</td>
       <td>${cn}</td>
       <td class="${esIng?'monto-ingreso':'monto-egreso'}">${esIng?'+':'-'}${fmt(m.monto)}</td>
       <td><div class="action-btns">
         <button class="btn-sm btn-edit" data-id="${m.id}" title="Editar">✏️</button>
+        <button class="btn-sm" style="background:#f0fdf4;color:#16a34a" data-id="${m.id}" title="Copiar movimiento" onclick="copiarMovimiento('${m.id}')">📋</button>
         <button class="btn-sm btn-delete" data-id="${m.id}" title="Eliminar">🗑</button>
       </div></td>`;
     setTimeout(()=>tr.classList.remove('row-new'),1600);
@@ -1488,9 +1657,18 @@ function renderMovimientos(){
 }
 
 function editarMov(id){
-  const m=DB.movimientos.find(x=>x.id===id);if(!m)return;
-  editandoId=id; $('movFecha').value=m.fecha; $('movTipo').value=m.tipo;
-  populateMovCats(); $('movCategoria').value=m.categoria;
+  const m=DB.movimientos.find(x=>x.id===id); if(!m) return;
+  editandoId=id;
+  $('movFecha').value=m.fecha;
+  $('movTipo').value=m.tipo;
+  $('movTipo').dispatchEvent(new Event('change'));
+  setTimeout(()=>{
+    populateMovCats(); $('movCategoria').value=m.categoria;
+    $('movCategoria').dispatchEvent(new Event('change'));
+    setTimeout(()=>{
+      if(m.subcategoria && $('movSubcategoria')) $('movSubcategoria').value=m.subcategoria;
+    },60);
+  },60);
   populateMovMetodos(); $('movMetodo').value=m.metodo||'';
   $('movDescripcion').value=m.descripcion||''; $('movMonto').value=m.monto;
   $('btnCancelarEdicion').style.display='';
@@ -1509,8 +1687,10 @@ $('filtroTexto').addEventListener('input',  renderMovimientos);
 $('filtroTipo').addEventListener('change',  renderMovimientos);
 $('filtroMetodo').addEventListener('change', renderMovimientos);
 $('filtroMes').addEventListener('change',   renderMovimientos);
+$('filtroMontoMin').addEventListener('input', renderMovimientos);
+$('filtroMontoMax').addEventListener('input', renderMovimientos);
 $('btnLimpiarFiltros').onclick=()=>{
-  ['filtroTexto','filtroTipo','filtroMetodo','filtroMes'].forEach(id=>$(id).value='');
+  ['filtroTexto','filtroTipo','filtroMetodo','filtroMes','filtroMontoMin','filtroMontoMax'].forEach(id=>$(id).value='');
   renderMovimientos();
 };
 
@@ -2200,26 +2380,68 @@ function renderCategorias(){
     const ul=$('listaCat'+t); ul.innerHTML='';
     const cats=DB.categorias.filter(c=>c.tipo===key);
     if(!cats.length){
-      ul.innerHTML=`<li class="cat-item" style="color:var(--text-muted);font-style:italic;font-size:.82rem">Sin categorías de ${key.toLowerCase()}</li>`;
+      ul.innerHTML=`<li class="cat-item" style="color:var(--text-muted);font-style:italic;font-size:.82rem">Sin categorías de ${key.toLowerCase()}.</li>`;
       return;
     }
     cats.forEach(c=>{
-      const li=document.createElement('li'); li.className='cat-item';
-      li.innerHTML=`<span class="cat-item-name">${c.icono||''} ${c.nombre}</span><button class="cat-item-del" data-id="${c.id}" title="Eliminar">✖</button>`;
+      const li=document.createElement('li');
+      const subcats=c.subcats||[];
+      li.innerHTML=`
+        <div class="cat-item" style="flex-direction:column;align-items:stretch;gap:.3rem">
+          <div style="display:flex;align-items:center;gap:.4rem">
+            <span style="cursor:pointer;user-select:none" onclick="document.getElementById('sub_${c.id}').style.display=document.getElementById('sub_${c.id}').style.display==='none'?'':'none'">
+              ${subcats.length?'▶':''} ${c.icono||''} <span style="font-weight:700">${c.nombre}</span>
+              <span style="font-size:.72rem;color:var(--text-muted)">(${subcats.length} subcats)</span>
+            </span>
+            <button class="cat-item-del" data-id="${c.id}" title="Eliminar categoría" style="margin-left:auto">✖</button>
+          </div>
+          <div id="sub_${c.id}" style="display:none;padding-left:.85rem;border-left:2.5px solid var(--primary-light);margin-left:.3rem;display:flex;flex-direction:column;gap:.25rem">
+            ${subcats.map(s=>`
+              <div style="display:flex;align-items:center;gap:.35rem;padding:.25rem 0">
+                <span style="font-size:.8rem;color:var(--text-muted)">↳</span>
+                <span style="flex:1;font-size:.83rem">${s.nombre}</span>
+                <button onclick="delSubcatNegocio('${c.id}','${s.id}')" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:.8rem;opacity:.6" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">✖</button>
+              </div>`).join('')}
+            <div style="display:flex;gap:.35rem;margin-top:.25rem">
+              <input type="text" id="newSub_${c.id}" placeholder="Nueva subcategoría..." style="flex:1;padding:.32rem .55rem;font-size:.8rem;border:1.5px solid var(--border);border-radius:5px" maxlength="40" />
+              <button onclick="addSubcatNegocio('${c.id}')" style="background:var(--primary);color:white;border:none;border-radius:5px;padding:.32rem .65rem;cursor:pointer;font-size:.78rem;font-weight:600">+ Add</button>
+            </div>
+          </div>
+        </div>`;
       ul.appendChild(li);
+      // Mostrar subcats si ya hay alguna
+      if(subcats.length) document.getElementById(`sub_${c.id}`)?.style && (document.getElementById(`sub_${c.id}`).style.display='flex');
     });
   });
+
   document.querySelectorAll('.cat-item-del').forEach(btn=>btn.onclick=async()=>{
     const id=btn.dataset.id, cat=DB.categorias.find(c=>c.id===id);
     if(DB.movimientos.some(m=>m.categoria===cat?.nombre)){showToast('No se puede eliminar: categoría en uso en movimientos.','error');return;}
     if(DB.creditos.some(c=>c.categoria===cat?.nombre)){showToast('No se puede eliminar: categoría en uso en créditos.','error');return;}
-    DB.categorias=DB.categorias.filter(c=>c.id!==id);
-    await saveConfig(); renderCategorias(); showToast('Categoría eliminada.','success');
+    openModal('Eliminar categoría',`¿Eliminar "${cat?.nombre}" y sus subcategorías?`,async()=>{
+      DB.categorias=DB.categorias.filter(c=>c.id!==id);
+      await saveConfig(); renderCategorias(); showToast('Categoría eliminada.','success');
+    });
   });
-  // Limpiar categorías General que puedan existir de versiones anteriores
-  const tenia=DB.categorias.some(c=>c.tipo==='General');
-  if(tenia){DB.categorias=DB.categorias.filter(c=>c.tipo!=='General');saveConfig();}
+
+  // Limpiar General residuales
+  if(DB.categorias.some(c=>c.tipo==='General')){DB.categorias=DB.categorias.filter(c=>c.tipo!=='General');saveConfig();}
 }
+
+window.addSubcatNegocio = async function(catId){
+  const inp=$('newSub_'+catId); const nombre=inp?.value?.trim(); if(!nombre)return;
+  const cat=DB.categorias.find(c=>c.id===catId); if(!cat)return;
+  if(!cat.subcats)cat.subcats=[];
+  if(cat.subcats.some(s=>s.nombre.toLowerCase()===nombre.toLowerCase())){showToast('Ya existe esa subcategoría.','error');return;}
+  cat.subcats.push({id:uid(),nombre});
+  await saveConfig(); renderCategorias(); showToast('Subcategoría agregada.','success');
+};
+
+window.delSubcatNegocio = async function(catId,subId){
+  const cat=DB.categorias.find(c=>c.id===catId); if(!cat)return;
+  cat.subcats=(cat.subcats||[]).filter(s=>s.id!==subId);
+  await saveConfig(); renderCategorias(); showToast('Subcategoría eliminada.','success');
+};
 
 // ── ZONA DE PELIGRO ──────────────────────────────────────────────
 $('btnLimpiarMovimientos').onclick=()=>{
@@ -2500,10 +2722,11 @@ $('btnExportExcel').onclick=()=>{
 
     addSheet('Movimientos', DB.movimientos.map(m=>({
       Fecha: m.fecha, Tipo: m.tipo, Categoria: m.categoria,
+      Subcategoria: m.subcategoria||'',
       Cuenta: DB.cuentas.find(c=>c.id===m.metodo)?.nombre||(m.metodo||'Credito'),
       Descripcion: m.descripcion||'', Monto: m.monto,
       Anticipo_desc: m.anticipoAplicadoMonto||0
-    })),['Fecha','Tipo','Categoria','Cuenta','Descripcion','Monto','Anticipo_desc']);
+    })),['Fecha','Tipo','Categoria','Subcategoria','Cuenta','Descripcion','Monto','Anticipo_desc']);
 
     addSheet('Devoluciones', DB.devoluciones.map(d=>({
       Fecha: d.fecha, Tipo: d.tipo,
