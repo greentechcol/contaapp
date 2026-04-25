@@ -941,91 +941,131 @@ let currentUser=null, FB=null;
 const userDoc  = (col,id)=>FB.doc(FB.db,'users',currentUser.uid,'negocio',col,id);
 const configDoc= ()=>FB.doc(FB.db,'users',currentUser.uid,'negocio_config','main');
 
-// ── OFFLINE ──────────────────────────────────────────────────────
-const LOCAL_KEY='contaapp_local_v4', QUEUE_KEY='contaapp_queue_v4', CONFIG_KEY='contaapp_config_v4';
+// ════════════════════════════════════════════════════════════════
+//  SINCRONIZACIÓN — v5 corregida (sin orderBy, sin doble disparo)
+// ════════════════════════════════════════════════════════════════
+
+// Keys v5 — limpian la cola v4 que tenía rutas incorrectas
+const LOCAL_KEY  = 'contaapp_neg_v5';
+const QUEUE_KEY  = 'contaapp_neg_q5';
+const CONFIG_KEY = 'contaapp_neg_cfg5';
 const lLoad=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch{return d;}};
 const lSave=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
+
+// Limpiar colas viejas con rutas incorrectas (evita que datos v4 interfieran)
+['contaapp_local_v4','contaapp_queue_v4','contaapp_config_v4',
+ 'contaapp_local_v3','contaapp_queue_v3','contaapp_config_v3']
+  .forEach(k=>{try{localStorage.removeItem(k);}catch{}});
 
 function qAdd(op,col,id,data=null){
   const q=lLoad(QUEUE_KEY,[]);
   const i=q.findIndex(e=>e.col===col&&e.id===id);
-  const e={op,col,id,data,ts:Date.now()};
-  if(i>=0)q[i]=e;else q.push(e);
+  const entry={op,col,id,data,ts:Date.now()};
+  if(i>=0)q[i]=entry; else q.push(entry);
   lSave(QUEUE_KEY,q); updateQueueBadge();
 }
-function qRemove(col,id){lSave(QUEUE_KEY,lLoad(QUEUE_KEY,[]).filter(e=>!(e.col===col&&e.id===id)));updateQueueBadge();}
+function qRemove(col,id){
+  lSave(QUEUE_KEY,lLoad(QUEUE_KEY,[]).filter(e=>!(e.col===col&&e.id===id)));
+  updateQueueBadge();
+}
 
 function saveSnap(){
-  lSave(LOCAL_KEY,{movimientos:DB.movimientos,anticipos:DB.anticipos,transferencias:DB.transferencias,
-    devoluciones:DB.devoluciones,creditos:DB.creditos,prestamos:DB.prestamos,cxc:DB.cxc,cxp:DB.cxp});
-  lSave(CONFIG_KEY,{cuentas:DB.cuentas,saldosIniciales:DB.saldosIniciales,categorias:DB.categorias,presupuestos:DB.presupuestos});
+  lSave(LOCAL_KEY,{
+    movimientos:DB.movimientos, anticipos:DB.anticipos,
+    transferencias:DB.transferencias, devoluciones:DB.devoluciones,
+    creditos:DB.creditos, prestamos:DB.prestamos, cxc:DB.cxc, cxp:DB.cxp
+  });
+  lSave(CONFIG_KEY,{
+    cuentas:DB.cuentas, saldosIniciales:DB.saldosIniciales,
+    categorias:DB.categorias, presupuestos:DB.presupuestos
+  });
 }
 function loadSnap(){
-  const s=lLoad(LOCAL_KEY,{}),c=lLoad(CONFIG_KEY,{});
-  ['movimientos','anticipos','transferencias','devoluciones','creditos','prestamos','cxc','cxp'].forEach(k=>{if(s[k])DB[k]=s[k];});
-  ['cuentas','saldosIniciales','categorias','presupuestos'].forEach(k=>{if(c[k])DB[k]=c[k];});
+  const s=lLoad(LOCAL_KEY,{}), c=lLoad(CONFIG_KEY,{});
+  ['movimientos','anticipos','transferencias','devoluciones','creditos','prestamos','cxc','cxp']
+    .forEach(k=>{if(s[k])DB[k]=s[k];});
+  ['cuentas','saldosIniciales','categorias','presupuestos']
+    .forEach(k=>{if(c[k])DB[k]=c[k];});
 }
 
 let isOnline=navigator.onLine;
-window.addEventListener('online', ()=>{isOnline=true; onRestored();});
-window.addEventListener('offline',()=>{isOnline=false; showSyncBadge('offline'); showToast('Sin conexión — guardando localmente 📴');});
+window.addEventListener('online',  ()=>{ isOnline=true; onRestored(); });
+window.addEventListener('offline', ()=>{ isOnline=false; showSyncBadge('offline'); showToast('Sin conexión — guardando localmente 📴'); });
 
 async function onRestored(){
-  showSyncBadge('sincronizando'); showToast('Reconectado — sincronizando… ☁️');
-  await flushQueue(); showSyncBadge('ok'); showToast('¡Sincronizado! ✅','success');
+  showSyncBadge('sincronizando');
+  showToast('Conexión restaurada — sincronizando… ☁️');
+  await flushQueue();
+  showSyncBadge('ok');
+  showToast('¡Sincronizado! ✅','success');
 }
 
 async function flushQueue(){
   if(!isOnline||!currentUser) return;
   const q=lLoad(QUEUE_KEY,[]);
+  if(!q.length) return;
   for(const e of q.filter(x=>x.col==='config')){
-    try{await FB.setDoc(configDoc(),e.data);qRemove('config','main');}catch(err){console.warn(err);return;}
+    try{ await FB.setDoc(configDoc(),e.data); qRemove('config','main'); }
+    catch(err){ console.warn('flushConfig',err); return; }
   }
   for(const e of lLoad(QUEUE_KEY,[]).filter(x=>x.col!=='config')){
     try{
-      if(e.op==='set')await FB.setDoc(userDoc(e.col,e.id),e.data);
-      else await FB.deleteDoc(userDoc(e.col,e.id));
+      if(e.op==='set') await FB.setDoc(userDoc(e.col,e.id),e.data);
+      else             await FB.deleteDoc(userDoc(e.col,e.id));
       qRemove(e.col,e.id);
-    }catch(err){console.warn(err);}
+    }catch(err){ console.warn('flushItem',e.col,err); }
   }
   updateQueueBadge();
 }
 
 async function fsSet(col,item){
   const arr=DB[col];
-  if(arr){const i=arr.findIndex(x=>x.id===item.id);if(i>=0)arr[i]=item;else arr.push(item);}
+  if(arr){ const i=arr.findIndex(x=>x.id===item.id); if(i>=0)arr[i]=item; else arr.push(item); }
   saveSnap();
-  if(isOnline){try{await FB.setDoc(userDoc(col,item.id),item);return;}catch(e){console.warn(e);}}
+  if(isOnline){ try{ await FB.setDoc(userDoc(col,item.id),item); return; } catch(e){ console.warn('fsSet',e); } }
   qAdd('set',col,item.id,item);
 }
 async function fsDel(col,id){
-  if(DB[col])DB[col]=DB[col].filter(x=>x.id!==id); saveSnap();
-  if(isOnline){try{await FB.deleteDoc(userDoc(col,id));return;}catch(e){console.warn(e);}}
+  if(DB[col]) DB[col]=DB[col].filter(x=>x.id!==id);
+  saveSnap();
+  if(isOnline){ try{ await FB.deleteDoc(userDoc(col,id)); return; } catch(e){ console.warn('fsDel',e); } }
   qAdd('del',col,id);
 }
 async function saveConfig(){
-  const data={cuentas:DB.cuentas,saldosIniciales:DB.saldosIniciales,categorias:DB.categorias,presupuestos:DB.presupuestos,updatedAt:Date.now()};
+  const data={cuentas:DB.cuentas,saldosIniciales:DB.saldosIniciales,
+    categorias:DB.categorias,presupuestos:DB.presupuestos,updatedAt:Date.now()};
   lSave(CONFIG_KEY,{cuentas:DB.cuentas,saldosIniciales:DB.saldosIniciales,categorias:DB.categorias,presupuestos:DB.presupuestos});
-  if(isOnline){try{await FB.setDoc(configDoc(),data);return;}catch(e){console.warn(e);}}
+  if(isOnline){ try{ await FB.setDoc(configDoc(),data); return; } catch(e){ console.warn('saveConfig',e); } }
   qAdd('set','config','main',data);
 }
+async function saveDB(){ await saveConfig(); }
 
 function showSyncBadge(state){
   let b=$('syncBadge');
-  if(!b){b=document.createElement('span');b.id='syncBadge';b.className='sync-badge';document.querySelector('.topbar-brand').appendChild(b);}
-  const m={cargando:{t:'⟳',c:''},ok:{t:'☁️',c:''},offline:{t:'📴',c:'#fca5a5'},sincronizando:{t:'⟳',c:'#fde68a'},error:{t:'⚠️',c:'#fca5a5'}};
-  const s=m[state]||m.ok; b.textContent=s.t; b.style.color=s.c;
+  if(!b){
+    b=document.createElement('span'); b.id='syncBadge'; b.className='sync-badge';
+    document.querySelector('.topbar-brand')?.appendChild(b);
+  }
+  const m={cargando:{t:'⟳',c:''},ok:{t:'☁️',c:''},offline:{t:'📴',c:'#fca5a5'},
+            sincronizando:{t:'⟳',c:'#fde68a'},error:{t:'⚠️',c:'#fca5a5'}};
+  const s=m[state]||m.ok;
+  b.textContent=s.t; b.style.color=s.c;
+  b.title={cargando:'Cargando…',ok:'Sincronizado',offline:'Sin conexión',
+           sincronizando:'Sincronizando…',error:'Error de sync'}[state]||'';
 }
 function updateQueueBadge(){
   const q=lLoad(QUEUE_KEY,[]);
-  if(!q.length){showSyncBadge(isOnline?'ok':'offline');return;}
+  if(!q.length){ showSyncBadge(isOnline?'ok':'offline'); return; }
   let b=$('syncBadge');
-  if(!b)showSyncBadge('ok');
-  else{b.textContent=`⏫${q.length}`;b.style.color='#fde68a';}
+  if(!b){ showSyncBadge('ok'); b=$('syncBadge'); }
+  b.textContent=`⏫${q.length}`;
+  b.title=`${q.length} cambio(s) pendiente(s)`;
+  b.style.color='#fde68a';
 }
 
-// ── CARGA FIREBASE ───────────────────────────────────────────────
+// ── CARGA FIREBASE (orden correcto) ───────────────────────────────
 const COLS=['movimientos','anticipos','transferencias','devoluciones','creditos','prestamos','cxc','cxp'];
+const activeListeners={};
 const DEFAULT_CUENTAS=[
   {id:'efectivo',nombre:'Efectivo',icono:'💵',color:'green',fija:true},
   {id:'banco1',nombre:'Banco 1',icono:'🏦',color:'blue',fija:false},
@@ -1047,52 +1087,98 @@ const DEFAULT_CATS=[
 
 async function loadFromFirestore(){
   showSyncBadge('cargando');
+
+  // PASO 1: datos locales para arranque instantáneo
   loadSnap();
-  if(!DB.cuentas.length) DB.cuentas=DEFAULT_CUENTAS;
-  if(!DB.categorias.length) DB.categorias=DEFAULT_CATS;
-  // Migrar categorías antiguas que no tienen subcats
+  if(!DB.cuentas.length)    DB.cuentas    = DEFAULT_CUENTAS;
+  if(!DB.categorias.length) DB.categorias = DEFAULT_CATS;
   DB.categorias.forEach(c=>{ if(!c.subcats) c.subcats=[]; });
-  if(!DB.presupuestos) DB.presupuestos={};
+  if(!DB.presupuestos)      DB.presupuestos = {};
+
+  // PASO 2: mostrar app con datos locales de inmediato
   initApp();
-  if(!isOnline){showSyncBadge('offline');updateQueueBadge();showToast('Modo offline — datos locales 📴');return;}
+
+  if(!isOnline){
+    showSyncBadge('offline'); updateQueueBadge();
+    showToast('Modo offline — datos guardados localmente 📴');
+    return;
+  }
+
+  // PASO 3: config desde Firebase (cuentas, categorias, saldos)
   try{
-    const snap=await FB.getDoc(configDoc());
+    const snap = await FB.getDoc(configDoc());
     if(snap.exists()){
       const d=snap.data();
-      if(d.cuentas)DB.cuentas=d.cuentas;
-      if(d.saldosIniciales)DB.saldosIniciales=d.saldosIniciales;
-      if(d.categorias)DB.categorias=d.categorias;
-      if(d.presupuestos)DB.presupuestos=d.presupuestos;
-    }else{await saveConfig();}
-    saveSnap();
-  }catch(e){console.warn(e);}
-  COLS.forEach(c=>loadCol(c));
+      if(d.cuentas)         DB.cuentas         = d.cuentas;
+      if(d.saldosIniciales) DB.saldosIniciales = d.saldosIniciales;
+      if(d.categorias){
+        DB.categorias = d.categorias;
+        DB.categorias.forEach(c=>{ if(!c.subcats) c.subcats=[]; });
+      }
+      if(d.presupuestos)    DB.presupuestos    = d.presupuestos;
+      saveSnap();
+      refreshActiveTab(); // actualizar con config real
+    } else {
+      await saveConfig(); // primera vez: guardar defaults
+    }
+  }catch(e){ console.warn('Config load error:',e); }
+
+  // PASO 4: suscribir colecciones en tiempo real
+  // SIN orderBy para evitar errores silenciosos cuando un doc no tiene 'fecha'
+  COLS.forEach(col => subscribeCol(col));
+
+  // PASO 5: subir operaciones offline pendientes
   await flushQueue();
-  showSyncBadge('ok'); updateQueueBadge();
-  refreshActiveTab();
 }
 
-function loadCol(colName){
+function subscribeCol(colName){
+  // Cancelar listener anterior si existe
+  if(activeListeners[colName]){
+    try{ activeListeners[colName](); }catch{}
+    delete activeListeners[colName];
+  }
   try{
-    const q=FB.query(FB.collection(FB.db,'users',currentUser.uid,'negocio',colName),FB.orderBy('fecha','desc'));
-    FB.onSnapshot(q,{includeMetadataChanges:true},snap=>{
-      DB[colName]=snap.docs.map(d=>d.data());
-      saveSnap(); refreshActiveTab();
-      if(snap.metadata.hasPendingWrites)showSyncBadge('sincronizando');
-      else if(isOnline)updateQueueBadge();
-    });
-  }catch(e){console.warn(colName,e);}
+    const colRef = FB.collection(FB.db,'users',currentUser.uid,'negocio',colName);
+    // SIN includeMetadataChanges — evita doble disparo por cada escritura
+    const unsubscribe = FB.onSnapshot(
+      colRef,
+      snap => {
+        // Ordenar en JS (más confiable que orderBy en Firestore cuando hay docs sin 'fecha')
+        DB[colName] = snap.docs
+          .map(d => d.data())
+          .sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
+        saveSnap();
+        updateQueueBadge();
+        refreshActiveTab();
+      },
+      err => {
+        console.error('onSnapshot ['+colName+']:', err.code, err.message);
+        showSyncBadge('error');
+        // Reintentar en 5s si sigue online
+        setTimeout(()=>{ if(isOnline && currentUser) subscribeCol(colName); }, 5000);
+      }
+    );
+    activeListeners[colName] = unsubscribe;
+  }catch(e){
+    console.error('subscribeCol setup error', colName, e);
+  }
 }
 
 function refreshActiveTab(){
-  const t=document.querySelector('.nav-btn.active')?.dataset?.tab;
-  if(!t)return;
-  const map={resumen:renderResumen,movimientos:renderMovimientos,devoluciones:renderDevoluciones,
-    anticipos:renderAnticipos,creditos:renderCreditos,prestamos:renderPrestamos,
-    transferencias:()=>{populateTrCuentas();renderTransferencias();},
-    presupuesto:renderPresupuesto,cxc:renderCxC,cxp:renderCxP,
-    cuentas:renderCuentas,categorias:renderCategorias,reportes:()=>{}};
-  if(map[t])map[t]();
+  const t = (
+    document.querySelector('.nav-btn.active') ||
+    document.querySelector('.bottom-nav-btn.active')
+  )?.dataset?.tab;
+  if(!t) return;
+  const map={
+    resumen:renderResumen, movimientos:renderMovimientos,
+    devoluciones:renderDevoluciones, anticipos:renderAnticipos,
+    creditos:renderCreditos, prestamos:renderPrestamos,
+    transferencias:()=>{ populateTrCuentas(); renderTransferencias(); },
+    presupuesto:renderPresupuesto, cxc:renderCxC, cxp:renderCxP,
+    cuentas:renderCuentas, categorias:renderCategorias, reportes:()=>{}
+  };
+  if(map[t]) map[t]();
 }
 
 // ── AUTH ─────────────────────────────────────────────────────────
