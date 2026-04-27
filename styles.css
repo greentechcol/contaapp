@@ -192,6 +192,7 @@ input:focus,select:focus,textarea:focus {
 }
 .btn-primary:hover,.btn-secondary:hover,.btn-danger:hover { filter:brightness(.92); }
 .btn-primary:active,.btn-secondary:active { transform:scale(.97); }
+@media (max-width:640px){ .btn-sm { min-height:40px; padding:.45rem .75rem; } }
 .btn-primary   { background:var(--primary); color:white; }
 .btn-secondary { background:var(--neutral-bg); color:var(--text-main); border:1.5px solid var(--border); }
 .btn-danger    { background:var(--danger); color:white; }
@@ -243,6 +244,7 @@ input:focus,select:focus,textarea:focus {
   background:var(--neutral-bg); padding:.65rem .75rem; border-top:2px solid var(--border);
 }
 .empty-state { text-align:center; color:var(--text-muted); padding:2.5rem 1rem; font-size:.9rem; }
+.empty-state::before { content:"📭"; display:block; font-size:2rem; margin-bottom:.5rem; }
 .action-btns { display:flex; gap:.35rem; }
 .btn-edit   { background:var(--primary-light); color:var(--primary); }
 .btn-delete { background:var(--danger-bg); color:var(--danger); }
@@ -563,7 +565,7 @@ input:focus,select:focus,textarea:focus {
     transition: background .15s, color .15s; white-space: nowrap;
   }
   .bottom-nav-btn .bn-icon { font-size: 1.2rem; line-height: 1; }
-  .bottom-nav-btn.active { color: var(--primary); background: var(--primary-light); }
+  .bottom-nav-btn.active { color: var(--primary); background: var(--primary-light); border-top: 3px solid var(--primary); }
   .bottom-nav-btn:active { background: var(--neutral-bg); }
 
   /* Ocultar las acciones de topbar menos esenciales */

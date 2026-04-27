@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>ContaApp — Personal</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firestore.googleapis.com; img-src 'self' data: https:;">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#16a34a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -15,7 +17,7 @@
     import { getAuth, onAuthStateChanged, signOut }
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, onSnapshot,
-             collection, deleteDoc, query, orderBy, writeBatch }
+             collection, deleteDoc, query, writeBatch }
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     const firebaseConfig = {
       apiKey:"AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
@@ -26,7 +28,7 @@
       appId:"1:672661191582:web:babf8b97b69925028eb48f"
     };
     const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
-    window.__FB={auth,db,onAuthStateChanged,signOut,doc,getDoc,setDoc,onSnapshot,collection,deleteDoc,query,orderBy,writeBatch};
+    window.__FB={auth,db,onAuthStateChanged,signOut,doc,getDoc,setDoc,onSnapshot,collection,deleteDoc,query,writeBatch};
     window.__fbReady=true;
     if(window.__fbResolve)window.__fbResolve(window.__FB);
     window.dispatchEvent(new Event('firebase-ready'));
@@ -430,6 +432,11 @@ const LK='ca_personal_v1', QK='ca_personal_q', CK='ca_personal_cfg';
 const ll=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch{return d;}};
 const ls=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 
+
+// Limpiar keys antiguas de localStorage
+['ca_personal_v1','ca_personal_q','ca_personal_cfg',
+ 'contaapp_local_v4','contaapp_queue_v4','contaapp_config_v4']
+  .forEach(k=>{try{localStorage.removeItem(k);}catch{}});
 function qAdd(op,col,id,data=null){const q=ll(QK,[]);const i=q.findIndex(e=>e.col===col&&e.id===id);const e={op,col,id,data,ts:Date.now()};if(i>=0)q[i]=e;else q.push(e);ls(QK,q);}
 function qRemove(col,id){ls(QK,ll(QK,[]).filter(e=>!(e.col===col&&e.id===id)));}
 
@@ -941,7 +948,7 @@ function renderCuentas(){
   const si=$('siInputs'); si.innerHTML='';
   DB.cuentas.forEach(c=>{
     const row=document.createElement('div'); row.style.display='flex'; row.style.flexDirection='column'; row.style.gap='.25rem';
-    row.innerHTML=`<label style="font-size:.76rem;font-weight:600;color:var(--muted);text-transform:uppercase">${c.icono||''} ${c.nombre}</label><input type="number" id="si_${c.id}" placeholder="0.00" step="0.01" min="0" value="${DB.saldosIniciales[c.id]||0}" style="padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:6px;font-size:.88rem"/>`;
+    row.innerHTML=`<label style="font-size:.76rem;font-weight:600;color:var(--muted);text-transform:uppercase">${esc(c.icono||'')} ${esc(c.nombre)}</label><input type="number" id="si_${c.id}" placeholder="0.00" step="0.01" min="0" value="${DB.saldosIniciales[c.id]||0}" style="padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:6px;font-size:.88rem"/>`;
     si.appendChild(row);
   });
 }

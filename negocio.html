@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>ContaApp — Negocio</title>
   <link rel="stylesheet" href="styles.css" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firestore.googleapis.com; img-src 'self' data: https:;">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#2563eb" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -232,7 +234,7 @@
   <section class="section-block">
     <h2 class="section-title">Registro de Movimientos</h2>
     <div class="filtros-bar">
-      <input type="text" id="filtroTexto" placeholder="🔍 Buscar..." class="filtro-input" />
+      <input type="text" id="filtroTexto" placeholder="🔍 Buscar..." class="filtro-input" maxlength="100" />
       <select id="filtroTipo" class="filtro-select">
         <option value="">Todos los tipos</option>
         <option value="Ingreso">Ingreso</option>
@@ -248,7 +250,7 @@
       <button class="btn-secondary" id="btnLimpiarFiltros">✖ Limpiar</button>
     </div>
     <div class="table-responsive">
-      <table class="data-table" id="tablaMovimientos">
+      <table class="data-table" id="tablaMovimientos" role="table" aria-label="Registro de movimientos">
         <thead><tr>
           <th data-sort="fecha">Fecha ↕</th><th data-sort="tipo">Tipo ↕</th>
           <th data-sort="categoria">Categoría ↕</th><th>Tercero/Desc./Nota</th>
@@ -834,7 +836,7 @@
 </main>
 
 <!-- ══════════════════════ MODAL IMPORTAR ══════════════════════ -->
-<div id="importOverlay" class="modal-overlay hidden">
+<div id="importOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Importar movimientos">
   <div class="modal-box" style="max-width:600px;width:100%">
     <h3>📤 Importar Movimientos</h3>
     <p>Archivo Excel o CSV con columnas: <strong>Fecha, Tipo, Categoría, Cuenta, Monto</strong> (Descripción opcional)</p>
@@ -864,7 +866,7 @@
 </div>
 
 <!-- ══════════════════════ MODAL EDITAR CUENTA ══════════════════════ -->
-<div id="editCuentaOverlay" class="modal-overlay hidden">
+<div id="editCuentaOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Editar cuenta">
   <div class="modal-box">
     <h3>✏️ Editar Cuenta</h3>
     <div class="form-group" style="margin-bottom:.75rem"><label>Nombre</label><input type="text" id="editCuentaNombre" maxlength="50" /></div>
@@ -885,7 +887,7 @@
 </div>
 
 <!-- MODAL CONFIRMACIÓN -->
-<div id="modalOverlay" class="modal-overlay hidden">
+<div id="modalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal-box">
     <h3 id="modalTitle">Confirmar acción</h3>
     <p id="modalMsg">¿Estás seguro?</p>
@@ -896,7 +898,7 @@
   </div>
 </div>
 
-<div id="toast" class="toast hidden"></div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <!-- BOTTOM NAV MÓVIL -->
 <nav class="bottom-nav" id="bottomNav">
@@ -1199,17 +1201,114 @@ function initAuth(){
 }
 async function loginGoogle(){try{await FB.signInWithPopup(FB.auth,new FB.GoogleAuthProvider());}catch(e){showLoginErr(authErr(e.code));}}
 function showLoginErr(m){$('loginError').textContent=m;$('loginError').classList.remove('hidden');}
-function authErr(c){const m={'auth/user-not-found':'No existe esa cuenta.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/invalid-email':'Correo inválido.','auth/too-many-requests':'Demasiados intentos.','auth/popup-closed-by-user':'Ventana cerrada.'};return m[c]||'Error: '+c;}
+function authErr(c){const m={'auth/user-not-found':'No existe esa cuenta.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/invalid-email':'Correo inválido.','auth/too-many-requests':'Demasiados intentos.','auth/popup-closed-by-user':'Ventana cerrada.',
+    'auth/network-request-failed':'Error de red — verifica tu conexión.',
+    'auth/invalid-credential':'Correo o contraseña incorrectos.'};return m[c]||'Error: '+c;}
 function hideSplash(){$('splashScreen').style.opacity='0';$('splashScreen').style.transition='opacity .4s';setTimeout(()=>$('splashScreen').style.display='none',400);}
 function showSplashLogin(){$('splashScreen').style.display='';$('splashScreen').style.opacity='1';$('splashLoader').classList.add('hidden');$('loginBox').classList.remove('hidden');}
 
 // ── TABS ─────────────────────────────────────────────────────────
+
+// ════════════════════════════════════════════════════════════════
+//  HELPERS: Seguridad, UX y Rendimiento
+// ════════════════════════════════════════════════════════════════
+
+// ── Sanitización XSS ──────
+
+// ── Debounce para búsqueda ────────────────────────────────────────
+function debounce(fn, ms=300){
+  let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); };
+}
+
+// ── withLock: evita doble envío de formularios ───────────────────
+let _submitLock = false;
+function withLock(fn){
+  return async function(...args){
+    if(_submitLock){ showToast('Procesando, espera un momento…'); return; }
+    _submitLock = true;
+    const btn = document.activeElement;
+    const origText = btn?.textContent;
+    if(btn?.tagName==='BUTTON'){ btn.disabled=true; btn.textContent='⏳ Guardando…'; }
+    try{ await fn(...args); }
+    finally{
+      _submitLock=false;
+      if(btn?.tagName==='BUTTON'){ btn.disabled=false; btn.textContent=origText; }
+    }
+  };
+}
+
+// ── Scroll al primer campo inválido ──────────────────────────────
+function scrollToInvalid(formId){
+  const form=$(formId); if(!form) return;
+  const invalid = form.querySelector(':invalid, [data-invalid]');
+  if(invalid){
+    invalid.scrollIntoView({behavior:'smooth', block:'center'});
+    invalid.focus();
+    const orig = invalid.style.borderColor;
+    invalid.style.borderColor='var(--danger)';
+    setTimeout(()=>{ invalid.style.borderColor=orig; }, 2500);
+  }
+}
+
+// ── Paginación liviana para tabla de movimientos ─────────────────
+let _movPage = 0;
+const MOV_PER_PAGE = 50;
+
+function paginateMovimientos(lista){
+  const total = lista.length;
+  const totalPages = Math.ceil(total / MOV_PER_PAGE);
+  _movPage = Math.min(_movPage, Math.max(0, totalPages-1));
+  const slice = lista.slice(_movPage * MOV_PER_PAGE, (_movPage+1) * MOV_PER_PAGE);
+
+  let pEl = $('movPaginacion');
+  if(!pEl){
+    pEl = document.createElement('div');
+    pEl.id='movPaginacion';
+    pEl.style.cssText='display:flex;align-items:center;justify-content:center;gap:.75rem;padding:.65rem 0;font-size:.83rem;color:var(--text-muted);flex-wrap:wrap';
+    const wrap=$('tablaMovimientos')?.closest('.table-responsive');
+    if(wrap) wrap.after(pEl);
+  }
+  if(totalPages<=1){ pEl.innerHTML=''; return slice; }
+
+  pEl.innerHTML=`
+    <button onclick="_movPage=Math.max(0,_movPage-1);renderMovimientos()"
+      style="background:var(--neutral-bg);border:1.5px solid var(--border);border-radius:6px;padding:.35rem .75rem;cursor:pointer;font-size:.82rem"
+      ${_movPage===0?'disabled':''}>◀ Anterior</button>
+    <span>Página <strong>${_movPage+1}</strong> de ${totalPages} — ${total} registros</span>
+    <button onclick="_movPage=Math.min(${totalPages-1},_movPage+1);renderMovimientos()"
+      style="background:var(--neutral-bg);border:1.5px solid var(--border);border-radius:6px;padding:.35rem .75rem;cursor:pointer;font-size:.82rem"
+      ${_movPage===totalPages-1?'disabled':''}>Siguiente ▶</button>`;
+  return slice;
+}
+
+// Recordatorio semanal de backup
+(function checkBackupReminder(){
+  try{
+    const last=parseInt(localStorage.getItem('ca_last_backup_reminder')||'0');
+    const WEEK=7*24*60*60*1000;
+    if(Date.now()-last>WEEK){
+      setTimeout(()=>{
+        showToast('💡 Recuerda exportar tu respaldo en Excel — botón 📥 arriba','');
+        localStorage.setItem('ca_last_backup_reminder',String(Date.now()));
+      },10000);
+    }
+  }catch{}
+})();
+
 function initTabs(){
+  const TAB_TITLES = {
+    resumen:'Resumen', movimientos:'Movimientos', devoluciones:'Devoluciones',
+    anticipos:'Anticipos', creditos:'Créditos', prestamos:'Préstamos',
+    transferencias:'Transferencias', presupuesto:'Presupuesto',
+    cxc:'Cuentas x Cobrar', cxp:'Cuentas x Pagar',
+    categorias:'Categorías', cuentas:'Cuentas', reportes:'Reportes'
+  };
   function activateTab(tabName){
     document.querySelectorAll('.nav-btn,.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden'));
     document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(b=>b.classList.add('active'));
     $('tab-'+tabName).classList.remove('hidden');
+    document.title = (TAB_TITLES[tabName]||tabName) + ' — ContaApp Negocio';
     refreshActiveTab();
   }
   document.querySelectorAll('.nav-btn,.bottom-nav-btn').forEach(btn=>{
@@ -1409,7 +1508,7 @@ function renderResumen(){
 
   // Saldos iniciales form
   const si=$('saldosInicialesInputs'); si.innerHTML='';
-  DB.cuentas.forEach(c=>{const r=document.createElement('div');r.className='form-row';r.innerHTML=`<label>${c.icono||''} ${c.nombre} Inicial</label><input type="number" id="si_${c.id}" placeholder="0.00" step="0.01" min="0" value="${DB.saldosIniciales[c.id]||0}" />`;si.appendChild(r);});
+  DB.cuentas.forEach(c=>{const r=document.createElement('div');r.className='form-row';r.innerHTML=`<label>${esc(c.icono||'')} ${esc(c.nombre)} Inicial</label><input type="number" id="si_${c.id}" placeholder="0.00" step="0.01" min="0" value="${DB.saldosIniciales[c.id]||0}" />`;si.appendChild(r);});
 
   fillERSelects(); calcER();
   fillAnioSelect($('anioGrafico')); renderChartFlujo();
@@ -1435,7 +1534,7 @@ function renderTop5(){
     return `<div style="display:grid;grid-template-columns:1fr auto;gap:.4rem;align-items:center">
       <div>
         <div style="display:flex;justify-content:space-between;margin-bottom:.2rem">
-          <span style="font-size:.83rem;font-weight:600">${i+1}. ${cat}</span>
+          <span style="font-size:.83rem;font-weight:600">${i+1}. ${esc(cat)}</span>
           <span style="font-size:.83rem;color:var(--danger);font-weight:700">${fmt(total)}</span>
         </div>
         <div style="height:6px;background:#e2e8f0;border-radius:3px">
@@ -1596,7 +1695,7 @@ function populateMovCats(){
 }
 // NOTA: populateMovCats ya se llama dentro de $('movTipo').onchange — no duplicar listener
 
-$('formMovimiento').onsubmit=async e=>{
+$('formMovimiento').onsubmit=withLock(async e=>{
   e.preventDefault();
   const fecha=$('movFecha').value,tipo=$('movTipo').value,cat=$('movCategoria').value;
   const esCredito=tipo==='Ingreso Crédito'||tipo==='Compra Crédito';
@@ -1637,7 +1736,7 @@ $('formMovimiento').onsubmit=async e=>{
   $('grupoAnticipo').style.display='none'; $('btnCancelarEdicion').style.display='none';
   $('grupoMetodoPago').style.display=''; $('grupoSubcat').style.display='none';
   showToast('Movimiento guardado. ☁️','success');
-};
+});
 
 $('btnCancelarEdicion').onclick=()=>{editandoId=null;$('formMovimiento').reset();$('grupoAnticipo').style.display='none';$('btnCancelarEdicion').style.display='none';$('grupoMetodoPago').style.display='';$('grupoSubcat').style.display='none';};
 
@@ -1694,7 +1793,9 @@ function renderMovimientos(){
     return (va-vb)*sortDir;
   });
 
-  // ── 5. Renderizar tabla ──
+  // ── 5. Renderizar tabla (con paginación) ──
+  const listaCompleta = lista;
+  lista = paginateMovimientos(lista);
   const tbody=$('tbodyMovimientos'); tbody.innerHTML='';
   let tot=0;
   lista.forEach(m=>{
@@ -1773,10 +1874,10 @@ async function eliminarMov(id){
 }
 
 // Filtros: 'change' para selects, 'input' solo para texto
-$('filtroTexto').addEventListener('input',  renderMovimientos);
-$('filtroTipo').addEventListener('change',  renderMovimientos);
-$('filtroMetodo').addEventListener('change', renderMovimientos);
-$('filtroMes').addEventListener('change',   renderMovimientos);
+$('filtroTexto').addEventListener('input', debounce(()=>{ _movPage=0; renderMovimientos(); }, 250));
+$('filtroTipo').addEventListener('change',  ()=>{ _movPage=0; renderMovimientos(); });
+$('filtroMetodo').addEventListener('change', ()=>{ _movPage=0; renderMovimientos(); });
+$('filtroMes').addEventListener('change',   ()=>{ _movPage=0; renderMovimientos(); });
 $('filtroMontoMin').addEventListener('input', renderMovimientos);
 $('filtroMontoMax').addEventListener('input', renderMovimientos);
 $('btnLimpiarFiltros').onclick=()=>{
@@ -1865,7 +1966,7 @@ function renderDevoluciones(){
     const cn=DB.cuentas.find(c=>c.id===d.cuenta)?.nombre||d.cuenta;
     const tr=document.createElement('tr'); 
     const tipoLabel={DevCompra:'🔄 Dev. Compra',DevAnticipo:'↩️ Dev. Anticipo',DevVenta:'↩️ Dev. Venta'}[d.tipo]||d.tipo;
-    tr.innerHTML=`<td>${d.fecha}</td><td>${tipoLabel}</td><td>${d.refId?'Ref. registrada':'Sin ref.'}</td><td>${cn}</td><td class="${d.tipo==='DevCompra'?'monto-ingreso':'monto-egreso'}">${fmt(d.monto)}</td><td>${d.descripcion||'—'}</td>
+    tr.innerHTML=`<td>${d.fecha}</td><td>${tipoLabel}</td><td>${d.refId?'Ref. registrada':'Sin ref.'}</td><td>${cn}</td><td class="${d.tipo==='DevCompra'?'monto-ingreso':'monto-egreso'}">${fmt(d.monto)}</td><td>${esc(d.descripcion)||'—'}</td>
       <td><button class="btn-sm btn-delete" data-id="${d.id}">🗑</button></td>`;
     tbody.appendChild(tr);
   });
@@ -2931,7 +3032,7 @@ $('btnCancelarImport').onclick=()=>$('importOverlay').classList.add('hidden');
 
 // ── MODAL ────────────────────────────────────────────────────────
 let modalCb=null;
-function openModal(t,m,cb){$('modalTitle').textContent=t;$('modalMsg').textContent=m;$('modalOverlay').classList.remove('hidden');modalCb=cb;}
+function openModal(t,m,cb){$('modalTitle').textContent=t;$('modalMsg').textContent=m;$('modalOverlay').classList.remove('hidden');modalCb=cb;setTimeout(()=>$('modalConfirm')?.focus(),50);}
 $('modalConfirm').onclick=()=>{$('modalOverlay').classList.add('hidden');if(modalCb)modalCb();modalCb=null;};
 $('modalCancel').onclick=()=>{$('modalOverlay').classList.add('hidden');modalCb=null;};
 
@@ -2967,6 +3068,21 @@ function initApp(){
   renderResumen(); renderMovimientos(); renderCategorias();
 }
 
+
+// Recordatorio semanal de exportar datos
+(function checkBackupReminder(){
+  try{
+    const last = parseInt(localStorage.getItem('ca_last_backup_reminder')||'0');
+    const now  = Date.now();
+    const WEEK = 7 * 24 * 60 * 60 * 1000;
+    if(now - last > WEEK){
+      setTimeout(()=>{
+        showToast('💡 Recuerda exportar tu respaldo en Excel desde el botón 📥','');
+        localStorage.setItem('ca_last_backup_reminder', String(now));
+      }, 8000); // mostrar 8s después de cargar
+    }
+  }catch{}
+})();
 // ── SERVICE WORKER ───────────────────────────────────────────────
 if('serviceWorker'in navigator){
   window.addEventListener('load',()=>{
