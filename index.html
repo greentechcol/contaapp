@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>ContaApp</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firestore.googleapis.com; img-src 'self' data: https:;">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#1e293b" />
@@ -158,7 +157,10 @@
 const $=id=>document.getElementById(id);
 let FB=null;
 
-const ERRS={'auth/user-not-found':'No existe esa cuenta.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/invalid-email':'Correo inválido.','auth/too-many-requests':'Demasiados intentos.','auth/popup-closed-by-user':'Ventana cerrada.','auth/invalid-credential':'Correo o contraseña incorrectos.',
+const ERRS={'auth/user-not-found':'No existe esa cuenta.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/invalid-email':'Correo inválido.','auth/too-many-requests':'Demasiados intentos.','auth/popup-closed-by-user':'Ventana cerrada.'
+    'auth/internal-error':'Error interno — usa correo/contraseña o intenta más tarde.',
+    'auth/popup-blocked':'Popup bloqueado — permite popups para este sitio.',
+    'auth/cancelled-popup-request':'Operación cancelada.','auth/invalid-credential':'Correo o contraseña incorrectos.',
     'auth/network-request-failed':'Error de red. Verifica tu conexión.'};
 
 function err(m){const e=$('errMsg');e.textContent=m;e.classList.add('show');}

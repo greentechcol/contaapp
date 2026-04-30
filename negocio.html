@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>ContaApp — Negocio</title>
   <link rel="stylesheet" href="styles.css" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firestore.googleapis.com; img-src 'self' data: https:;">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#2563eb" />
@@ -1203,6 +1202,9 @@ async function loginGoogle(){try{await FB.signInWithPopup(FB.auth,new FB.GoogleA
 function showLoginErr(m){$('loginError').textContent=m;$('loginError').classList.remove('hidden');}
 function authErr(c){const m={'auth/user-not-found':'No existe esa cuenta.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/invalid-email':'Correo inválido.','auth/too-many-requests':'Demasiados intentos.','auth/popup-closed-by-user':'Ventana cerrada.',
     'auth/network-request-failed':'Error de red — verifica tu conexión.',
+    'auth/internal-error':'Error interno de autenticación. Intenta con correo/contraseña.',
+    'auth/cancelled-popup-request':'Solicitud cancelada — intenta de nuevo.',
+    'auth/popup-blocked':'Popup bloqueado por el navegador. Permite popups para este sitio.',
     'auth/invalid-credential':'Correo o contraseña incorrectos.'};return m[c]||'Error: '+c;}
 function hideSplash(){$('splashScreen').style.opacity='0';$('splashScreen').style.transition='opacity .4s';setTimeout(()=>$('splashScreen').style.display='none',400);}
 function showSplashLogin(){$('splashScreen').style.display='';$('splashScreen').style.opacity='1';$('splashLoader').classList.add('hidden');$('loginBox').classList.remove('hidden');}
