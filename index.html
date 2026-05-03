@@ -11,8 +11,38 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- CORRECCIÓN DE RUTA PARA GITHUB PAGES -->
-  <script type="module" src="./firebase-config.js"></script>
+  <!-- CONFIGURACIÓN INTEGRADA PARA EVITAR ERRORES DE CARGA EN GITHUB PAGES -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, deleteDoc, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
+      authDomain: "contaappgreentech.firebaseapp.com",
+      projectId: "contaappgreentech",
+      storageBucket: "contaappgreentech.firebasestorage.app",
+      messagingSenderId: "672661191582",
+      appId: "1:672661191582:web:babf8b97b69925028eb48f"
+    };
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      window.__FB = { 
+        auth, db, GoogleAuthProvider, signInWithPopup, 
+        signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+        onAuthStateChanged, signOut, doc, getDoc, setDoc, 
+        onSnapshot, collection, deleteDoc, query, orderBy, writeBatch 
+      };
+      window.__fbReady = true;
+      window.dispatchEvent(new Event('firebase-ready'));
+    } catch (error) {
+      console.error("Error al inicializar Firebase:", error);
+    }
+  </script>
   
   <style>
     body {
@@ -190,15 +220,23 @@
       setTimeout(() => box.classList.remove('show'), 4000);
     }
 
-    // Timeout de seguridad para diagnóstico
-    const timeout = setTimeout(() => {
-      if (!$('authCard').offsetParent) {
-        $('loadingText').innerHTML = '<span style="color:var(--danger)">⚠️ Error al conectar con Firebase.<br>Verifica que firebase-config.js esté en la carpeta raíz.</span>';
+    // Esperar a que Firebase esté listo
+    const checkFB = setInterval(() => {
+      if (window.__fbReady && window.__FB) {
+        clearInterval(checkFB);
+        initUI();
       }
-    }, 10000);
+    }, 100);
 
-    window.addEventListener('firebase-ready', () => {
-      clearTimeout(timeout);
+    // Timeout de diagnóstico
+    setTimeout(() => {
+      if (!window.__fbReady) {
+        clearInterval(checkFB);
+        $('loadingText').innerHTML = '<span style="color:var(--danger)">⚠️ Error crítico de inicialización.<br>Por favor, recarga la página.</span>';
+      }
+    }, 15000);
+
+    function initUI() {
       const FB = window.__FB;
       $('loading').style.display = 'none';
       $('authCard').style.display = 'block';
@@ -261,7 +299,7 @@
           sessionStorage.clear();
         }
       });
-    });
+    }
   </script>
 </body>
 </html>
