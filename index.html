@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>ContaApp</title>
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1e293b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="ContaApp" />
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup,
+             signInWithEmailAndPassword, createUserWithEmailAndPassword,
+             onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    const firebaseConfig = {
+      apiKey:"AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
+      authDomain:"contaappgreentech.firebaseapp.com",
+      projectId:"contaappgreentech",
+      storageBucket:"contaappgreentech.firebasestorage.app",
+      messagingSenderId:"672661191582",
+      appId:"1:672661191582:web:babf8b97b69925028eb48f"
+    };
+    const app=initializeApp(firebaseConfig), auth=getAuth(app);
+    window.__FB={auth,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,createUserWithEmailAndPassword,onAuthStateChanged,signOut};
+    window.__fbReady=true;
+    if(window.__fbResolve)window.__fbResolve(window.__FB);
+    window.dispatchEvent(new Event('firebase-ready'));
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--font:'Segoe UI',system-ui,-apple-system,sans-serif;--r:14px;--sh:0 4px 24px rgba(0,0,0,.18)}
+    html,body{height:100%;font-family:var(--font)}
+    body{min-height:100vh;background:linear-gradient(145deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);display:flex;align-items:center;justify-content:center;padding:1.25rem}
+
+    /* ─ CARD ─ */
+    .card{background:#fff;border-radius:var(--r);padding:2.25rem 2rem;max-width:400px;width:100%;box-shadow:var(--sh);text-align:center}
+    .logo{font-size:3.2rem;margin-bottom:.4rem}
+    .title{font-size:1.8rem;font-weight:800;color:#1e293b}
+    .sub{color:#64748b;font-size:.88rem;margin-bottom:1.75rem}
+
+    /* ─ TABS ─ */
+    .tabs{display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:1.1rem}
+    .tab{flex:1;background:none;border:none;padding:.6rem;font-size:.88rem;font-weight:600;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s}
+    .tab.active{color:#2563eb;border-bottom-color:#2563eb}
+
+    /* ─ INPUTS ─ */
+    .inp{width:100%;margin-bottom:.6rem;padding:.68rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;font-family:var(--font);transition:border-color .15s}
+    .inp:focus{outline:none;border-color:#2563eb}
+
+    /* ─ BUTTONS ─ */
+    .btn{width:100%;padding:.72rem;border:none;border-radius:8px;background:#2563eb;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.45rem;transition:filter .15s}
+    .btn:hover{filter:brightness(.92)}
+    .btn-g{width:100%;display:flex;align-items:center;justify-content:center;gap:.55rem;padding:.68rem;border:1.5px solid #e2e8f0;border-radius:8px;background:#fff;font-size:.88rem;font-weight:600;cursor:pointer;color:#1e293b;transition:background .15s}
+    .btn-g:hover{background:#f8fafc}
+    .divider{display:flex;align-items:center;gap:.6rem;color:#94a3b8;font-size:.78rem;margin:.6rem 0}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+    .err{background:#fee2e2;color:#dc2626;border-radius:8px;padding:.55rem .8rem;font-size:.83rem;font-weight:600;margin-top:.4rem;display:none}
+    .err.show{display:block}
+
+    /* ─ SPINNER ─ */
+    .spin-wrap{display:flex;align-items:center;justify-content:center;gap:.7rem;color:#64748b;padding:.8rem 0}
+    .spinner{width:20px;height:20px;border:3px solid #dbeafe;border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ─ PROFILE SELECTOR ─ */
+    .profile-card{display:none;background:#fff;border-radius:var(--r);padding:2rem 1.75rem;max-width:460px;width:100%;box-shadow:var(--sh)}
+    .profile-card.show{display:block}
+    .ph{text-align:center;margin-bottom:1.5rem}
+    .ph .logo{font-size:2.4rem}
+    .ph h2{font-size:1.25rem;font-weight:800;color:#1e293b;margin:.25rem 0 .15rem}
+    .ph p{font-size:.82rem;color:#64748b}
+    .profiles{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1.25rem}
+    .pb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;padding:1.4rem .9rem;border-radius:12px;border:2.5px solid #e2e8f0;background:#f8fafc;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit}
+    .pb:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.1)}
+    .pb.neg:hover{border-color:#2563eb;background:#dbeafe}
+    .pb.per:hover{border-color:#16a34a;background:#dcfce7}
+    .pb .pi{font-size:2.4rem}
+    .pb .pt{font-size:.95rem;font-weight:800;color:#1e293b}
+    .pb .pd{font-size:.73rem;color:#64748b;text-align:center;line-height:1.3}
+    .pf{display:flex;align-items:center;justify-content:space-between;padding-top:.85rem;border-top:1px solid #e2e8f0}
+    .uchip{display:flex;align-items:center;gap:.45rem;background:#f1f5f9;border-radius:20px;padding:.3rem .65rem}
+    .uav{width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700}
+    .uemail{font-size:.78rem;color:#475569;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .btn-out{background:none;border:1.5px solid #e2e8f0;border-radius:8px;padding:.3rem .65rem;font-size:.78rem;color:#dc2626;cursor:pointer;font-weight:600}
+    .btn-out:hover{background:#fee2e2}
+
+    @media(max-width:400px){
+      .profiles{grid-template-columns:1fr}
+      .card,.profile-card{padding:1.75rem 1.1rem}
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="card" id="loginCard">
+  <div class="logo">📒</div>
+  <div class="title">ContaApp</div>
+  <div class="sub">Negocio y finanzas personales, todo en uno</div>
+  <div class="spin-wrap" id="loginSpinner"><div class="spinner"></div><span>Conectando…</span></div>
+  <div id="loginForms" style="display:none">
+    <div class="tabs">
+      <button class="tab active" id="tabL">Iniciar sesión</button>
+      <button class="tab" id="tabR">Registrarse</button>
+    </div>
+    <div id="fL">
+      <input type="email"    id="lEmail" placeholder="Correo electrónico" class="inp"/>
+      <input type="password" id="lPass"  placeholder="Contraseña"         class="inp"/>
+      <button class="btn" id="btnLE">Entrar</button>
+      <div class="divider"><span>o</span></div>
+      <button class="btn-g" id="btnLG"><svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 12.4 5 3 14.4 3 26s9.4 21 21 21 21-9.4 21-21c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 15.1l6.6 4.8C14.5 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 16.3 5 9.7 9.1 6.3 15.1z"/><path fill="#4CAF50" d="M24 47c5.2 0 10-.2 13.6-3.2l-6.3-4.8C29.4 40.7 26.8 41 24 41c-5.3 0-9.8-3.2-11.4-7.7l-6.5 5C9.5 43.3 16.3 47 24 47z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l.1-.1 6.3 4.8c-.4.4 6.5-4.8 6.5-14.4 0-1.3-.1-2.6-.4-3.9z"/></svg> Continuar con Google</button>
+    </div>
+    <div id="fR" style="display:none">
+      <input type="email"    id="rEmail" placeholder="Correo electrónico"        class="inp"/>
+      <input type="password" id="rPass"  placeholder="Contraseña (mín. 6 chars)" class="inp"/>
+      <input type="password" id="rPass2" placeholder="Confirmar contraseña"       class="inp"/>
+      <button class="btn" id="btnRE">Crear cuenta</button>
+      <div class="divider"><span>o</span></div>
+      <button class="btn-g" id="btnRG"><svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 12.4 5 3 14.4 3 26s9.4 21 21 21 21-9.4 21-21c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 15.1l6.6 4.8C14.5 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 16.3 5 9.7 9.1 6.3 15.1z"/><path fill="#4CAF50" d="M24 47c5.2 0 10-.2 13.6-3.2l-6.3-4.8C29.4 40.7 26.8 41 24 41c-5.3 0-9.8-3.2-11.4-7.7l-6.5 5C9.5 43.3 16.3 47 24 47z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l.1-.1 6.3 4.8c-.4.4 6.5-4.8 6.5-14.4 0-1.3-.1-2.6-.4-3.9z"/></svg> Registrarse con Google</button>
+    </div>
+    <div class="err" id="errMsg"></div>
+  </div>
+</div>
+
+<!-- SELECTOR DE PERFIL -->
+<div class="profile-card" id="profileCard">
+  <div class="ph">
+    <div class="logo">📒</div>
+    <h2>¿Qué vas a gestionar hoy?</h2>
+    <p>Selecciona el perfil con el que quieres trabajar</p>
+  </div>
+  <div class="profiles">
+    <a href="negocio.html" class="pb neg">
+      <span class="pi">🏢</span>
+      <span class="pt">Negocio</span>
+      <span class="pd">Ventas, compras, créditos, contabilidad</span>
+    </a>
+    <a href="personal.html" class="pb per">
+      <span class="pi">🏠</span>
+      <span class="pt">Personal</span>
+      <span class="pd">Gastos del hogar, presupuesto, metas</span>
+    </a>
+  </div>
+  <div class="pf">
+    <div class="uchip">
+      <div class="uav" id="uAv">U</div>
+      <span class="uemail" id="uEmail">usuario@email.com</span>
+    </div>
+    <button class="btn-out" id="btnOut">🚪 Salir</button>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let FB=null;
+
+const ERRS={'auth/user-not-found':'No existe esa cuenta.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/invalid-email':'Correo inválido.','auth/too-many-requests':'Demasiados intentos.','auth/popup-closed-by-user':'Ventana cerrada.',
+    'auth/internal-error':'Error interno — usa correo/contraseña o intenta más tarde.',
+    'auth/popup-blocked':'Popup bloqueado — permite popups para este sitio.',
+    'auth/cancelled-popup-request':'Operación cancelada.','auth/invalid-credential':'Correo o contraseña incorrectos.',
+    'auth/network-request-failed':'Error de red. Verifica tu conexión.'};
+
+function err(m){const e=$('errMsg');e.textContent=m;e.classList.add('show');}
+function noErr(){$('errMsg').classList.remove('show');}
+
+function initAuth(){
+  // Tabs
+  $('tabL').onclick=()=>{$('tabL').classList.add('active');$('tabR').classList.remove('active');$('fL').style.display='';$('fR').style.display='none';noErr();};
+  $('tabR').onclick=()=>{$('tabR').classList.add('active');$('tabL').classList.remove('active');$('fR').style.display='';$('fL').style.display='none';noErr();};
+
+  // Email login
+  $('btnLE').onclick=async()=>{
+    noErr();
+    const e=$('lEmail').value.trim(),p=$('lPass').value;
+    if(!e||!p){err('Completa correo y contraseña.');return;}
+    try{await FB.signInWithEmailAndPassword(FB.auth,e,p);}
+    catch(ex){err(ERRS[ex.code]||'Error: '+ex.code);}
+  };
+
+  // Google
+  const google=async()=>{noErr();try{await FB.signInWithPopup(FB.auth,new FB.GoogleAuthProvider());}catch(ex){err(ERRS[ex.code]||'Error.');}};
+  $('btnLG').onclick=$('btnRG').onclick=google;
+
+  // Register
+  $('btnRE').onclick=async()=>{
+    noErr();
+    const e=$('rEmail').value.trim(),p=$('rPass').value,p2=$('rPass2').value;
+    if(!e||!p){err('Completa todos los campos.');return;}
+    if(p!==p2){err('Las contraseñas no coinciden.');return;}
+    if(p.length<6){err('Mínimo 6 caracteres.');return;}
+    try{await FB.createUserWithEmailAndPassword(FB.auth,e,p);}
+    catch(ex){err(ERRS[ex.code]||'Error: '+ex.code);}
+  };
+
+  // Logout
+  $('btnOut').onclick=()=>FB.signOut(FB.auth);
+
+  // State
+  FB.onAuthStateChanged(FB.auth,user=>{
+    if(user){
+      $('loginCard').style.display='none';
+      $('profileCard').classList.add('show');
+      const n=user.displayName||user.email||'U';
+      $('uAv').textContent=n[0].toUpperCase();
+      $('uEmail').textContent=user.email||user.displayName||'';
+      // Pasar uid a las sub-apps via sessionStorage
+      sessionStorage.setItem('ca_uid',user.uid);
+      sessionStorage.setItem('ca_email',user.email||'');
+      sessionStorage.setItem('ca_name',user.displayName||user.email||'');
+    } else {
+      $('loginCard').style.display='';
+      $('loginSpinner').style.display='none';
+      $('loginForms').style.display='';
+      $('profileCard').classList.remove('show');
+      sessionStorage.clear();
+    }
+  });
+}
+
+// Firebase ready
+new Promise(resolve=>{
+  if(window.__fbReady&&window.__FB){resolve(window.__FB);return;}
+  window.__fbResolve=resolve;
+  window.addEventListener('firebase-ready',()=>resolve(window.__FB),{once:true});
+  const t=setInterval(()=>{if(window.__FB){clearInterval(t);resolve(window.__FB);}},100);
+  setTimeout(()=>{clearInterval(t);if(!window.__FB)$('loginSpinner').innerHTML='<span style="color:#dc2626">⚠️ Error de conexión. Recarga la página.</span>';},10000);
+}).then(fb=>{FB=fb;initAuth();});
+
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
