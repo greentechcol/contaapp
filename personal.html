@@ -430,8 +430,8 @@ function showToast(msg,type=''){
 const DB={movimientos:[],categorias:[],cuentas:[],saldosIniciales:{},presupuestos:{},metas:[]};
 let currentUser=null, FB=null, isOnline=navigator.onLine;
 
-// Rutas Firestore → subcolección 'personal'
-const userDoc  =(col,id)=>FB.doc(FB.db,'users',currentUser.uid,'personal',col,id);
+// Rutas Firestore → subcolecciones 'personal_{col}'
+const userDoc  =(col,id)=>FB.doc(FB.db,'users',currentUser.uid,'personal_'+col,id);
 const configDoc=()=>FB.doc(FB.db,'users',currentUser.uid,'personal_config','main');
 
 // ── OFFLINE ─────────────────────────────────────────────────────
@@ -440,9 +440,8 @@ const ll=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch{return
 const ls=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 
 
-// Limpiar keys antiguas de localStorage
-['ca_personal_v1','ca_personal_q','ca_personal_cfg',
- 'contaapp_local_v4','contaapp_queue_v4','contaapp_config_v4']
+// Limpiar SOLO keys de versiones anteriores (NO las actuales)
+['contaapp_local_v4','contaapp_queue_v4','contaapp_config_v4']
   .forEach(k=>{try{localStorage.removeItem(k);}catch{}});
 function qAdd(op,col,id,data=null){const q=ll(QK,[]);const i=q.findIndex(e=>e.col===col&&e.id===id);const e={op,col,id,data,ts:Date.now()};if(i>=0)q[i]=e;else q.push(e);ls(QK,q);}
 function qRemove(col,id){ls(QK,ll(QK,[]).filter(e=>!(e.col===col&&e.id===id)));}
@@ -530,22 +529,29 @@ async function loadData(){
   if(!DB.cuentas.length)DB.cuentas=DEFAULT_CUENTAS;
   if(!DB.categorias.length)DB.categorias=DEFAULT_CATS;
   if(!DB.presupuestos)DB.presupuestos={};
-  initApp();
-  if(!isOnline){showToast('Modo offline — datos locales 📴');return;}
+  if(!isOnline){initApp();showToast('Modo offline — datos locales 📴');return;}
   try{
     const snap=await FB.getDoc(configDoc());
-    if(snap.exists()){const d=snap.data();if(d.categorias)DB.categorias=d.categorias;if(d.cuentas)DB.cuentas=d.cuentas;if(d.saldosIniciales)DB.saldosIniciales=d.saldosIniciales;if(d.presupuestos)DB.presupuestos=d.presupuestos;}
-    else await saveConfig();
+    if(snap.exists()){
+      const d=snap.data();
+      if(d.categorias)DB.categorias=d.categorias;
+      if(d.cuentas)DB.cuentas=d.cuentas;
+      if(d.saldosIniciales)DB.saldosIniciales=d.saldosIniciales;
+      if(d.presupuestos)DB.presupuestos=d.presupuestos;
+    } else {
+      await saveConfig();
+    }
     saveSnap();
-  }catch(e){console.warn(e);}
+  }catch(e){console.warn('loadData config:',e);}
+  initApp();
   COLS_P.forEach(c=>loadCol(c));
   await flushQueue();
 }
 
 function loadCol(colName){
   try{
-    // SIN orderBy ni includeMetadataChanges — evita errores silenciosos y doble disparo
-    const colRef=FB.collection(FB.db,'users',currentUser.uid,'personal',colName);
+    // Ruta correcta: users/{uid}/personal_{colName} como colección raíz del usuario
+    const colRef=FB.collection(FB.db,'users',currentUser.uid,'personal_'+colName);
     FB.onSnapshot(colRef,snap=>{
       DB[colName]=snap.docs.map(d=>d.data()).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
       saveSnap(); refreshTab();
