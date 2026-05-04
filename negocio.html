@@ -12,52 +12,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, addDoc, onSnapshot, collection, deleteDoc, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
-      authDomain: "contaappgreentech.firebaseapp.com",
-      projectId: "contaappgreentech",
-      storageBucket: "contaappgreentech.firebasestorage.app",
-      messagingSenderId: "672661191582",
-      appId: "1:672661191582:web:babf8b97b69925028eb48f"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    window.__FB = { 
-      auth, db, GoogleAuthProvider, signInWithPopup, 
-      signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-      onAuthStateChanged, signOut, doc, getDoc, setDoc, addDoc,
-      onSnapshot, collection, deleteDoc, query, orderBy, writeBatch 
-    };
-    window.__fbReady = true;
-    window.dispatchEvent(new Event('firebase-ready'));
-  </script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay { position:fixed; inset:0; background:white; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2000; }
+    .spinner { width:40px; height:40px; border:4px solid #f1f5f9; border-top-color:#2563eb; border-radius:50%; animation:spin 1s linear infinite; }
+    .badge { padding:0.25rem 0.5rem; border-radius:9999px; font-size:0.75rem; font-weight:700; }
+    .badge-success { background:#dcfce7; color:#166534; }
+    .badge-danger  { background:#fee2e2; color:#991b1b; }
+    .section-title { font-size:1.125rem; font-weight:700; color:#0f172a; }
+    .mb-4 { margin-bottom:1rem; }
+    .btn-sm { padding:0.375rem 0.75rem; font-size:0.8125rem; }
+    .user-avatar { width:32px; height:32px; border-radius:50%; background:#2563eb; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.875rem; }
+    .user-chip { display:flex; align-items:center; }
+    #diagBox { background:#fee2e2; color:#991b1b; padding:1rem; border-radius:8px; margin:1rem; font-size:0.875rem; font-weight:600; display:none; border:1px solid #fecaca; }
+  </style>
 </head>
 <body class="theme-business">
 
-  <div id="loading" class="loading-overlay" style="position:fixed; inset:0; background:white; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2000;">
-    <div class="spinner" style="width:40px; height:40px; border:4px solid #f1f5f9; border-top-color:#2563eb; border-radius:50%; animation:spin 1s linear infinite;"></div>
-    <p style="margin-top:1rem; color:#64748b;">Sincronizando datos...</p>
+  <div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p style="margin-top:1rem;color:#64748b;" id="loadingMsg">Verificando sesión...</p>
   </div>
+
+  <div id="diagBox"></div>
 
   <header class="topbar">
     <a href="index.html" class="brand">
       <span class="brand-logo">📒</span>
       <span class="brand-name">Negocio</span>
     </a>
-    <div class="nav-tabs" id="mainNav">
+    <div class="nav-tabs">
       <a href="#" class="tab-link active" data-tab="resumen">Resumen</a>
       <a href="#" class="tab-link" data-tab="movimientos">Movimientos</a>
-      <a href="#" class="tab-link" data-tab="categorias">Categorías</a>
-      <a href="#" class="tab-link" data-tab="reportes">Reportes</a>
     </div>
     <div class="flex items-center gap-2" style="margin-left:auto">
       <div class="user-chip">
@@ -68,40 +54,31 @@
   </header>
 
   <main class="container">
-    <!-- SECCIÓN RESUMEN -->
+
+    <!-- RESUMEN -->
     <div id="tab-resumen" class="tab-content">
       <div class="card">
         <h2 class="section-title mb-4">Control de Saldos</h2>
-        <div class="grid" id="cardsGrid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
-          <!-- Cargado dinámicamente -->
-        </div>
+        <div id="cardsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;"></div>
       </div>
-
       <div class="card">
         <h2 class="section-title mb-4">Estado de Resultados</h2>
         <div class="table-wrap">
-          <table class="table">
-            <tbody id="erTableBody">
-              <!-- Cargado dinámicamente -->
-            </tbody>
-          </table>
+          <table class="table"><tbody id="erTableBody"></tbody></table>
         </div>
       </div>
-
       <div class="card">
-        <h2 class="section-title mb-4">Flujo Mensual</h2>
-        <div style="height:300px">
-          <canvas id="chartFlujo"></canvas>
-        </div>
+        <h2 class="section-title mb-4">Flujo de Caja</h2>
+        <div style="height:300px"><canvas id="chartFlujo"></canvas></div>
       </div>
     </div>
 
-    <!-- SECCIÓN MOVIMIENTOS -->
+    <!-- MOVIMIENTOS -->
     <div id="tab-movimientos" class="tab-content hidden">
       <div class="card">
         <h2 class="section-title mb-4">Nuevo Movimiento</h2>
         <form id="formMovimiento">
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:1rem;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;">
             <div class="form-group">
               <label class="label">Fecha</label>
               <input type="date" id="movFecha" class="input" required>
@@ -120,17 +97,18 @@
             </div>
             <div class="form-group">
               <label class="label">Monto</label>
-              <input type="number" id="movMonto" class="input" placeholder="0.00" step="0.01" required>
+              <input type="number" id="movMonto" class="input" placeholder="0.00" step="0.01" min="0" required>
             </div>
           </div>
-          <div class="form-group mt-4">
+          <div class="form-group" style="margin-top:1rem;">
             <label class="label">Descripción</label>
             <input type="text" id="movDescripcion" class="input" placeholder="Ej: Venta de producto X">
           </div>
-          <button type="submit" class="btn btn-primary w-100 mt-2" style="width:100%">Guardar Movimiento</button>
+          <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.75rem" id="btnGuardar">
+            Guardar Movimiento
+          </button>
         </form>
       </div>
-
       <div class="card">
         <div class="flex justify-between items-center mb-4">
           <h2 class="section-title">Historial</h2>
@@ -139,232 +117,308 @@
         <div class="table-wrap">
           <table class="table">
             <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Descripción</th>
-                <th>Monto</th>
-                <th>Acciones</th>
-              </tr>
+              <tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th style="text-align:right">Monto</th><th></th></tr>
             </thead>
-            <tbody id="tbodyMovimientos">
-              <!-- Cargado dinámicamente -->
-            </tbody>
+            <tbody id="tbodyMovimientos"></tbody>
           </table>
         </div>
       </div>
     </div>
+
   </main>
 
+  <!--
+    ═══════════════════════════════════════════════════════
+    CAUSA RAÍZ DEL BUG DE "Sincronización infinita":
+    La arquitectura original tenía DOS <script type="module">
+    separados. El primero inicializaba Firebase y disparaba
+    window.dispatchEvent(new Event('firebase-ready')).
+    El segundo escuchaba ese evento con addEventListener.
+
+    PROBLEMA: los módulos ES se ejecutan de forma diferida y
+    asíncrona. Cuando el segundo módulo registra su listener,
+    el evento YA fue disparado por el primero → el listener
+    NUNCA se ejecuta → onAuthStateChanged NUNCA corre →
+    el loading NUNCA se oculta.
+
+    SOLUCIÓN: Un único <script type="module"> que importa
+    Firebase y maneja toda la lógica UI directamente.
+    onAuthStateChanged es la única puerta de entrada y
+    oculta el loading al resolverse (usuario o null).
+    ═══════════════════════════════════════════════════════
+  -->
   <script type="module">
+    // ── IMPORTS ──────────────────────────────────────────────────
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, doc, collection,
+      addDoc, deleteDoc,
+      onSnapshot, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // ── FIREBASE INIT ─────────────────────────────────────────────
+    const app  = initializeApp({
+      apiKey:            "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
+      authDomain:        "contaappgreentech.firebaseapp.com",
+      projectId:         "contaappgreentech",
+      storageBucket:     "contaappgreentech.firebasestorage.app",
+      messagingSenderId: "672661191582",
+      appId:             "1:672661191582:web:babf8b97b69925028eb48f"
+    });
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // ── ESTADO ────────────────────────────────────────────────────
     const $ = id => document.getElementById(id);
     let DB = { movimientos: [], categorias: [], cuentas: [], saldosIniciales: {} };
-    let chartFlujo = null;
+    let chartFlujo   = null;
+    let unsubConfig  = null;
+    let unsubMovs    = null;
 
-    // ✅ Valores por defecto para cuentas nuevas
-    const defaultCategorias = ['Ventas', 'Servicios', 'Proveedores', 'Gastos Operativos', 'Nómina', 'Otros'];
-    const defaultCuentas = [{ id: 'caja', nombre: 'Caja' }, { id: 'banco', nombre: 'Banco' }];
+    const DEFAULT_CATS   = ['Ventas', 'Servicios', 'Proveedores', 'Gastos Operativos', 'Nómina', 'Otros'];
+    const DEFAULT_CUENTAS = [{ id: 'caja', nombre: 'Caja' }, { id: 'banco', nombre: 'Banco' }];
 
-    window.addEventListener('firebase-ready', () => {
-      const FB = window.__FB;
-      
-      // Manejo de Pestañas
-      document.querySelectorAll('.tab-link').forEach(link => {
-        link.onclick = (e) => {
-          e.preventDefault();
-          document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-          link.classList.add('active');
-          $(`tab-${link.dataset.tab}`).classList.remove('hidden');
-        };
+    // ── DIAGNÓSTICO ───────────────────────────────────────────────
+    function showDiag(msg) {
+      const b = $('diagBox');
+      b.textContent = '⚠️ ' + msg;
+      b.style.display = 'block';
+    }
+
+    // ── NAVEGACIÓN ────────────────────────────────────────────────
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        link.classList.add('active');
+        $('tab-' + link.dataset.tab).classList.remove('hidden');
       });
-
-      FB.onAuthStateChanged(FB.auth, user => {
-        if (!user) {
-          window.location.href = 'index.html';
-        } else {
-          $('userAvatar').textContent = (user.email || 'U')[0].toUpperCase();
-          initData(user.uid);
-        }
-      });
-
-      $('btnLogout').onclick = () => FB.signOut(FB.auth);
     });
 
-    async function initData(uid) {
-      const FB = window.__FB;
-
-      // ✅ FIX #1: Rutas absolutas de Firestore (v10 no acepta doc ref como base para doc())
-      const configRef = FB.doc(FB.db, 'users', uid, 'config', 'negocio');
-
-      // ✅ FIX #2: Ocultar loading aquí, ANTES de los listeners,
-      //    por si la cuenta es nueva y las colecciones están vacías.
+    // ── AUTH GUARD ────────────────────────────────────────────────
+    // Este callback se ejecuta siempre al resolver el estado de auth.
+    // Es la única forma segura de ocultar el loading.
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.replace('index.html');
+        return;
+      }
+      // Ocultar loading tan pronto sabemos que hay sesión
       $('loading').style.display = 'none';
+      $('userAvatar').textContent = (user.email || 'U')[0].toUpperCase();
+      initData(user.uid);
+    });
 
-      // Cargar Configuración (Categorías, Cuentas, Saldos Iniciales)
-      FB.onSnapshot(configRef, (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          DB.categorias = data.categorias || defaultCategorias;
-          DB.cuentas = data.cuentas || defaultCuentas;
-          DB.saldosIniciales = data.saldosIniciales || {};
-        } else {
-          // Cuenta nueva: usar valores por defecto
-          DB.categorias = defaultCategorias;
-          DB.cuentas = defaultCuentas;
+    $('btnLogout').addEventListener('click', () => signOut(auth));
+
+    // ── INIT DATA ─────────────────────────────────────────────────
+    function initData(uid) {
+      // Limpiar listeners previos (protección ante reconexión)
+      if (unsubConfig) unsubConfig();
+      if (unsubMovs)   unsubMovs();
+
+      // Config: categorías y cuentas
+      unsubConfig = onSnapshot(
+        doc(db, 'users', uid, 'config', 'negocio'),
+        snap => {
+          if (snap.exists()) {
+            const d = snap.data();
+            DB.categorias      = d.categorias      || DEFAULT_CATS;
+            DB.cuentas         = d.cuentas         || DEFAULT_CUENTAS;
+            DB.saldosIniciales = d.saldosIniciales || {};
+          } else {
+            DB.categorias = DEFAULT_CATS;
+            DB.cuentas    = DEFAULT_CUENTAS;
+          }
+          renderSelects();
+          renderResumen();
+        },
+        err => {
+          console.warn('Config error:', err.code);
+          DB.categorias = DEFAULT_CATS;
+          DB.cuentas    = DEFAULT_CUENTAS;
+          renderSelects();
         }
-        updateUI();
-      }, (err) => {
-        console.error('Error config negocio:', err);
-        DB.categorias = defaultCategorias;
-        DB.cuentas = defaultCuentas;
-        updateUI();
-      });
-
-      // Cargar Movimientos con ruta absoluta
-      const movQuery = FB.query(
-        FB.collection(FB.db, 'users', uid, 'movimientos_negocio'),
-        FB.orderBy('fecha', 'desc')
       );
-      FB.onSnapshot(movQuery, (snap) => {
-        DB.movimientos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateUI();
-      }, (err) => {
-        console.error('Error movimientos negocio:', err);
-        updateUI();
-      });
+
+      // Movimientos
+      unsubMovs = onSnapshot(
+        query(collection(db, 'users', uid, 'movimientos_negocio'), orderBy('fecha', 'desc')),
+        snap => {
+          DB.movimientos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderResumen();
+          renderMovimientos();
+        },
+        err => {
+          console.warn('Movimientos error:', err.code, err.message);
+          if (err.code === 'failed-precondition') {
+            showDiag('Falta índice en Firestore para ordenar movimientos. Revisa la consola de Firebase.');
+          } else {
+            showDiag('Error cargando datos: ' + err.message);
+          }
+          DB.movimientos = [];
+          renderResumen();
+          renderMovimientos();
+        }
+      );
     }
 
-    function updateUI() {
-      renderResumen();
-      renderMovimientos();
-      renderSelects();
-    }
-
+    // ── RENDER RESUMEN ────────────────────────────────────────────
     function renderResumen() {
-      const grid = $('cardsGrid');
-      const erBody = $('erTableBody');
-      
-      // Cálculo de saldos por cuenta
       const saldos = {};
-      DB.cuentas.forEach(c => saldos[c.nombre] = DB.saldosIniciales[c.id] || 0);
-      
+      DB.cuentas.forEach(c => { saldos[c.nombre] = DB.saldosIniciales[c.id] || 0; });
+
       let totalIngresos = 0, totalEgresos = 0;
-      
       DB.movimientos.forEach(m => {
-        const monto = parseFloat(m.monto) || 0;
+        const v = parseFloat(m.monto) || 0;
         if (m.tipo === 'Ingreso') {
-          totalIngresos += monto;
-          if (m.cuenta && saldos[m.cuenta] !== undefined) saldos[m.cuenta] += monto;
+          totalIngresos += v;
+          if (m.cuenta && saldos[m.cuenta] !== undefined) saldos[m.cuenta] += v;
         } else {
-          totalEgresos += monto;
-          if (m.cuenta && saldos[m.cuenta] !== undefined) saldos[m.cuenta] -= monto;
+          totalEgresos += v;
+          if (m.cuenta && saldos[m.cuenta] !== undefined) saldos[m.cuenta] -= v;
         }
       });
 
-      // Renderizar Tarjetas de Saldo
-      grid.innerHTML = Object.entries(saldos).map(([nombre, monto]) => `
-        <div class="card" style="padding:1rem; border-left:4px solid #2563eb">
-          <p style="font-size:0.75rem; color:#64748b; font-weight:600">${nombre}</p>
-          <h3 style="font-size:1.25rem; font-weight:800">$${monto.toLocaleString()}</h3>
-        </div>
-      `).join('');
+      $('cardsGrid').innerHTML = Object.entries(saldos).map(([nombre, monto]) => `
+        <div class="card" style="padding:1rem;border-left:4px solid #2563eb;margin-bottom:0">
+          <p style="font-size:0.7rem;color:#64748b;font-weight:700;text-transform:uppercase;margin-bottom:0.25rem">${nombre}</p>
+          <h3 style="font-size:1.35rem;font-weight:800">$${monto.toLocaleString('es-CO')}</h3>
+        </div>`).join('');
 
-      // Renderizar Estado de Resultados
-      erBody.innerHTML = `
-        <tr><td>Ingresos Totales</td><td style="color:green; font-weight:700">$${totalIngresos.toLocaleString()}</td></tr>
-        <tr><td>Egresos Totales</td><td style="color:red; font-weight:700">-$${totalEgresos.toLocaleString()}</td></tr>
+      const utilidad = totalIngresos - totalEgresos;
+      $('erTableBody').innerHTML = `
+        <tr>
+          <td>Ingresos Totales</td>
+          <td style="color:#16a34a;font-weight:700;text-align:right">$${totalIngresos.toLocaleString('es-CO')}</td>
+        </tr>
+        <tr>
+          <td>Egresos Totales</td>
+          <td style="color:#dc2626;font-weight:700;text-align:right">-$${totalEgresos.toLocaleString('es-CO')}</td>
+        </tr>
         <tr style="border-top:2px solid #e2e8f0">
           <td style="font-weight:800">Utilidad Neta</td>
-          <td style="font-weight:800; color:${totalIngresos - totalEgresos >= 0 ? 'green' : 'red'}">$${(totalIngresos - totalEgresos).toLocaleString()}</td>
-        </tr>
-      `;
+          <td style="font-weight:800;color:${utilidad >= 0 ? '#16a34a' : '#dc2626'};text-align:right">
+            $${utilidad.toLocaleString('es-CO')}
+          </td>
+        </tr>`;
 
-      renderChart();
+      renderChart(totalIngresos, totalEgresos);
     }
 
+    // ── RENDER MOVIMIENTOS ────────────────────────────────────────
     function renderMovimientos() {
       const tbody = $('tbodyMovimientos');
+      if (!DB.movimientos.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:2rem">
+          Sin movimientos registrados aún</td></tr>`;
+        return;
+      }
       tbody.innerHTML = DB.movimientos.map(m => `
         <tr>
-          <td>${m.fecha}</td>
+          <td>${m.fecha || '-'}</td>
           <td><span class="badge badge-${m.tipo === 'Ingreso' ? 'success' : 'danger'}">${m.tipo}</span></td>
           <td>${m.descripcion || '-'}</td>
-          <td style="font-weight:700; color:${m.tipo === 'Ingreso' ? 'green' : 'red'}">$${m.monto.toLocaleString()}</td>
-          <td><button class="btn btn-secondary btn-sm" onclick="eliminarMovimiento('${m.id}')">🗑️</button></td>
-        </tr>
-      `).join('');
+          <td style="font-weight:700;color:${m.tipo === 'Ingreso' ? '#16a34a' : '#dc2626'};text-align:right">
+            $${(parseFloat(m.monto) || 0).toLocaleString('es-CO')}
+          </td>
+          <td><button class="btn btn-secondary btn-sm" data-id="${m.id}" data-action="del">🗑️</button></td>
+        </tr>`).join('');
     }
 
+    // Delegación de eventos — evita onclick inline
+    $('tbodyMovimientos').addEventListener('click', async e => {
+      const btn = e.target.closest('[data-action="del"]');
+      if (!btn) return;
+      if (!confirm('¿Eliminar este movimiento?')) return;
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+      try {
+        await deleteDoc(doc(db, 'users', uid, 'movimientos_negocio', btn.dataset.id));
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message);
+      }
+    });
+
+    // ── RENDER SELECT CATEGORÍAS ──────────────────────────────────
     function renderSelects() {
-      const catSelect = $('movCategoria');
-      catSelect.innerHTML = DB.categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+      $('movCategoria').innerHTML = DB.categorias.map(c =>
+        `<option value="${c}">${c}</option>`
+      ).join('');
     }
 
-    function renderChart() {
-      const ctx = $('chartFlujo').getContext('2d');
-      if (chartFlujo) chartFlujo.destroy();
-      
-      const labels = ['Ingresos', 'Egresos'];
-      const data = [
-        DB.movimientos.filter(m => m.tipo === 'Ingreso').reduce((acc, m) => acc + m.monto, 0),
-        DB.movimientos.filter(m => m.tipo !== 'Ingreso').reduce((acc, m) => acc + m.monto, 0)
-      ];
-
-      chartFlujo = new Chart(ctx, {
+    // ── CHART ─────────────────────────────────────────────────────
+    function renderChart(ingresos, egresos) {
+      const canvas = $('chartFlujo');
+      if (!canvas) return;
+      if (chartFlujo) { chartFlujo.destroy(); chartFlujo = null; }
+      chartFlujo = new Chart(canvas.getContext('2d'), {
         type: 'bar',
         data: {
-          labels,
+          labels: ['Ingresos', 'Egresos'],
           datasets: [{
-            label: 'Flujo del Mes',
-            data,
+            label: 'Flujo de Caja',
+            data: [ingresos, egresos],
             backgroundColor: ['#22c55e', '#ef4444'],
             borderRadius: 8
           }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
       });
     }
 
-    window.eliminarMovimiento = async (id) => {
-      if (!confirm('¿Eliminar este movimiento?')) return;
-      const FB = window.__FB;
-      const uid = FB.auth.currentUser?.uid;
-      if (!uid) return;
-      // ✅ FIX: ruta absoluta correcta
-      await FB.deleteDoc(FB.doc(FB.db, 'users', uid, 'movimientos_negocio', id));
-    };
-
-    $('formMovimiento').onsubmit = async (e) => {
+    // ── GUARDAR MOVIMIENTO ────────────────────────────────────────
+    $('formMovimiento').addEventListener('submit', async e => {
       e.preventDefault();
-      const FB = window.__FB;
-      const uid = FB.auth.currentUser?.uid;
+      const uid = auth.currentUser?.uid;
       if (!uid) return;
-      const mov = {
-        fecha: $('movFecha').value,
-        tipo: $('movTipo').value,
-        categoria: $('movCategoria').value,
-        monto: parseFloat($('movMonto').value),
-        descripcion: $('movDescripcion').value,
-        cuenta: DB.cuentas[0]?.nombre || 'Caja',
-        creadoEn: new Date().toISOString()
-      };
-      try {
-        // ✅ FIX #3: addDoc genera ID automáticamente (setDoc requiere ID explícito)
-        await FB.addDoc(FB.collection(FB.db, 'users', uid, 'movimientos_negocio'), mov);
-        $('formMovimiento').reset();
-      } catch (err) {
-        console.error('Error guardando movimiento:', err);
-        alert('Error al guardar: ' + err.message);
-      }
-    };
-  </script>
 
-  <style>
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .badge { padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
-    .badge-success { background: #dcfce7; color: #166534; }
-    .badge-danger { background: #fee2e2; color: #991b1b; }
-  </style>
+      const btn = $('btnGuardar');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      try {
+        await addDoc(collection(db, 'users', uid, 'movimientos_negocio'), {
+          fecha:       $('movFecha').value,
+          tipo:        $('movTipo').value,
+          categoria:   $('movCategoria').value,
+          monto:       parseFloat($('movMonto').value) || 0,
+          descripcion: $('movDescripcion').value.trim(),
+          cuenta:      DB.cuentas[0]?.nombre || 'Caja',
+          creadoEn:    new Date().toISOString()
+        });
+        e.target.reset();
+      } catch (err) {
+        console.error('Error guardando:', err);
+        alert('Error al guardar: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar Movimiento';
+      }
+    });
+
+    // ── EXPORTAR EXCEL ────────────────────────────────────────────
+    $('btnExportExcel').addEventListener('click', () => {
+      if (typeof XLSX === 'undefined') { alert('Librería XLSX no disponible'); return; }
+      const ws = XLSX.utils.json_to_sheet(
+        DB.movimientos.map(m => ({
+          Fecha: m.fecha, Tipo: m.tipo, Categoría: m.categoria,
+          Monto: m.monto, Descripción: m.descripcion, Cuenta: m.cuenta
+        }))
+      );
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Movimientos');
+      XLSX.writeFile(wb, 'movimientos_negocio.xlsx');
+    });
+
+  </script>
 </body>
 </html>

@@ -11,52 +11,42 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, deleteDoc, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
-      authDomain: "contaappgreentech.firebaseapp.com",
-      projectId: "contaappgreentech",
-      storageBucket: "contaappgreentech.firebasestorage.app",
-      messagingSenderId: "672661191582",
-      appId: "1:672661191582:web:babf8b97b69925028eb48f"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    window.__FB = { 
-      auth, db, GoogleAuthProvider, signInWithPopup, 
-      signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-      onAuthStateChanged, signOut, doc, getDoc, setDoc, addDoc,
-      onSnapshot, collection, deleteDoc, query, orderBy, writeBatch 
-    };
-    window.__fbReady = true;
-    window.dispatchEvent(new Event('firebase-ready'));
-  </script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay { position:fixed; inset:0; background:white; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2000; }
+    .spinner { width:40px; height:40px; border:4px solid #f1f5f9; border-top-color:#16a34a; border-radius:50%; animation:spin 1s linear infinite; }
+    .badge { padding:0.2rem 0.5rem; border-radius:9999px; font-size:0.75rem; font-weight:700; }
+    .badge-success { background:#dcfce7; color:#166534; }
+    .badge-danger  { background:#fee2e2; color:#991b1b; }
+    .badge-warning { background:#fef3c7; color:#92400e; }
+    .section-title { font-size:1.125rem; font-weight:700; color:#0f172a; }
+    .mb-4 { margin-bottom:1rem; }
+    .mt-4 { margin-top:1rem; }
+    .btn-sm { padding:0.375rem 0.75rem; font-size:0.8125rem; }
+    .user-avatar { width:32px; height:32px; border-radius:50%; background:#16a34a; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.875rem; }
+    .user-chip { display:flex; align-items:center; }
+    .stat-label { font-size:0.7rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-bottom:0.25rem; }
+    #diagBox { background:#fee2e2; color:#991b1b; padding:1rem; border-radius:8px; margin:1rem; font-size:0.875rem; font-weight:600; display:none; border:1px solid #fecaca; }
+  </style>
 </head>
 <body class="theme-personal">
 
-  <div id="loading" class="loading-overlay" style="position:fixed; inset:0; background:white; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2000;">
-    <div class="spinner" style="width:40px; height:40px; border:4px solid #f1f5f9; border-top-color:#16a34a; border-radius:50%; animation:spin 1s linear infinite;"></div>
-    <p style="margin-top:1rem; color:#64748b;">Cargando tus finanzas...</p>
+  <div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p style="margin-top:1rem;color:#64748b;" id="loadingMsg">Verificando sesión...</p>
   </div>
+
+  <div id="diagBox"></div>
 
   <header class="topbar">
     <a href="index.html" class="brand">
       <span class="brand-logo">📒</span>
       <span class="brand-name">Personal</span>
     </a>
-    <div class="nav-tabs" id="mainNav">
+    <div class="nav-tabs">
       <a href="#" class="tab-link active" data-tab="resumen">Dashboard</a>
       <a href="#" class="tab-link" data-tab="movimientos">Gastos</a>
       <a href="#" class="tab-link" data-tab="metas">Metas</a>
-      <a href="#" class="tab-link" data-tab="categorias">Categorías</a>
     </div>
     <div class="flex items-center gap-2" style="margin-left:auto">
       <div class="user-chip">
@@ -67,24 +57,17 @@
   </header>
 
   <main class="container">
+
     <!-- DASHBOARD -->
     <div id="tab-resumen" class="tab-content">
-      <div class="grid" id="dashCards" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
-        <!-- Cargado dinámicamente -->
-      </div>
-
+      <div id="dashCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;margin-bottom:1.5rem;"></div>
       <div class="card">
         <h2 class="section-title mb-4">Gastos por Categoría</h2>
-        <div style="height:250px">
-          <canvas id="chartDonut"></canvas>
-        </div>
+        <div style="height:250px"><canvas id="chartDonut"></canvas></div>
       </div>
-      
       <div class="card mt-4">
         <h2 class="section-title mb-4">Flujo Mensual</h2>
-        <div style="height:300px">
-          <canvas id="chartFlujo"></canvas>
-        </div>
+        <div style="height:280px"><canvas id="chartFlujo"></canvas></div>
       </div>
     </div>
 
@@ -93,7 +76,7 @@
       <div class="card">
         <h2 class="section-title mb-4">Registrar Movimiento</h2>
         <form id="formMovimiento">
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:1rem;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;">
             <div class="form-group">
               <label class="label">Fecha</label>
               <input type="date" id="gasFecha" class="input" required>
@@ -108,33 +91,28 @@
             </div>
             <div class="form-group">
               <label class="label">Monto</label>
-              <input type="number" id="gasMonto" class="input" placeholder="0.00" step="0.01" required>
+              <input type="number" id="gasMonto" class="input" placeholder="0.00" step="0.01" min="0" required>
             </div>
           </div>
-          <div class="form-group mt-4">
+          <div class="form-group" style="margin-top:1rem;">
             <label class="label">Categoría</label>
             <select id="gasCat" class="input" required></select>
           </div>
-          <div class="form-group mt-4">
+          <div class="form-group" style="margin-top:1rem;">
             <label class="label">Descripción</label>
             <input type="text" id="gasDesc" class="input" placeholder="Ej: Mercado, Netflix, etc.">
           </div>
-          <button type="submit" class="btn btn-primary w-100 mt-2" style="width:100%">Guardar</button>
+          <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.75rem" id="btnGuardar">
+            Guardar
+          </button>
         </form>
       </div>
-
       <div class="card mt-4">
         <h2 class="section-title mb-4">Historial Reciente</h2>
         <div class="table-wrap">
           <table class="table">
             <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Categoría</th>
-                <th>Monto</th>
-                <th></th>
-              </tr>
+              <tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th style="text-align:right">Monto</th><th></th></tr>
             </thead>
             <tbody id="tbodyMov"></tbody>
           </table>
@@ -146,255 +124,332 @@
     <div id="tab-metas" class="tab-content hidden">
       <div class="card">
         <h2 class="section-title mb-4">Metas de Ahorro</h2>
-        <div id="metasContainer" class="grid" style="display:grid; gap:1rem;">
-          <!-- Cargado dinámicamente -->
-        </div>
+        <div id="metasContainer" style="display:grid;gap:1rem;"></div>
       </div>
     </div>
+
   </main>
 
-  <script type="module">
-    const $ = id => document.getElementById(id);
-    let DB = { movimientos: [], categorias: [], metas: [], cuentas: [] };
-    let chartDonut = null, chartFlujo = null;
+  <!--
+    ═══════════════════════════════════════════════════════
+    CAUSA RAÍZ DEL BUG DE "Sincronización infinita":
+    La arquitectura original tenía DOS <script type="module">
+    separados. El primero disparaba window.dispatchEvent
+    ('firebase-ready'). El segundo escuchaba ese evento.
 
-    // ✅ Categorías por defecto para cuentas nuevas
-    const defaultCategorias = [
-      { nombre: 'Alimentación', icono: '🍔' },
-      { nombre: 'Transporte', icono: '🚌' },
-      { nombre: 'Vivienda', icono: '🏠' },
-      { nombre: 'Salud', icono: '💊' },
-      { nombre: 'Entretenimiento', icono: '🎬' },
-      { nombre: 'Educación', icono: '📚' },
-      { nombre: 'Salario', icono: '💰' },
-      { nombre: 'Otros', icono: '📦' }
+    PROBLEMA: Los módulos ES se ejecutan de forma diferida.
+    Cuando el segundo módulo registra su listener, el evento
+    YA fue disparado → el listener NUNCA se activa →
+    onAuthStateChanged NUNCA corre → el loading NUNCA
+    desaparece → "sincronización infinita".
+
+    SOLUCIÓN: Un único <script type="module"> que importa
+    Firebase directamente y registra onAuthStateChanged
+    de inmediato. El callback oculta el loading al resolverse.
+    ═══════════════════════════════════════════════════════
+  -->
+  <script type="module">
+    // ── IMPORTS ──────────────────────────────────────────────────
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, doc, collection,
+      addDoc, deleteDoc,
+      onSnapshot, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // ── FIREBASE INIT ─────────────────────────────────────────────
+    const app  = initializeApp({
+      apiKey:            "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
+      authDomain:        "contaappgreentech.firebaseapp.com",
+      projectId:         "contaappgreentech",
+      storageBucket:     "contaappgreentech.firebasestorage.app",
+      messagingSenderId: "672661191582",
+      appId:             "1:672661191582:web:babf8b97b69925028eb48f"
+    });
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // ── ESTADO ────────────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+    let DB = { movimientos: [], categorias: [], metas: [] };
+    let chartDonut = null, chartFlujo = null;
+    let unsubConfig = null, unsubMovs = null;
+
+    const DEFAULT_CATS = [
+      { nombre: 'Alimentación',   icono: '🍔' },
+      { nombre: 'Transporte',     icono: '🚌' },
+      { nombre: 'Vivienda',       icono: '🏠' },
+      { nombre: 'Salud',          icono: '💊' },
+      { nombre: 'Entretenimiento',icono: '🎬' },
+      { nombre: 'Educación',      icono: '📚' },
+      { nombre: 'Salario',        icono: '💰' },
+      { nombre: 'Otros',          icono: '📦' }
     ];
 
-    window.addEventListener('firebase-ready', () => {
-      const FB = window.__FB;
-      
-      // Navegación
-      document.querySelectorAll('.tab-link').forEach(link => {
-        link.onclick = (e) => {
-          e.preventDefault();
-          document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-          link.classList.add('active');
-          $(`tab-${link.dataset.tab}`).classList.remove('hidden');
-        };
-      });
+    // ── DIAGNÓSTICO ───────────────────────────────────────────────
+    function showDiag(msg) {
+      const b = $('diagBox');
+      b.textContent = '⚠️ ' + msg;
+      b.style.display = 'block';
+    }
 
-      FB.onAuthStateChanged(FB.auth, user => {
-        if (!user) {
-          window.location.href = 'index.html';
-        } else {
-          $('userAvatar').textContent = (user.email || 'U')[0].toUpperCase();
-          initData(user.uid);
-        }
+    // ── NAVEGACIÓN ────────────────────────────────────────────────
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        link.classList.add('active');
+        $('tab-' + link.dataset.tab).classList.remove('hidden');
       });
-
-      $('btnLogout').onclick = () => FB.signOut(FB.auth);
     });
 
-    async function initData(uid) {
-      const FB = window.__FB;
-
-      // ✅ FIX #1: Rutas absolutas de Firestore (v10 no soporta doc ref anidado)
-      const configRef = FB.doc(FB.db, 'users', uid, 'config', 'personal');
-
-      // ✅ FIX #2: Ocultar loading aquí, ANTES de los listeners,
-      //    por si la cuenta es nueva y las colecciones están vacías.
+    // ── AUTH GUARD ────────────────────────────────────────────────
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.replace('index.html');
+        return;
+      }
       $('loading').style.display = 'none';
+      $('userAvatar').textContent = (user.email || 'U')[0].toUpperCase();
+      initData(user.uid);
+    });
 
-      // Cargar Configuración (Categorías, Metas)
-      FB.onSnapshot(configRef, (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          DB.categorias = data.categorias || defaultCategorias;
-          DB.metas = data.metas || [];
-        } else {
-          // Cuenta nueva: valores por defecto
-          DB.categorias = defaultCategorias;
-          DB.metas = [];
+    $('btnLogout').addEventListener('click', () => signOut(auth));
+
+    // ── INIT DATA ─────────────────────────────────────────────────
+    function initData(uid) {
+      if (unsubConfig) unsubConfig();
+      if (unsubMovs)   unsubMovs();
+
+      // Config: categorías y metas
+      unsubConfig = onSnapshot(
+        doc(db, 'users', uid, 'config', 'personal'),
+        snap => {
+          if (snap.exists()) {
+            const d = snap.data();
+            DB.categorias = d.categorias || DEFAULT_CATS;
+            DB.metas      = d.metas      || [];
+          } else {
+            DB.categorias = DEFAULT_CATS;
+            DB.metas      = [];
+          }
+          renderSelects();
+          renderMetas();
+        },
+        err => {
+          console.warn('Config error:', err.code);
+          DB.categorias = DEFAULT_CATS;
+          renderSelects();
         }
-        updateUI();
-      }, (err) => {
-        console.error('Error config personal:', err);
-        DB.categorias = defaultCategorias;
-        updateUI();
-      });
-
-      // Cargar Movimientos con ruta absoluta
-      const movQuery = FB.query(
-        FB.collection(FB.db, 'users', uid, 'movimientos_personal'),
-        FB.orderBy('fecha', 'desc')
       );
-      FB.onSnapshot(movQuery, (snap) => {
-        DB.movimientos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateUI();
-      }, (err) => {
-        console.error('Error movimientos personal:', err);
-        updateUI();
-      });
+
+      // Movimientos
+      unsubMovs = onSnapshot(
+        query(collection(db, 'users', uid, 'movimientos_personal'), orderBy('fecha', 'desc')),
+        snap => {
+          DB.movimientos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderDashboard();
+          renderMovimientos();
+          renderMetas();
+        },
+        err => {
+          console.warn('Movimientos error:', err.code, err.message);
+          if (err.code === 'failed-precondition') {
+            showDiag('Falta índice en Firestore. Revisa la consola de Firebase para crearlo.');
+          } else {
+            showDiag('Error cargando datos: ' + err.message);
+          }
+          DB.movimientos = [];
+          renderDashboard();
+          renderMovimientos();
+        }
+      );
     }
 
-    function updateUI() {
-      renderDashboard();
-      renderMovimientos();
-      renderMetas();
-      renderSelects();
-    }
-
+    // ── DASHBOARD ─────────────────────────────────────────────────
     function renderDashboard() {
-      const dashCards = $('dashCards');
       let ingresos = 0, gastos = 0, ahorros = 0;
-      
       DB.movimientos.forEach(m => {
-        const val = parseFloat(m.monto) || 0;
-        if (m.tipo === 'Ingreso') ingresos += val;
-        else if (m.tipo === 'Gasto') gastos += val;
-        else if (m.tipo === 'Ahorro') ahorros += val;
+        const v = parseFloat(m.monto) || 0;
+        if      (m.tipo === 'Ingreso') ingresos += v;
+        else if (m.tipo === 'Gasto')   gastos   += v;
+        else if (m.tipo === 'Ahorro')  ahorros  += v;
       });
+      const disponible = ingresos - gastos - ahorros;
 
-      dashCards.innerHTML = `
-        <div class="card" style="border-left: 4px solid #16a34a">
-          <p class="label">Ingresos Totales</p>
-          <h2 style="font-size:1.75rem">$${ingresos.toLocaleString()}</h2>
-        </div>
-        <div class="card" style="border-left: 4px solid #dc2626">
-          <p class="label">Gastos Totales</p>
-          <h2 style="font-size:1.75rem">$${gastos.toLocaleString()}</h2>
-        </div>
-        <div class="card" style="border-left: 4px solid #d97706">
-          <p class="label">Ahorros / Metas</p>
-          <h2 style="font-size:1.75rem">$${ahorros.toLocaleString()}</h2>
-        </div>
-        <div class="card" style="border-left: 4px solid #2563eb">
-          <p class="label">Saldo Disponible</p>
-          <h2 style="font-size:1.75rem">$${(ingresos - gastos - ahorros).toLocaleString()}</h2>
-        </div>
-      `;
+      $('dashCards').innerHTML = [
+        { label: 'Ingresos Totales', value: ingresos,   color: '#16a34a' },
+        { label: 'Gastos Totales',   value: gastos,     color: '#dc2626' },
+        { label: 'Ahorros / Metas',  value: ahorros,    color: '#d97706' },
+        { label: 'Saldo Disponible', value: disponible, color: '#2563eb' }
+      ].map(({ label, value, color }) => `
+        <div class="card" style="border-left:4px solid ${color};margin-bottom:0;padding:1.25rem">
+          <p class="stat-label">${label}</p>
+          <h2 style="font-size:1.65rem;font-weight:800;color:${color}">
+            $${value.toLocaleString('es-CO')}
+          </h2>
+        </div>`).join('');
 
       renderCharts(ingresos, gastos, ahorros);
     }
 
+    // ── MOVIMIENTOS ───────────────────────────────────────────────
     function renderMovimientos() {
       const tbody = $('tbodyMov');
-      tbody.innerHTML = DB.movimientos.slice(0, 15).map(m => `
-        <tr>
-          <td>${m.fecha.split('-').slice(1).join('/')}</td>
-          <td><span class="badge badge-${m.tipo === 'Ingreso' ? 'success' : m.tipo === 'Gasto' ? 'danger' : 'warning'}">${m.tipo[0]}</span></td>
-          <td>${m.categoria}</td>
-          <td style="font-weight:700; color:${m.tipo === 'Ingreso' ? 'green' : 'red'}">$${m.monto.toLocaleString()}</td>
-          <td><button class="btn btn-secondary btn-sm" onclick="eliminarMov('${m.id}')">🗑️</button></td>
-        </tr>
-      `).join('');
-    }
-
-    function renderMetas() {
-      const container = $('metasContainer');
-      if (!DB.metas.length) {
-        container.innerHTML = '<div class="text-center text-muted py-8">No hay metas activas.</div>';
+      const items = DB.movimientos.slice(0, 20);
+      if (!items.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:2rem">
+          Sin movimientos registrados aún</td></tr>`;
         return;
       }
-      
-      container.innerHTML = DB.metas.map(meta => {
-        const ahorrado = DB.movimientos
-          .filter(m => m.tipo === 'Ahorro' && m.metaId === meta.id)
-          .reduce((acc, m) => acc + m.monto, 0);
-        const pct = Math.min(100, Math.round((ahorrado / meta.objetivo) * 100));
-        
+      tbody.innerHTML = items.map(m => {
+        const tipo    = m.tipo || '';
+        const badgeCls = tipo === 'Ingreso' ? 'success' : tipo === 'Gasto' ? 'danger' : 'warning';
+        const color    = tipo === 'Ingreso' ? '#16a34a' : '#dc2626';
+        const partes   = (m.fecha || '').split('-');
+        const fechaFmt = partes.length === 3 ? `${partes[2]}/${partes[1]}` : m.fecha;
         return `
-          <div class="card">
-            <div class="flex justify-between items-center mb-2">
-              <span style="font-weight:800">${meta.icono || '🎯'} ${meta.nombre}</span>
-              <span style="font-size:0.875rem; color:#64748b">$${ahorrado.toLocaleString()} / $${meta.objetivo.toLocaleString()}</span>
-            </div>
-            <div style="height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden">
-              <div style="width:${pct}%; height:100%; background:#16a34a; transition:width 0.5s"></div>
-            </div>
-            <p style="font-size:0.75rem; margin-top:0.5rem; text-align:right; font-weight:700">${pct}% completado</p>
-          </div>
-        `;
+          <tr>
+            <td>${fechaFmt}</td>
+            <td><span class="badge badge-${badgeCls}">${tipo[0] || '?'}</span></td>
+            <td>${m.categoria || '-'}</td>
+            <td style="font-weight:700;color:${color};text-align:right">
+              $${(parseFloat(m.monto) || 0).toLocaleString('es-CO')}
+            </td>
+            <td><button class="btn btn-secondary btn-sm" data-id="${m.id}" data-action="del">🗑️</button></td>
+          </tr>`;
       }).join('');
     }
 
-    function renderSelects() {
-      const catSelect = $('gasCat');
-      catSelect.innerHTML = DB.categorias.map(c => `<option value="${c.nombre}">${c.icono || ''} ${c.nombre}</option>`).join('');
+    // Delegación de eventos
+    $('tbodyMov').addEventListener('click', async e => {
+      const btn = e.target.closest('[data-action="del"]');
+      if (!btn) return;
+      if (!confirm('¿Eliminar movimiento?')) return;
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+      try {
+        await deleteDoc(doc(db, 'users', uid, 'movimientos_personal', btn.dataset.id));
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message);
+      }
+    });
+
+    // ── METAS ─────────────────────────────────────────────────────
+    function renderMetas() {
+      const container = $('metasContainer');
+      if (!DB.metas.length) {
+        container.innerHTML = `<p style="text-align:center;color:#94a3b8;padding:2rem">
+          No hay metas activas.</p>`;
+        return;
+      }
+      container.innerHTML = DB.metas.map(meta => {
+        const ahorrado = DB.movimientos
+          .filter(m => m.tipo === 'Ahorro' && m.metaId === meta.id)
+          .reduce((acc, m) => acc + (parseFloat(m.monto) || 0), 0);
+        const objetivo = parseFloat(meta.objetivo) || 1;
+        const pct = Math.min(100, Math.round((ahorrado / objetivo) * 100));
+        return `
+          <div class="card">
+            <div class="flex justify-between items-center mb-4">
+              <span style="font-weight:800">${meta.icono || '🎯'} ${meta.nombre}</span>
+              <span style="font-size:0.875rem;color:#64748b">
+                $${ahorrado.toLocaleString('es-CO')} / $${objetivo.toLocaleString('es-CO')}
+              </span>
+            </div>
+            <div style="height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden">
+              <div style="width:${pct}%;height:100%;background:#16a34a;transition:width 0.5s"></div>
+            </div>
+            <p style="font-size:0.75rem;margin-top:0.5rem;text-align:right;font-weight:700">${pct}% completado</p>
+          </div>`;
+      }).join('');
     }
 
+    // ── SELECTS ───────────────────────────────────────────────────
+    function renderSelects() {
+      $('gasCat').innerHTML = DB.categorias.map(c =>
+        `<option value="${c.nombre}">${c.icono || ''} ${c.nombre}</option>`
+      ).join('');
+    }
+
+    // ── CHARTS ────────────────────────────────────────────────────
     function renderCharts(ing, gas, aho) {
-      // Donut Chart (Gastos por categoría)
+      // Donut — gastos por categoría
       const catMap = {};
       DB.movimientos.filter(m => m.tipo === 'Gasto').forEach(m => {
-        catMap[m.categoria] = (catMap[m.categoria] || 0) + m.monto;
-      });
-      
-      const ctxD = $('chartDonut').getContext('2d');
-      if (chartDonut) chartDonut.destroy();
-      chartDonut = new Chart(ctxD, {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(catMap),
-          datasets: [{ data: Object.values(catMap), backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
+        const k = m.categoria || 'Sin categoría';
+        catMap[k] = (catMap[k] || 0) + (parseFloat(m.monto) || 0);
       });
 
-      // Bar Chart (Flujo)
-      const ctxF = $('chartFlujo').getContext('2d');
-      if (chartFlujo) chartFlujo.destroy();
-      chartFlujo = new Chart(ctxF, {
+      const ctxD = $('chartDonut');
+      if (chartDonut) { chartDonut.destroy(); chartDonut = null; }
+      chartDonut = new Chart(ctxD.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(catMap).length ? Object.keys(catMap) : ['Sin datos'],
+          datasets: [{
+            data: Object.values(catMap).length ? Object.values(catMap) : [1],
+            backgroundColor: ['#ef4444','#f97316','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#14b8a6'],
+            borderWidth: 2
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+
+      // Barras — flujo
+      const ctxF = $('chartFlujo');
+      if (chartFlujo) { chartFlujo.destroy(); chartFlujo = null; }
+      chartFlujo = new Chart(ctxF.getContext('2d'), {
         type: 'bar',
         data: {
           labels: ['Ingresos', 'Gastos', 'Ahorros'],
-          datasets: [{ data: [ing, gas, aho], backgroundColor: ['#22c55e', '#ef4444', '#f59e0b'], borderRadius: 6 }]
+          datasets: [{
+            data: [ing, gas, aho],
+            backgroundColor: ['#22c55e', '#ef4444', '#f59e0b'],
+            borderRadius: 6
+          }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
       });
     }
 
-    window.eliminarMov = async (id) => {
-      if (!confirm('¿Eliminar movimiento?')) return;
-      const FB = window.__FB;
-      const uid = FB.auth.currentUser?.uid;
-      if (!uid) return;
-      // ✅ FIX: ruta absoluta correcta
-      await FB.deleteDoc(FB.doc(FB.db, 'users', uid, 'movimientos_personal', id));
-    };
-
-    $('formMovimiento').onsubmit = async (e) => {
+    // ── GUARDAR MOVIMIENTO ────────────────────────────────────────
+    $('formMovimiento').addEventListener('submit', async e => {
       e.preventDefault();
-      const FB = window.__FB;
-      const uid = FB.auth.currentUser?.uid;
+      const uid = auth.currentUser?.uid;
       if (!uid) return;
-      const mov = {
-        fecha: $('gasFecha').value,
-        tipo: $('gasTipo').value,
-        categoria: $('gasCat').value,
-        monto: parseFloat($('gasMonto').value),
-        descripcion: $('gasDesc').value,
-        creadoEn: new Date().toISOString()
-      };
-      try {
-        // ✅ FIX #3: addDoc genera ID automáticamente (setDoc requiere ID explícito)
-        await FB.addDoc(FB.collection(FB.db, 'users', uid, 'movimientos_personal'), mov);
-        $('formMovimiento').reset();
-      } catch (err) {
-        console.error('Error guardando movimiento:', err);
-        alert('Error al guardar: ' + err.message);
-      }
-    };
-  </script>
 
-  <style>
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .badge { padding: 0.2rem 0.4rem; border-radius: 6px; font-size: 0.7rem; font-weight: 800; color: white; }
-    .badge-success { background: #22c55e; }
-    .badge-danger { background: #ef4444; }
-    .badge-warning { background: #f59e0b; }
-    .label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 0.25rem; }
-  </style>
+      const btn = $('btnGuardar');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      try {
+        await addDoc(collection(db, 'users', uid, 'movimientos_personal'), {
+          fecha:       $('gasFecha').value,
+          tipo:        $('gasTipo').value,
+          categoria:   $('gasCat').value,
+          monto:       parseFloat($('gasMonto').value) || 0,
+          descripcion: $('gasDesc').value.trim(),
+          creadoEn:    new Date().toISOString()
+        });
+        e.target.reset();
+      } catch (err) {
+        console.error('Error guardando:', err);
+        alert('Error al guardar: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar';
+      }
+    });
+
+  </script>
 </body>
 </html>
