@@ -3,233 +3,303 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>ContaApp</title>
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#1e293b" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="ContaApp" />
+  <title>ContaApp — Login</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#2563eb" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CONFIGURACIÓN INTEGRADA PARA EVITAR ERRORES DE CARGA EN GITHUB PAGES -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup,
-             signInWithEmailAndPassword, createUserWithEmailAndPassword,
-             onAuthStateChanged, signOut }
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, deleteDoc, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
     const firebaseConfig = {
-      apiKey:"AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
-      authDomain:"contaappgreentech.firebaseapp.com",
-      projectId:"contaappgreentech",
-      storageBucket:"contaappgreentech.firebasestorage.app",
-      messagingSenderId:"672661191582",
-      appId:"1:672661191582:web:babf8b97b69925028eb48f"
+      apiKey: "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
+      authDomain: "contaappgreentech.firebaseapp.com",
+      projectId: "contaappgreentech",
+      storageBucket: "contaappgreentech.firebasestorage.app",
+      messagingSenderId: "672661191582",
+      appId: "1:672661191582:web:babf8b97b69925028eb48f"
     };
-    const app=initializeApp(firebaseConfig), auth=getAuth(app);
-    window.__FB={auth,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,createUserWithEmailAndPassword,onAuthStateChanged,signOut};
-    window.__fbReady=true;
-    if(window.__fbResolve)window.__fbResolve(window.__FB);
-    window.dispatchEvent(new Event('firebase-ready'));
-  </script>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--font:'Segoe UI',system-ui,-apple-system,sans-serif;--r:14px;--sh:0 4px 24px rgba(0,0,0,.18)}
-    html,body{height:100%;font-family:var(--font)}
-    body{min-height:100vh;background:linear-gradient(145deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);display:flex;align-items:center;justify-content:center;padding:1.25rem}
 
-    /* ─ CARD ─ */
-    .card{background:#fff;border-radius:var(--r);padding:2.25rem 2rem;max-width:400px;width:100%;box-shadow:var(--sh);text-align:center}
-    .logo{font-size:3.2rem;margin-bottom:.4rem}
-    .title{font-size:1.8rem;font-weight:800;color:#1e293b}
-    .sub{color:#64748b;font-size:.88rem;margin-bottom:1.75rem}
+    try {
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
-    /* ─ TABS ─ */
-    .tabs{display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:1.1rem}
-    .tab{flex:1;background:none;border:none;padding:.6rem;font-size:.88rem;font-weight:600;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s}
-    .tab.active{color:#2563eb;border-bottom-color:#2563eb}
-
-    /* ─ INPUTS ─ */
-    .inp{width:100%;margin-bottom:.6rem;padding:.68rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;font-family:var(--font);transition:border-color .15s}
-    .inp:focus{outline:none;border-color:#2563eb}
-
-    /* ─ BUTTONS ─ */
-    .btn{width:100%;padding:.72rem;border:none;border-radius:8px;background:#2563eb;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.45rem;transition:filter .15s}
-    .btn:hover{filter:brightness(.92)}
-    .btn-g{width:100%;display:flex;align-items:center;justify-content:center;gap:.55rem;padding:.68rem;border:1.5px solid #e2e8f0;border-radius:8px;background:#fff;font-size:.88rem;font-weight:600;cursor:pointer;color:#1e293b;transition:background .15s}
-    .btn-g:hover{background:#f8fafc}
-    .divider{display:flex;align-items:center;gap:.6rem;color:#94a3b8;font-size:.78rem;margin:.6rem 0}
-    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
-    .err{background:#fee2e2;color:#dc2626;border-radius:8px;padding:.55rem .8rem;font-size:.83rem;font-weight:600;margin-top:.4rem;display:none}
-    .err.show{display:block}
-
-    /* ─ SPINNER ─ */
-    .spin-wrap{display:flex;align-items:center;justify-content:center;gap:.7rem;color:#64748b;padding:.8rem 0}
-    .spinner{width:20px;height:20px;border:3px solid #dbeafe;border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* ─ PROFILE SELECTOR ─ */
-    .profile-card{display:none;background:#fff;border-radius:var(--r);padding:2rem 1.75rem;max-width:460px;width:100%;box-shadow:var(--sh)}
-    .profile-card.show{display:block}
-    .ph{text-align:center;margin-bottom:1.5rem}
-    .ph .logo{font-size:2.4rem}
-    .ph h2{font-size:1.25rem;font-weight:800;color:#1e293b;margin:.25rem 0 .15rem}
-    .ph p{font-size:.82rem;color:#64748b}
-    .profiles{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1.25rem}
-    .pb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;padding:1.4rem .9rem;border-radius:12px;border:2.5px solid #e2e8f0;background:#f8fafc;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit}
-    .pb:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.1)}
-    .pb.neg:hover{border-color:#2563eb;background:#dbeafe}
-    .pb.per:hover{border-color:#16a34a;background:#dcfce7}
-    .pb .pi{font-size:2.4rem}
-    .pb .pt{font-size:.95rem;font-weight:800;color:#1e293b}
-    .pb .pd{font-size:.73rem;color:#64748b;text-align:center;line-height:1.3}
-    .pf{display:flex;align-items:center;justify-content:space-between;padding-top:.85rem;border-top:1px solid #e2e8f0}
-    .uchip{display:flex;align-items:center;gap:.45rem;background:#f1f5f9;border-radius:20px;padding:.3rem .65rem}
-    .uav{width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700}
-    .uemail{font-size:.78rem;color:#475569;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .btn-out{background:none;border:1.5px solid #e2e8f0;border-radius:8px;padding:.3rem .65rem;font-size:.78rem;color:#dc2626;cursor:pointer;font-weight:600}
-    .btn-out:hover{background:#fee2e2}
-
-    @media(max-width:400px){
-      .profiles{grid-template-columns:1fr}
-      .card,.profile-card{padding:1.75rem 1.1rem}
+      window.__FB = { 
+        auth, db, GoogleAuthProvider, signInWithPopup, 
+        signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+        onAuthStateChanged, signOut, doc, getDoc, setDoc, 
+        onSnapshot, collection, deleteDoc, query, orderBy, writeBatch 
+      };
+      window.__fbReady = true;
+      window.dispatchEvent(new Event('firebase-ready'));
+    } catch (error) {
+      console.error("Error al inicializar Firebase:", error);
     }
+  </script>
+  
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .auth-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .auth-header { text-align: center; margin-bottom: 2rem; }
+    .auth-logo { font-size: 3.5rem; margin-bottom: 0.5rem; display: block; }
+    .auth-title { font-size: 2rem; font-weight: 800; color: var(--slate-900); letter-spacing: -0.025em; }
+    .auth-sub { color: var(--slate-500); font-size: 0.9375rem; }
+
+    .auth-tabs { display: flex; border-bottom: 1px solid var(--slate-200); margin-bottom: 1.5rem; }
+    .auth-tab { flex: 1; padding: 0.75rem; border: none; background: none; font-weight: 600; color: var(--slate-400); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .auth-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    .error-box {
+      background: var(--danger-bg);
+      color: var(--danger);
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: none;
+      border: 1px solid #fecaca;
+    }
+    .error-box.show { display: block; animation: shake 0.4s ease-in-out; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .divider { display: flex; align-items: center; margin: 1.5rem 0; color: var(--slate-400); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--slate-200); }
+    .divider span { padding: 0 0.75rem; }
+
+    .profile-selector { display: none; }
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+    .profile-btn {
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem;
+      border-radius: var(--radius);
+      border: 2px solid var(--slate-100);
+      background: var(--slate-50);
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .profile-btn:hover { border-color: var(--brand-color); background: var(--brand-bg); transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .profile-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .profile-name { font-weight: 700; color: var(--slate-900); font-size: 1rem; }
+    .profile-desc { font-size: 0.75rem; color: var(--slate-500); margin-top: 0.25rem; }
+
+    .user-info {
+      margin-top: 2rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--slate-100);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .user-chip { display: flex; align-items: center; gap: 0.625rem; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem; }
+    .user-email { font-size: 0.8125rem; font-weight: 600; color: var(--slate-700); max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+
+    .loading-overlay { position: fixed; inset: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--slate-100); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div class="card" id="loginCard">
-  <div class="logo">📒</div>
-  <div class="title">ContaApp</div>
-  <div class="sub">Negocio y finanzas personales, todo en uno</div>
-  <div class="spin-wrap" id="loginSpinner"><div class="spinner"></div><span>Conectando…</span></div>
-  <div id="loginForms" style="display:none">
-    <div class="tabs">
-      <button class="tab active" id="tabL">Iniciar sesión</button>
-      <button class="tab" id="tabR">Registrarse</button>
-    </div>
-    <div id="fL">
-      <input type="email"    id="lEmail" placeholder="Correo electrónico" class="inp"/>
-      <input type="password" id="lPass"  placeholder="Contraseña"         class="inp"/>
-      <button class="btn" id="btnLE">Entrar</button>
-      <div class="divider"><span>o</span></div>
-      <button class="btn-g" id="btnLG"><svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 12.4 5 3 14.4 3 26s9.4 21 21 21 21-9.4 21-21c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 15.1l6.6 4.8C14.5 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 16.3 5 9.7 9.1 6.3 15.1z"/><path fill="#4CAF50" d="M24 47c5.2 0 10-.2 13.6-3.2l-6.3-4.8C29.4 40.7 26.8 41 24 41c-5.3 0-9.8-3.2-11.4-7.7l-6.5 5C9.5 43.3 16.3 47 24 47z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l.1-.1 6.3 4.8c-.4.4 6.5-4.8 6.5-14.4 0-1.3-.1-2.6-.4-3.9z"/></svg> Continuar con Google</button>
-    </div>
-    <div id="fR" style="display:none">
-      <input type="email"    id="rEmail" placeholder="Correo electrónico"        class="inp"/>
-      <input type="password" id="rPass"  placeholder="Contraseña (mín. 6 chars)" class="inp"/>
-      <input type="password" id="rPass2" placeholder="Confirmar contraseña"       class="inp"/>
-      <button class="btn" id="btnRE">Crear cuenta</button>
-      <div class="divider"><span>o</span></div>
-      <button class="btn-g" id="btnRG"><svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 12.4 5 3 14.4 3 26s9.4 21 21 21 21-9.4 21-21c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 15.1l6.6 4.8C14.5 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 16.3 5 9.7 9.1 6.3 15.1z"/><path fill="#4CAF50" d="M24 47c5.2 0 10-.2 13.6-3.2l-6.3-4.8C29.4 40.7 26.8 41 24 41c-5.3 0-9.8-3.2-11.4-7.7l-6.5 5C9.5 43.3 16.3 47 24 47z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l.1-.1 6.3 4.8c-.4.4 6.5-4.8 6.5-14.4 0-1.3-.1-2.6-.4-3.9z"/></svg> Registrarse con Google</button>
-    </div>
-    <div class="err" id="errMsg"></div>
+  <div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p class="mt-4 text-muted" id="loadingText">Cargando ContaApp...</p>
   </div>
-</div>
 
-<!-- SELECTOR DE PERFIL -->
-<div class="profile-card" id="profileCard">
-  <div class="ph">
-    <div class="logo">📒</div>
-    <h2>¿Qué vas a gestionar hoy?</h2>
-    <p>Selecciona el perfil con el que quieres trabajar</p>
-  </div>
-  <div class="profiles">
-    <a href="negocio.html" class="pb neg">
-      <span class="pi">🏢</span>
-      <span class="pt">Negocio</span>
-      <span class="pd">Ventas, compras, créditos, contabilidad</span>
-    </a>
-    <a href="personal.html" class="pb per">
-      <span class="pi">🏠</span>
-      <span class="pt">Personal</span>
-      <span class="pd">Gastos del hogar, presupuesto, metas</span>
-    </a>
-  </div>
-  <div class="pf">
-    <div class="uchip">
-      <div class="uav" id="uAv">U</div>
-      <span class="uemail" id="uEmail">usuario@email.com</span>
+  <div class="auth-card" id="authCard" style="display:none">
+    <div class="auth-header">
+      <span class="auth-logo">📒</span>
+      <h1 class="auth-title">ContaApp</h1>
+      <p class="auth-sub">Tus finanzas bajo control</p>
     </div>
-    <button class="btn-out" id="btnOut">🚪 Salir</button>
+
+    <div id="loginSection">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin">Entrar</button>
+        <button class="auth-tab" id="tabRegister">Registro</button>
+      </div>
+
+      <div id="errorBox" class="error-box"></div>
+
+      <form id="formAuth">
+        <div class="form-group">
+          <label class="label">Correo Electrónico</label>
+          <input type="email" id="email" class="input" placeholder="ejemplo@correo.com" required>
+        </div>
+        <div class="form-group">
+          <label class="label">Contraseña</label>
+          <input type="password" id="password" class="input" placeholder="••••••••" required>
+        </div>
+        <div class="form-group" id="confirmPassGroup" style="display:none">
+          <label class="label">Confirmar Contraseña</label>
+          <input type="password" id="confirmPassword" class="input" placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%" id="btnSubmit">Iniciar Sesión</button>
+      </form>
+
+      <div class="divider"><span>o continúa con</span></div>
+      <button class="btn btn-secondary" style="width:100%" id="btnGoogle">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 12.4 5 3 14.4 3 26s9.4 21 21 21 21-9.4 21-21c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 15.1l6.6 4.8C14.5 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3L37.3 9.6C34.1 6.7 29.3 5 24 5 16.3 5 9.7 9.1 6.3 15.1z"/><path fill="#4CAF50" d="M24 47c5.2 0 10-.2 13.6-3.2l-6.3-4.8C29.4 40.7 26.8 41 24 41c-5.3 0-9.8-3.2-11.4-7.7l-6.5 5C9.5 43.3 16.3 47 24 47z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l.1-.1 6.3 4.8c-.4.4 6.5-4.8 6.5-14.4 0-1.3-.1-2.6-.4-3.9z"/></svg>
+        Google
+      </button>
+    </div>
+
+    <div id="profileSection" class="profile-selector">
+      <h2 class="text-center" style="font-size:1.25rem">¿Qué deseas gestionar?</h2>
+      <div class="profile-grid">
+        <a href="./negocio.html" class="profile-btn" style="--brand-color:var(--primary); --brand-bg:var(--primary-light)">
+          <span class="profile-icon">🏢</span>
+          <span class="profile-name">Negocio</span>
+          <span class="profile-desc">Ventas y compras</span>
+        </a>
+        <a href="./personal.html" class="profile-btn" style="--brand-color:var(--success); --brand-bg:var(--success-light)">
+          <span class="profile-icon">🏠</span>
+          <span class="profile-name">Personal</span>
+          <span class="profile-desc">Gastos y ahorros</span>
+        </a>
+      </div>
+      <div class="user-info">
+        <div class="user-chip">
+          <div class="user-avatar" id="uAv">U</div>
+          <span class="user-email" id="uEmail">...</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btnSignOut">Cerrar Sesión</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<script>
-const $=id=>document.getElementById(id);
-let FB=null;
+  <script type="module">
+    const $ = id => document.getElementById(id);
+    let isRegister = false;
 
-const ERRS={'auth/user-not-found':'No existe esa cuenta.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/invalid-email':'Correo inválido.','auth/too-many-requests':'Demasiados intentos.','auth/popup-closed-by-user':'Ventana cerrada.',
-    'auth/internal-error':'Error interno — usa correo/contraseña o intenta más tarde.',
-    'auth/popup-blocked':'Popup bloqueado — permite popups para este sitio.',
-    'auth/cancelled-popup-request':'Operación cancelada.','auth/invalid-credential':'Correo o contraseña incorrectos.',
-    'auth/network-request-failed':'Error de red. Verifica tu conexión.'};
+    const ERRS = {
+      'auth/user-not-found': 'No existe esa cuenta.',
+      'auth/wrong-password': 'Contraseña incorrecta.',
+      'auth/email-already-in-use': 'El correo ya está registrado.',
+      'auth/invalid-email': 'Correo electrónico inválido.',
+      'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+      'auth/popup-closed-by-user': 'Operación cancelada.',
+      'auth/invalid-credential': 'Credenciales incorrectas.'
+    };
 
-function err(m){const e=$('errMsg');e.textContent=m;e.classList.add('show');}
-function noErr(){$('errMsg').classList.remove('show');}
-
-function initAuth(){
-  // Tabs
-  $('tabL').onclick=()=>{$('tabL').classList.add('active');$('tabR').classList.remove('active');$('fL').style.display='';$('fR').style.display='none';noErr();};
-  $('tabR').onclick=()=>{$('tabR').classList.add('active');$('tabL').classList.remove('active');$('fR').style.display='';$('fL').style.display='none';noErr();};
-
-  // Email login
-  $('btnLE').onclick=async()=>{
-    noErr();
-    const e=$('lEmail').value.trim(),p=$('lPass').value;
-    if(!e||!p){err('Completa correo y contraseña.');return;}
-    try{await FB.signInWithEmailAndPassword(FB.auth,e,p);}
-    catch(ex){err(ERRS[ex.code]||'Error: '+ex.code);}
-  };
-
-  // Google
-  const google=async()=>{noErr();try{await FB.signInWithPopup(FB.auth,new FB.GoogleAuthProvider());}catch(ex){err(ERRS[ex.code]||'Error.');}};
-  $('btnLG').onclick=$('btnRG').onclick=google;
-
-  // Register
-  $('btnRE').onclick=async()=>{
-    noErr();
-    const e=$('rEmail').value.trim(),p=$('rPass').value,p2=$('rPass2').value;
-    if(!e||!p){err('Completa todos los campos.');return;}
-    if(p!==p2){err('Las contraseñas no coinciden.');return;}
-    if(p.length<6){err('Mínimo 6 caracteres.');return;}
-    try{await FB.createUserWithEmailAndPassword(FB.auth,e,p);}
-    catch(ex){err(ERRS[ex.code]||'Error: '+ex.code);}
-  };
-
-  // Logout
-  $('btnOut').onclick=()=>FB.signOut(FB.auth);
-
-  // State
-  FB.onAuthStateChanged(FB.auth,user=>{
-    if(user){
-      $('loginCard').style.display='none';
-      $('profileCard').classList.add('show');
-      const n=user.displayName||user.email||'U';
-      $('uAv').textContent=n[0].toUpperCase();
-      $('uEmail').textContent=user.email||user.displayName||'';
-      // Pasar uid a las sub-apps via sessionStorage
-      sessionStorage.setItem('ca_uid',user.uid);
-      sessionStorage.setItem('ca_email',user.email||'');
-      sessionStorage.setItem('ca_name',user.displayName||user.email||'');
-    } else {
-      $('loginCard').style.display='';
-      $('loginSpinner').style.display='none';
-      $('loginForms').style.display='';
-      $('profileCard').classList.remove('show');
-      sessionStorage.clear();
+    function showError(msg) {
+      const box = $('errorBox');
+      box.textContent = msg;
+      box.classList.add('show');
+      setTimeout(() => box.classList.remove('show'), 4000);
     }
-  });
-}
 
-// Firebase ready
-new Promise(resolve=>{
-  if(window.__fbReady&&window.__FB){resolve(window.__FB);return;}
-  window.__fbResolve=resolve;
-  window.addEventListener('firebase-ready',()=>resolve(window.__FB),{once:true});
-  const t=setInterval(()=>{if(window.__FB){clearInterval(t);resolve(window.__FB);}},100);
-  setTimeout(()=>{clearInterval(t);if(!window.__FB)$('loginSpinner').innerHTML='<span style="color:#dc2626">⚠️ Error de conexión. Recarga la página.</span>';},10000);
-}).then(fb=>{FB=fb;initAuth();});
+    // Esperar a que Firebase esté listo
+    const checkFB = setInterval(() => {
+      if (window.__fbReady && window.__FB) {
+        clearInterval(checkFB);
+        initUI();
+      }
+    }, 100);
 
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
-</script>
+    // Timeout de diagnóstico
+    setTimeout(() => {
+      if (!window.__fbReady) {
+        clearInterval(checkFB);
+        $('loadingText').innerHTML = '<span style="color:var(--danger)">⚠️ Error crítico de inicialización.<br>Por favor, recarga la página.</span>';
+      }
+    }, 15000);
+
+    function initUI() {
+      const FB = window.__FB;
+      $('loading').style.display = 'none';
+      $('authCard').style.display = 'block';
+
+      // Toggle Login/Register
+      $('tabLogin').onclick = () => {
+        isRegister = false;
+        $('tabLogin').classList.add('active');
+        $('tabRegister').classList.remove('active');
+        $('confirmPassGroup').style.display = 'none';
+        $('btnSubmit').textContent = 'Iniciar Sesión';
+      };
+      $('tabRegister').onclick = () => {
+        isRegister = true;
+        $('tabRegister').classList.add('active');
+        $('tabLogin').classList.remove('active');
+        $('confirmPassGroup').style.display = 'block';
+        $('btnSubmit').textContent = 'Crear Cuenta';
+      };
+
+      // Auth logic
+      $('formAuth').onsubmit = async (e) => {
+        e.preventDefault();
+        const email = $('email').value.trim();
+        const pass = $('password').value;
+        
+        try {
+          if (isRegister) {
+            const confirm = $('confirmPassword').value;
+            if (pass !== confirm) throw { code: 'custom/pass-mismatch' };
+            await FB.createUserWithEmailAndPassword(FB.auth, email, pass);
+          } else {
+            await FB.signInWithEmailAndPassword(FB.auth, email, pass);
+          }
+        } catch (err) {
+          showError(ERRS[err.code] || err.message || 'Error en la operación');
+        }
+      };
+
+      $('btnGoogle').onclick = async () => {
+        try {
+          await FB.signInWithPopup(FB.auth, new FB.GoogleAuthProvider());
+        } catch (err) {
+          showError(ERRS[err.code] || 'Error con Google');
+        }
+      };
+
+      $('btnSignOut').onclick = () => FB.signOut(FB.auth);
+
+      FB.onAuthStateChanged(FB.auth, user => {
+        if (user) {
+          $('loginSection').style.display = 'none';
+          $('profileSection').style.display = 'block';
+          $('uEmail').textContent = user.email;
+          $('uAv').textContent = (user.email || 'U')[0].toUpperCase();
+          sessionStorage.setItem('ca_uid', user.uid);
+        } else {
+          $('loginSection').style.display = 'block';
+          $('profileSection').style.display = 'none';
+          sessionStorage.clear();
+        }
+      });
+    }
+  </script>
 </body>
 </html>
