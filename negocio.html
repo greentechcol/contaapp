@@ -16,7 +16,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, deleteDoc, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, addDoc, onSnapshot, collection, deleteDoc, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBRcdPOgC3jU4Br81r3lC5KK2ZowBSns80",
@@ -34,7 +34,7 @@
     window.__FB = { 
       auth, db, GoogleAuthProvider, signInWithPopup, 
       signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-      onAuthStateChanged, signOut, doc, getDoc, setDoc, 
+      onAuthStateChanged, signOut, doc, getDoc, setDoc, addDoc,
       onSnapshot, collection, deleteDoc, query, orderBy, writeBatch 
     };
     window.__fbReady = true;
@@ -161,6 +161,10 @@
     let DB = { movimientos: [], categorias: [], cuentas: [], saldosIniciales: {} };
     let chartFlujo = null;
 
+    // ✅ Valores por defecto para cuentas nuevas
+    const defaultCategorias = ['Ventas', 'Servicios', 'Proveedores', 'Gastos Operativos', 'Nómina', 'Otros'];
+    const defaultCuentas = [{ id: 'caja', nombre: 'Caja' }, { id: 'banco', nombre: 'Banco' }];
+
     window.addEventListener('firebase-ready', () => {
       const FB = window.__FB;
       
@@ -189,25 +193,44 @@
 
     async function initData(uid) {
       const FB = window.__FB;
-      const userRef = FB.doc(FB.db, 'users', uid);
-      const configRef = FB.doc(userRef, 'config', 'negocio');
-      
+
+      // ✅ FIX #1: Rutas absolutas de Firestore (v10 no acepta doc ref como base para doc())
+      const configRef = FB.doc(FB.db, 'users', uid, 'config', 'negocio');
+
+      // ✅ FIX #2: Ocultar loading aquí, ANTES de los listeners,
+      //    por si la cuenta es nueva y las colecciones están vacías.
+      $('loading').style.display = 'none';
+
       // Cargar Configuración (Categorías, Cuentas, Saldos Iniciales)
-      FB.onSnapshot(configRef, (doc) => {
-        if (doc.exists()) {
-          const data = doc.data();
-          DB.categorias = data.categorias || [];
-          DB.cuentas = data.cuentas || [];
+      FB.onSnapshot(configRef, (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          DB.categorias = data.categorias || defaultCategorias;
+          DB.cuentas = data.cuentas || defaultCuentas;
           DB.saldosIniciales = data.saldosIniciales || {};
-          updateUI();
+        } else {
+          // Cuenta nueva: usar valores por defecto
+          DB.categorias = defaultCategorias;
+          DB.cuentas = defaultCuentas;
         }
+        updateUI();
+      }, (err) => {
+        console.error('Error config negocio:', err);
+        DB.categorias = defaultCategorias;
+        DB.cuentas = defaultCuentas;
+        updateUI();
       });
 
-      // Cargar Movimientos
-      const movQuery = FB.query(FB.collection(userRef, 'movimientos_negocio'), FB.orderBy('fecha', 'desc'));
+      // Cargar Movimientos con ruta absoluta
+      const movQuery = FB.query(
+        FB.collection(FB.db, 'users', uid, 'movimientos_negocio'),
+        FB.orderBy('fecha', 'desc')
+      );
       FB.onSnapshot(movQuery, (snap) => {
         DB.movimientos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        $('loading').style.display = 'none';
+        updateUI();
+      }, (err) => {
+        console.error('Error movimientos negocio:', err);
         updateUI();
       });
     }
@@ -306,24 +329,34 @@
     window.eliminarMovimiento = async (id) => {
       if (!confirm('¿Eliminar este movimiento?')) return;
       const FB = window.__FB;
-      const uid = FB.auth.currentUser.uid;
+      const uid = FB.auth.currentUser?.uid;
+      if (!uid) return;
+      // ✅ FIX: ruta absoluta correcta
       await FB.deleteDoc(FB.doc(FB.db, 'users', uid, 'movimientos_negocio', id));
     };
 
     $('formMovimiento').onsubmit = async (e) => {
       e.preventDefault();
       const FB = window.__FB;
-      const uid = FB.auth.currentUser.uid;
+      const uid = FB.auth.currentUser?.uid;
+      if (!uid) return;
       const mov = {
         fecha: $('movFecha').value,
         tipo: $('movTipo').value,
         categoria: $('movCategoria').value,
         monto: parseFloat($('movMonto').value),
         descripcion: $('movDescripcion').value,
-        cuenta: DB.cuentas[0]?.nombre || 'Caja'
+        cuenta: DB.cuentas[0]?.nombre || 'Caja',
+        creadoEn: new Date().toISOString()
       };
-      await FB.setDoc(FB.doc(FB.collection(FB.db, 'users', uid, 'movimientos_negocio')), mov);
-      $('formMovimiento').reset();
+      try {
+        // ✅ FIX #3: addDoc genera ID automáticamente (setDoc requiere ID explícito)
+        await FB.addDoc(FB.collection(FB.db, 'users', uid, 'movimientos_negocio'), mov);
+        $('formMovimiento').reset();
+      } catch (err) {
+        console.error('Error guardando movimiento:', err);
+        alert('Error al guardar: ' + err.message);
+      }
     };
   </script>
 
