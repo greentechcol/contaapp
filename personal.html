@@ -179,6 +179,89 @@
     .add-subcat{display:flex;gap:.4rem;margin-top:.4rem;padding-left:1.1rem}
     .add-subcat input{flex:1;font-size:.82rem;padding:.38rem .6rem}
     .add-subcat button{background:var(--green);color:white;border:none;border-radius:var(--radius-sm);padding:.38rem .7rem;cursor:pointer;font-size:.8rem;font-weight:600}
+
+    /* ══════════════════════════════════════════
+       MÓDULO DE RETOS Y PLANES DE AHORRO
+    ══════════════════════════════════════════ */
+    .sav-tabs{display:flex;gap:.3rem;margin-bottom:1rem;background:var(--neutral-bg);border-radius:var(--radius);padding:.3rem;overflow-x:auto;scrollbar-width:none}
+    .sav-tabs::-webkit-scrollbar{display:none}
+    .sav-tab{flex:1;min-width:80px;padding:.42rem .6rem;border:none;border-radius:var(--radius-sm);background:transparent;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .18s}
+    .sav-tab.active{background:white;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+    .sav-panel{display:none}.sav-panel.active{display:block}
+    .sav-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.7rem;margin-bottom:1rem}
+    .sav-kpi{border-radius:var(--radius);padding:.85rem 1rem;display:flex;flex-direction:column;gap:.2rem;position:relative;overflow:hidden}
+    .sav-kpi::before{content:'';position:absolute;right:-10px;top:-10px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.12)}
+    .sav-kpi-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.85}
+    .sav-kpi-val{font-size:1.25rem;font-weight:900;letter-spacing:-.03em}
+    .sav-kpi-sub{font-size:.68rem;opacity:.78}
+    .kpi-teal{background:linear-gradient(135deg,#134e4a,#0d9488);color:white}
+    .kpi-indigo{background:linear-gradient(135deg,#1e1b4b,#4338ca);color:white}
+    .kpi-amber{background:linear-gradient(135deg,#78350f,#f59e0b);color:white}
+    .kpi-rose{background:linear-gradient(135deg,#881337,#f43f5e);color:white}
+    .reto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.85rem}
+    .reto-card{border-radius:var(--radius);border:2px solid var(--border);padding:1.1rem;cursor:pointer;transition:border-color .18s,box-shadow .18s,transform .18s;background:white;position:relative;overflow:hidden}
+    .reto-card:hover{border-color:var(--green);box-shadow:0 4px 18px rgba(22,163,74,.15);transform:translateY(-2px)}
+    .reto-card.popular::after{content:'⭐ Popular';position:absolute;top:10px;right:-22px;background:var(--green);color:white;font-size:.62rem;font-weight:800;padding:.18rem 1.6rem;transform:rotate(35deg);letter-spacing:.05em}
+    .reto-icon{font-size:2rem;margin-bottom:.5rem;display:block}
+    .reto-name{font-weight:800;font-size:.95rem;margin-bottom:.25rem}
+    .reto-desc{font-size:.78rem;color:var(--muted);line-height:1.45;margin-bottom:.6rem}
+    .reto-meta{display:flex;gap:.5rem;flex-wrap:wrap}
+    .reto-pill{background:var(--neutral-bg);border-radius:20px;font-size:.68rem;font-weight:700;padding:.18rem .55rem;color:var(--muted)}
+    .reto-pill.green{background:var(--green-l);color:var(--green)}
+    .reto-pill.amber{background:#fef3c7;color:#92400e}
+    .reto-pill.blue{background:#dbeafe;color:#1d4ed8}
+    .plan-card{border-radius:var(--radius);border:2px solid var(--border);padding:1.1rem;margin-bottom:.85rem;background:white}
+    .plan-card.vencido{border-color:var(--danger);background:#fff8f8}
+    .plan-card.completado{border-color:var(--green);background:#f0fdf4}
+    .plan-card.urgente{border-color:var(--warning);background:#fffbeb}
+    .plan-header{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.75rem}
+    .plan-icon-big{font-size:1.8rem;line-height:1}
+    .plan-info{flex:1}
+    .plan-name{font-weight:800;font-size:.98rem}
+    .plan-sub{font-size:.76rem;color:var(--muted);margin-top:.15rem}
+    .plan-badge{display:inline-flex;align-items:center;gap:.25rem;font-size:.68rem;font-weight:700;padding:.18rem .5rem;border-radius:20px;white-space:nowrap}
+    .pb-ok{background:#dcfce7;color:#15803d}
+    .pb-warn{background:#fef3c7;color:#92400e}
+    .pb-danger{background:#fee2e2;color:#dc2626}
+    .pb-done{background:#dbeafe;color:#1d4ed8}
+    .plan-progress-wrap{margin:.6rem 0}
+    .plan-progress-bar{height:12px;background:var(--neutral-bg);border-radius:6px;overflow:hidden;margin-bottom:.3rem}
+    .plan-progress-fill{height:100%;border-radius:6px;transition:width .5s ease}
+    .plan-progress-labels{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);font-weight:600}
+    .cal-grid{display:grid;gap:3px;margin:.6rem 0}
+    .cal-cell{border-radius:3px;aspect-ratio:1;cursor:default;transition:transform .12s}
+    .cal-cell:hover{transform:scale(1.3)}
+    .cal-cell.done{background:var(--green)}
+    .cal-cell.pending{background:#e2e8f0}
+    .cal-cell.today{box-shadow:0 0 0 2px var(--green),0 0 0 4px white}
+    .cal-cell.vencido{background:#fca5a5}
+    .timeline{display:flex;flex-direction:column;gap:.4rem;max-height:300px;overflow-y:auto;padding-right:.25rem}
+    .tl-item{display:flex;align-items:center;gap:.65rem;padding:.45rem .6rem;border-radius:var(--radius-sm);background:#f8fafc;font-size:.82rem}
+    .tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .tl-dot.done{background:var(--green)}
+    .tl-dot.pending{background:#cbd5e1}
+    .tl-dot.vencido{background:var(--danger)}
+    .tl-fecha{color:var(--muted);font-size:.74rem;white-space:nowrap}
+    .tl-monto{font-weight:700;margin-left:auto;white-space:nowrap}
+    .alarm-banner{border-radius:var(--radius);padding:.8rem 1rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.6rem;font-size:.83rem;font-weight:600}
+    .alarm-pulse{animation:pulse-alarm 2s ease infinite}
+    @keyframes pulse-alarm{0%,100%{opacity:1}50%{opacity:.75}}
+    .alarm-danger{background:#fee2e2;border-left:4px solid var(--danger);color:#7f1d1d}
+    .alarm-warn{background:#fef3c7;border-left:4px solid var(--warning);color:#78350f}
+    .alarm-ok{background:#dcfce7;border-left:4px solid var(--green);color:#14532d}
+    .alarm-dismiss{margin-left:auto;background:none;border:none;cursor:pointer;font-size:1rem;opacity:.6}
+    .alarm-dismiss:hover{opacity:1}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeOverlay .2s ease}
+    @keyframes fadeOverlay{from{opacity:0}to{opacity:1}}
+    .modal-sheet{background:white;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;padding:1.4rem 1.3rem 2.5rem;animation:slideUp .25s ease}
+    @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal-handle{width:40px;height:4px;background:#cbd5e1;border-radius:2px;margin:0 auto 1.1rem}
+    .modal-title{font-weight:800;font-size:1.05rem;margin-bottom:.8rem}
+    .modal-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+    .cuota-highlight{background:linear-gradient(135deg,var(--green),#065f46);color:white;border-radius:var(--radius);padding:.8rem 1rem;margin:.6rem 0;display:flex;align-items:center;gap:.75rem}
+    .cuota-highlight .ch-val{font-size:1.35rem;font-weight:900}
+    .cuota-highlight .ch-lbl{font-size:.75rem;opacity:.88}
+    @media(max-width:640px){.reto-grid{grid-template-columns:1fr}.sav-kpi-grid{grid-template-columns:1fr 1fr}}
   </style>
 </head>
 <body>
@@ -390,12 +473,113 @@
   </section>
 </main>
 
+<!-- ══ RETOS DE AHORRO ══ -->
+<main class="tab-content hidden" id="tab-retos">
+
+  <!-- Alarmas activas -->
+  <div id="savAlarmas"></div>
+
+  <!-- Sub-tabs internos -->
+  <div class="section-block" style="padding:.8rem 1rem">
+    <div class="sav-tabs">
+      <button class="sav-tab active" data-sav="dashboard">🏠 Dashboard</button>
+      <button class="sav-tab" data-sav="planes">📋 Mis Planes</button>
+      <button class="sav-tab" data-sav="plantillas">🎲 Plantillas</button>
+      <button class="sav-tab" data-sav="personalizado">⚙️ Personalizado</button>
+    </div>
+
+    <!-- PANEL: DASHBOARD -->
+    <div class="sav-panel active" id="savp-dashboard">
+      <div class="sav-kpi-grid" id="savKpis"></div>
+      <div id="savDashPlanes"></div>
+    </div>
+
+    <!-- PANEL: MIS PLANES -->
+    <div class="sav-panel" id="savp-planes">
+      <div id="savPlanesLista"><div class="empty-state">No tienes planes activos aún. ¡Elige una plantilla!</div></div>
+    </div>
+
+    <!-- PANEL: PLANTILLAS -->
+    <div class="sav-panel" id="savp-plantillas">
+      <p class="section-desc" style="margin-bottom:.9rem">Elige un reto o método de ahorro probado. Lo configuramos juntos para adaptarlo a tu bolsillo.</p>
+      <div class="reto-grid" id="retoGrid"></div>
+    </div>
+
+    <!-- PANEL: PERSONALIZADO -->
+    <div class="sav-panel" id="savp-personalizado">
+      <p class="section-desc" style="margin-bottom:.9rem">Crea tu propio plan de ahorro con frecuencia y monto personalizados.</p>
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre del plan *</label><input type="text" id="cpNombre" placeholder="Ej: Fondo viaje, Emergencias..." maxlength="60"/></div>
+        <div class="form-group"><label>Icono / Emoji</label><input type="text" id="cpIcono" placeholder="💰" maxlength="4"/></div>
+        <div class="form-group"><label>Monto objetivo *</label><input type="number" id="cpObjetivo" placeholder="0.00" step="0.01" min="1"/></div>
+        <div class="form-group">
+          <label>Frecuencia de aporte *</label>
+          <select id="cpFrecuencia">
+            <option value="diario">Diario</option>
+            <option value="semanal" selected>Semanal</option>
+            <option value="quincenal">Quincenal</option>
+            <option value="mensual">Mensual</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Monto por aporte *</label><input type="number" id="cpCuota" placeholder="0.00" step="0.01" min="0.01"/></div>
+        <div class="form-group"><label>Fecha de inicio *</label><input type="date" id="cpInicio"/></div>
+        <div class="form-group"><label>Cuenta de ahorro *</label><select id="cpCuenta"><option value="">— Seleccionar —</option></select></div>
+        <div class="form-group"><label>Alerta días antes de vencimiento</label><input type="number" id="cpAlerta" value="7" min="1" max="30"/></div>
+      </div>
+      <div id="cpPreview" style="display:none" class="cuota-highlight">
+        <div><div class="ch-val" id="cpPrevVal"></div><div class="ch-lbl" id="cpPrevLbl"></div></div>
+        <div style="margin-left:auto;font-size:.78rem;opacity:.9" id="cpPrevEnd"></div>
+      </div>
+      <div class="form-actions" style="margin-top:.75rem">
+        <button class="btn-primary" id="btnCrearPersonalizado">💾 Crear plan</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal configurar reto -->
+<div id="modalReto" style="display:none" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalRetoTitle">Configurar reto</div>
+    <p class="section-desc" id="modalRetoDesc" style="margin-bottom:.9rem"></p>
+    <div class="cuota-highlight" id="modalRetoCuota" style="display:none">
+      <div><div class="ch-val" id="modalCuotaVal"></div><div class="ch-lbl" id="modalCuotaLbl"></div></div>
+      <div style="margin-left:auto;font-size:.78rem;opacity:.9" id="modalCuotaEnd"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Monto base / objetivo *</label><input type="number" id="mrMonto" placeholder="0.00" step="0.01" min="1"/></div>
+      <div class="form-group"><label>Fecha de inicio *</label><input type="date" id="mrInicio"/></div>
+      <div class="form-group"><label>Cuenta de ahorro *</label><select id="mrCuenta"><option value="">— Seleccionar —</option></select></div>
+      <div class="form-group"><label>Alerta días antes (vencimiento)</label><input type="number" id="mrAlerta" value="7" min="1" max="30"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="btnConfirmarReto">🚀 Activar reto</button>
+      <button class="btn-secondary" onclick="cerrarModalReto()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal detalle plan -->
+<div id="modalPlan" style="display:none" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="modalPlanContent"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="btnRegistrarAporte">✅ Registrar aporte de hoy</button>
+      <button class="btn-secondary" onclick="cerrarModalPlan()">Cerrar</button>
+      <button class="btn-danger btn-sm" id="btnEliminarPlan">🗑 Eliminar plan</button>
+    </div>
+  </div>
+</div>
+
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="bnb active" data-tab="resumen"><span class="bni">🏠</span>Resumen</button>
   <button class="bnb" data-tab="movimientos"><span class="bni">💸</span>Movim.</button>
   <button class="bnb" data-tab="presupuesto"><span class="bni">📊</span>Presup.</button>
   <button class="bnb" data-tab="metas"><span class="bni">🎯</span>Metas</button>
+  <button class="bnb" data-tab="retos"><span class="bni">🏆</span>Retos</button>
   <button class="bnb" data-tab="categorias"><span class="bni">🏷️</span>Categ.</button>
   <button class="bnb" data-tab="cuentas"><span class="bni">🏦</span>Cuentas</button>
 </nav>
@@ -430,7 +614,7 @@ function showToast(msg,type=''){
 const DB={movimientos:[],categorias:[],cuentas:[],saldosIniciales:{},presupuestos:{},metas:[]};
 let currentUser=null, FB=null, isOnline=navigator.onLine;
 
-// Rutas Firestore → subcolecciones 'personal_{col}'
+// Rutas Firestore → subcolección 'personal'
 const userDoc  =(col,id)=>FB.doc(FB.db,'users',currentUser.uid,'personal_'+col,id);
 const configDoc=()=>FB.doc(FB.db,'users',currentUser.uid,'personal_config','main');
 
@@ -550,7 +734,7 @@ async function loadData(){
 
 function loadCol(colName){
   try{
-    // Ruta correcta: users/{uid}/personal_{colName} como colección raíz del usuario
+    // SIN orderBy ni includeMetadataChanges — evita errores silenciosos y doble disparo
     const colRef=FB.collection(FB.db,'users',currentUser.uid,'personal_'+colName);
     FB.onSnapshot(colRef,snap=>{
       DB[colName]=snap.docs.map(d=>d.data()).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
@@ -576,7 +760,7 @@ function initTabs(){
 }
 function refreshTab(){
   const t=document.querySelector('.bnb.active')?.dataset?.tab;
-  const map={resumen:renderResumen,movimientos:renderMovimientos,presupuesto:renderPresupuesto,metas:renderMetas,categorias:renderCategorias,cuentas:renderCuentas};
+  const map={resumen:renderResumen,movimientos:renderMovimientos,presupuesto:renderPresupuesto,metas:renderMetas,categorias:renderCategorias,cuentas:renderCuentas,retos:()=>{if(typeof renderSavDashboard==='function')renderSavDashboard();}};
   if(t&&map[t])map[t]();
 }
 
@@ -1019,7 +1203,523 @@ new Promise(resolve=>{
   setTimeout(()=>clearInterval(t),10000);
 }).then(fb=>{FB=fb;initAuth();});
 
+function initApp(){
+  const h=hoy(); $('movFecha').value=h; $('cpInicio').value=h; $('mrInicio').value=h;
+  initTabs(); populateCatSelect(''); populateCuentaSelect();
+  renderResumen(); renderMovimientos(); renderCategorias(); renderCuentas();
+  initSavModule();
+}
+
+// Firebase ready
+new Promise(resolve=>{
+  if(window.__fbReady&&window.__FB){resolve(window.__FB);return;}
+  window.__fbResolve=resolve;
+  window.addEventListener('firebase-ready',()=>resolve(window.__FB),{once:true});
+  const t=setInterval(()=>{if(window.__FB){clearInterval(t);resolve(window.__FB);}},100);
+  setTimeout(()=>clearInterval(t),10000);
+}).then(fb=>{FB=fb;initAuth();});
+
 if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+// ════════════════════════════════════════════════════════════════
+//  MÓDULO DE RETOS Y PLANES DE AHORRO — ContaApp Personal
+// ════════════════════════════════════════════════════════════════
+
+// ── Extensión del DB para planes ─────────────────────────────────
+// DB.planesAhorro = []  ← se agrega dinámicamente
+
+function getPlanesAhorro(){ return DB.planesAhorro||(DB.planesAhorro=[]); }
+
+// ── Persistencia planes (Firestore subcolección personal_planesAhorro) ──
+async function savePlan(plan){
+  if(!DB.planesAhorro)DB.planesAhorro=[];
+  const i=DB.planesAhorro.findIndex(p=>p.id===plan.id);
+  if(i>=0)DB.planesAhorro[i]=plan; else DB.planesAhorro.push(plan);
+  savePlanesSnap();
+  if(isOnline&&currentUser){
+    try{await FB.setDoc(FB.doc(FB.db,'users',currentUser.uid,'personal_planesAhorro',plan.id),plan);return;}catch(e){console.warn(e);}
+  }
+  qAdd('set','planesAhorro',plan.id,plan);
+}
+async function deletePlan(id){
+  DB.planesAhorro=(DB.planesAhorro||[]).filter(p=>p.id!==id);
+  savePlanesSnap();
+  if(isOnline&&currentUser){
+    try{await FB.deleteDoc(FB.doc(FB.db,'users',currentUser.uid,'personal_planesAhorro',id));return;}catch(e){console.warn(e);}
+  }
+  qAdd('del','planesAhorro',id);
+}
+function savePlanesSnap(){
+  try{localStorage.setItem('ca_planes_v1',JSON.stringify(DB.planesAhorro||[]));}catch{}
+}
+function loadPlanesSnap(){
+  try{const d=localStorage.getItem('ca_planes_v1');if(d)DB.planesAhorro=JSON.parse(d);}catch{}
+  if(!DB.planesAhorro)DB.planesAhorro=[];
+}
+function loadPlanesFirestore(){
+  if(!isOnline||!currentUser)return;
+  try{
+    FB.onSnapshot(FB.collection(FB.db,'users',currentUser.uid,'personal_planesAhorro'),snap=>{
+      DB.planesAhorro=snap.docs.map(d=>d.data());
+      savePlanesSnap();
+      renderSavModule();
+    },err=>console.warn('planesAhorro:',err));
+  }catch(e){console.warn(e);}
+}
+
+// ── Catálogo de plantillas ────────────────────────────────────────
+const RETO_TEMPLATES=[
+  {
+    id:'reto365',nombre:'Reto 365 días',icono:'📅',popular:true,
+    desc:'Ahorra $1 el día 1, $2 el día 2… hasta $365 el día 365. Al final tendrás exactamente $66.795.',
+    tipo:'escalado_diario',duracionDias:365,
+    pill1:{txt:'365 días',cls:'amber'},pill2:{txt:'Escalado',cls:'blue'},pill3:{txt:'$66.795 total',cls:'green'},
+    calcTotal:(base)=>((365*366)/2)*base,
+    calcCuota:(base,dia)=>base*dia,
+    calcDias:()=>365,
+    baseLabel:'Valor base (día 1)',basePlaceholder:'1000',
+  },
+  {
+    id:'reto52',nombre:'Reto 52 semanas',icono:'📆',popular:true,
+    desc:'Semana 1 ahorra 1x, semana 2 ahorra 2x… la semana 52 ahorra 52x tu cuota base. Ideal para el año.',
+    tipo:'escalado_semanal',duracionDias:364,
+    pill1:{txt:'52 semanas',cls:'amber'},pill2:{txt:'Escalado',cls:'blue'},pill3:{txt:'~$1.378 x base',cls:'green'},
+    calcTotal:(base)=>((52*53)/2)*base,
+    calcCuota:(base,semana)=>base*semana,
+    calcDias:()=>364,
+    baseLabel:'Valor base (semana 1)',basePlaceholder:'10000',
+  },
+  {
+    id:'4sobre1000',nombre:'Método 4 sobres',icono:'✉️',popular:false,
+    desc:'Divide el mes en 4 semanas. Cada semana un sobre con el mismo monto. Control visual y psicológico del gasto.',
+    tipo:'fijo_semanal',duracionDias:28,
+    pill1:{txt:'4 semanas',cls:'amber'},pill2:{txt:'Fijo semanal',cls:'blue'},pill3:{txt:'Bajo estrés',cls:'green'},
+    calcTotal:(base)=>base*4,
+    calcCuota:(base)=>base,
+    calcDias:()=>28,
+    baseLabel:'Monto por sobre (semanal)',basePlaceholder:'50000',
+  },
+  {
+    id:'regla50_30_20',nombre:'Regla 50-30-20',icono:'⚖️',popular:true,
+    desc:'El 20% de tu ingreso mensual va directo al ahorro. Automático, mensual y disciplinado. La más recomendada por expertos.',
+    tipo:'fijo_mensual',duracionDias:365,
+    pill1:{txt:'12 meses',cls:'amber'},pill2:{txt:'Fijo mensual',cls:'blue'},pill3:{txt:'20% ingreso',cls:'green'},
+    calcTotal:(base)=>base*12,
+    calcCuota:(base)=>base,
+    calcDias:()=>365,
+    baseLabel:'Monto mensual a ahorrar (20% de tu ingreso)',basePlaceholder:'200000',
+  },
+  {
+    id:'retoMonedas',nombre:'Reto Monedas/Redondeo',icono:'🪙',popular:false,
+    desc:'Cada día ahorra el redondeo de tus gastos al siguiente múltiplo de tu cuota. Versión digital: aparta una cuota fija diaria pequeña.',
+    tipo:'fijo_diario',duracionDias:365,
+    pill1:{txt:'365 días',cls:'amber'},pill2:{txt:'Diario',cls:'blue'},pill3:{txt:'Hábito',cls:'green'},
+    calcTotal:(base)=>base*365,
+    calcCuota:(base)=>base,
+    calcDias:()=>365,
+    baseLabel:'Monto fijo diario',basePlaceholder:'2000',
+  },
+  {
+    id:'fondoEmergencia',nombre:'Fondo de Emergencia',icono:'🛡️',popular:false,
+    desc:'Meta: 3 a 6 meses de gastos. Define cuánto quieres ahorrar y en cuántos meses. Aporte mensual calculado automáticamente.',
+    tipo:'fijo_mensual',duracionDias:180,
+    pill1:{txt:'6 meses',cls:'amber'},pill2:{txt:'Fijo mensual',cls:'blue'},pill3:{txt:'Protección',cls:'green'},
+    calcTotal:(base)=>base,
+    calcCuota:(base,_,meses)=>base/meses,
+    calcDias:(meses)=>meses*30,
+    baseLabel:'Monto total objetivo (3-6x gastos mensuales)',basePlaceholder:'3000000',
+    extraField:'meses',extraLabel:'¿En cuántos meses?',extraDefault:6,
+  },
+  {
+    id:'biweekly',nombre:'Ahorro Quincenal',icono:'💳',popular:false,
+    desc:'Sincronizado con tu quincena. Cada 15 días apartas una cuota fija. 24 aportes al año sin sentirlo.',
+    tipo:'fijo_quincenal',duracionDias:365,
+    pill1:{txt:'24 aportes',cls:'amber'},pill2:{txt:'Quincenal',cls:'blue'},pill3:{txt:'Con nómina',cls:'green'},
+    calcTotal:(base)=>base*24,
+    calcCuota:(base)=>base,
+    calcDias:()=>365,
+    baseLabel:'Monto por quincena',basePlaceholder:'100000',
+  },
+  {
+    id:'retoCafe',nombre:'Reto Sin Café / Sin Extras',icono:'☕',popular:false,
+    desc:'Cada día que resistes un gasto impulsivo (café, snack, delivery), aportas ese monto al ahorro. Versión planificada: cuota fija diaria.',
+    tipo:'fijo_diario',duracionDias:90,
+    pill1:{txt:'90 días',cls:'amber'},pill2:{txt:'Diario',cls:'blue'},pill3:{txt:'Anti-impulso',cls:'green'},
+    calcTotal:(base)=>base*90,
+    calcCuota:(base)=>base,
+    calcDias:()=>90,
+    baseLabel:'Monto diario a apartar',basePlaceholder:'5000',
+  },
+];
+
+// ── Utilidades de fechas para planes ────────────────────────────
+function addDays(dateStr,n){const d=new Date(dateStr+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function diffDays(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/(864e5));}
+function formatFecha(s){if(!s)return'—';const[y,m,d]=s.split('-');const MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return `${parseInt(d)} ${MN[parseInt(m)-1]} ${y}`;}
+
+// ── Calcular aportes de un plan ────────────────────────────────
+function calcAportesPlan(plan){
+  const tpl=RETO_TEMPLATES.find(t=>t.id===plan.templateId)||null;
+  const aportes=[];
+  const inicio=plan.inicio;
+  if(plan.tipo==='escalado_diario'){
+    for(let i=0;i<plan.duracionDias;i++){
+      aportes.push({fecha:addDays(inicio,i),monto:plan.base*(i+1)});
+    }
+  } else if(plan.tipo==='escalado_semanal'){
+    for(let s=0;s<52;s++){
+      aportes.push({fecha:addDays(inicio,s*7),monto:plan.base*(s+1)});
+    }
+  } else if(plan.tipo==='fijo_diario'){
+    const dias=plan.duracionDias||90;
+    for(let i=0;i<dias;i++) aportes.push({fecha:addDays(inicio,i),monto:plan.cuota});
+  } else if(plan.tipo==='fijo_semanal'){
+    const semanas=Math.round((plan.duracionDias||28)/7);
+    for(let s=0;s<semanas;s++) aportes.push({fecha:addDays(inicio,s*7),monto:plan.cuota});
+  } else if(plan.tipo==='fijo_quincenal'){
+    const qs=Math.round((plan.duracionDias||365)/15);
+    for(let q=0;q<qs;q++) aportes.push({fecha:addDays(inicio,q*15),monto:plan.cuota});
+  } else if(plan.tipo==='fijo_mensual'){
+    const meses=Math.round((plan.duracionDias||365)/30);
+    for(let m=0;m<meses;m++) aportes.push({fecha:addDays(inicio,m*30),monto:plan.cuota});
+  }
+  return aportes;
+}
+
+// ── Estado de un plan ─────────────────────────────────────────
+function getEstadoPlan(plan){
+  const hoyStr=hoy();
+  const fin=plan.fin||addDays(plan.inicio,plan.duracionDias-1);
+  const pagados=plan.pagados||{};
+  const aportes=calcAportesPlan(plan);
+  const totalEsperado=aportes.filter(a=>a.fecha<=hoyStr).length;
+  const totalPagados=Object.values(pagados).filter(Boolean).length;
+  const totalMontoPagado=aportes.filter(a=>pagados[a.fecha]).reduce((s,a)=>s+a.monto,0);
+  const totalMontoPlan=aportes.reduce((s,a)=>s+a.monto,0);
+  const vencido=hoyStr>fin;
+  const completado=totalPagados>=aportes.length;
+  const diasRestantes=diffDays(hoyStr,fin);
+  const pendientesVencidos=aportes.filter(a=>a.fecha<hoyStr&&!pagados[a.fecha]);
+  return{aportes,totalEsperado,totalPagados,totalMontoPagado,totalMontoPlan,vencido,completado,diasRestantes,fin,pendientesVencidos,pagados};
+}
+
+// ── INICIALIZACIÓN DEL MÓDULO ─────────────────────────────────
+function initSavModule(){
+  loadPlanesSnap();
+  loadPlanesFirestore();
+  // Sub-tabs
+  document.querySelectorAll('.sav-tab').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.sav-tab').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.sav-panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      $('savp-'+btn.dataset.sav).classList.add('active');
+      if(btn.dataset.sav==='plantillas')renderPlantillas();
+      if(btn.dataset.sav==='planes')renderMisPlanes();
+      if(btn.dataset.sav==='dashboard')renderSavDashboard();
+      if(btn.dataset.sav==='personalizado')initPersonalizado();
+    };
+  });
+  // Inputs preview en personalizado
+  ['cpObjetivo','cpCuota','cpFrecuencia','cpInicio'].forEach(id=>{
+    const el=$(id); if(el)el.addEventListener('input',updateCpPreview);
+  });
+  $('btnCrearPersonalizado').onclick=crearPlanPersonalizado;
+  renderPlantillas();
+  renderSavDashboard();
+}
+
+function renderSavModule(){
+  const t=document.querySelector('.sav-tab.active')?.dataset?.sav||'dashboard';
+  if(t==='dashboard')renderSavDashboard();
+  else if(t==='planes')renderMisPlanes();
+}
+
+// ── ALARMAS ──────────────────────────────────────────────────
+function renderAlarmas(){
+  const cont=$('savAlarmas'); if(!cont)return;
+  const hoyStr=hoy();
+  const alarmas=[];
+  getPlanesAhorro().forEach(plan=>{
+    const est=getEstadoPlan(plan);
+    if(est.completado)return;
+    const alerta=plan.alertaDias||7;
+    if(est.vencido){
+      alarmas.push({tipo:'danger',msg:`🚨 <strong>${plan.nombre}</strong> venció el ${formatFecha(est.fin)} y no está completado.`,planId:plan.id});
+    } else if(est.diasRestantes<=alerta){
+      alarmas.push({tipo:'warn',msg:`⏰ <strong>${plan.nombre}</strong> vence en ${est.diasRestantes} día${est.diasRestantes===1?'':'s'} (${formatFecha(est.fin)}).`,planId:plan.id});
+    }
+    if(est.pendientesVencidos.length>0&&!est.vencido){
+      alarmas.push({tipo:'warn',msg:`📋 <strong>${plan.nombre}</strong>: tienes ${est.pendientesVencidos.length} aporte${est.pendientesVencidos.length>1?'s':''} sin registrar.`,planId:plan.id});
+    }
+  });
+  cont.innerHTML=alarmas.map((a,i)=>`
+    <div class="alarm-banner alarm-${a.tipo} ${a.tipo==='danger'?'alarm-pulse':''}">
+      <span>${a.msg}</span>
+      <button class="alarm-dismiss" onclick="this.parentElement.remove()">✕</button>
+    </div>`).join('');
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────
+function renderSavDashboard(){
+  renderAlarmas();
+  const planes=getPlanesAhorro();
+  let totalAhorrado=0,totalMeta=0,planesActivos=0,planesCompletados=0;
+  planes.forEach(p=>{
+    const est=getEstadoPlan(p);
+    totalAhorrado+=est.totalMontoPagado;
+    totalMeta+=est.totalMontoPlan;
+    if(est.completado)planesCompletados++;
+    else planesActivos++;
+  });
+  $('savKpis').innerHTML=`
+    <div class="sav-kpi kpi-teal"><div class="sav-kpi-lbl">💰 Total ahorrado</div><div class="sav-kpi-val">${fmt(totalAhorrado)}</div><div class="sav-kpi-sub">de ${fmt(totalMeta)} proyectado</div></div>
+    <div class="sav-kpi kpi-indigo"><div class="sav-kpi-lbl">📋 Planes activos</div><div class="sav-kpi-val">${planesActivos}</div><div class="sav-kpi-sub">${planesCompletados} completados</div></div>
+    <div class="sav-kpi kpi-amber"><div class="sav-kpi-lbl">📈 Progreso global</div><div class="sav-kpi-val">${totalMeta>0?Math.round((totalAhorrado/totalMeta)*100):0}%</div><div class="sav-kpi-sub">hacia todas las metas</div></div>
+    <div class="sav-kpi kpi-rose"><div class="sav-kpi-lbl">⚠️ Con alertas</div><div class="sav-kpi-val">${planes.filter(p=>{const e=getEstadoPlan(p);return !e.completado&&(e.vencido||e.diasRestantes<=(p.alertaDias||7)||e.pendientesVencidos.length>0);}).length}</div><div class="sav-kpi-sub">requieren atención</div></div>`;
+
+  // Planes resumen en dashboard
+  const dashPlanes=$('savDashPlanes');
+  if(!planes.length){dashPlanes.innerHTML='<div class="empty-state" style="padding:1.5rem">No hay planes activos. ¡Elige una plantilla en la pestaña Plantillas!</div>';return;}
+  dashPlanes.innerHTML='<div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">Mis planes</div>'+
+    planes.map(p=>planCardHTML(p,true)).join('');
+}
+
+// ── MIS PLANES ───────────────────────────────────────────────
+function renderMisPlanes(){
+  const planes=getPlanesAhorro();
+  const cont=$('savPlanesLista');
+  if(!planes.length){cont.innerHTML='<div class="empty-state">No tienes planes activos aún. ¡Elige una plantilla!</div>';return;}
+  cont.innerHTML=planes.map(p=>planCardHTML(p,false)).join('');
+}
+
+function planCardHTML(plan,compact){
+  const est=getEstadoPlan(plan);
+  const pct=est.totalMontoPlan>0?Math.min(100,Math.round((est.totalMontoPagado/est.totalMontoPlan)*100)):0;
+  const color=est.completado?'#2563eb':est.vencido?'#dc2626':pct>=80?'#16a34a':pct>=40?'#d97706':'#2563eb';
+  const cls=est.completado?'completado':est.vencido?'vencido':est.diasRestantes<=(plan.alertaDias||7)?'urgente':'';
+  let badge='';
+  if(est.completado)badge='<span class="plan-badge pb-done">🏆 Completado</span>';
+  else if(est.vencido)badge='<span class="plan-badge pb-danger">🔴 Vencido</span>';
+  else if(est.diasRestantes<=(plan.alertaDias||7))badge=`<span class="plan-badge pb-warn">⏰ ${est.diasRestantes}d restantes</span>`;
+  else badge=`<span class="plan-badge pb-ok">✅ Al día</span>`;
+  const hoyStr=hoy();
+  const aporteHoy=est.aportes.find(a=>a.fecha===hoyStr);
+  const pagadoHoy=aporteHoy&&est.pagados[hoyStr];
+  return `<div class="plan-card ${cls}" onclick="abrirModalPlan('${plan.id}')">
+    <div class="plan-header">
+      <div class="plan-icon-big">${plan.icono||'💰'}</div>
+      <div class="plan-info">
+        <div class="plan-name">${esc(plan.nombre)}</div>
+        <div class="plan-sub">${formatFecha(plan.inicio)} → ${formatFecha(est.fin)}</div>
+        <div style="margin-top:.3rem">${badge}${aporteHoy&&!pagadoHoy?'<span class="plan-badge pb-warn" style="margin-left:.3rem">📌 Aporte pendiente hoy: '+fmt(aporteHoy.monto)+'</span>':''}</div>
+      </div>
+    </div>
+    <div class="plan-progress-wrap">
+      <div class="plan-progress-bar"><div class="plan-progress-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="plan-progress-labels"><span>${fmt(est.totalMontoPagado)} ahorrado</span><span>${pct}%</span><span>${fmt(est.totalMontoPlan)} meta</span></div>
+    </div>
+    ${!compact?`<div style="font-size:.76rem;color:var(--muted);margin-top:.35rem">${est.totalPagados} de ${est.aportes.length} aportes completados · ${est.pendientesVencidos.length>0?'<span style="color:var(--danger);font-weight:700">'+est.pendientesVencidos.length+' pendientes vencidos</span>':est.totalEsperado-est.totalPagados+' pendientes'}</div>`:''}
+  </div>`;
+}
+
+// ── PLANTILLAS ──────────────────────────────────────────────
+function renderPlantillas(){
+  $('retoGrid').innerHTML=RETO_TEMPLATES.map(t=>`
+    <div class="reto-card ${t.popular?'popular':''}" onclick="abrirModalReto('${t.id}')">
+      <span class="reto-icon">${t.icono}</span>
+      <div class="reto-name">${t.nombre}</div>
+      <div class="reto-desc">${t.desc}</div>
+      <div class="reto-meta">
+        <span class="reto-pill ${t.pill1.cls}">${t.pill1.txt}</span>
+        <span class="reto-pill ${t.pill2.cls}">${t.pill2.txt}</span>
+        <span class="reto-pill ${t.pill3.cls}">${t.pill3.txt}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── MODAL CONFIGURAR RETO ────────────────────────────────────
+let _retoActivo=null;
+window.abrirModalReto=id=>{
+  _retoActivo=RETO_TEMPLATES.find(t=>t.id===id); if(!_retoActivo)return;
+  $('modalRetoTitle').textContent=_retoActivo.icono+' '+_retoActivo.nombre;
+  $('modalRetoDesc').textContent=_retoActivo.desc;
+  $('mrMonto').value=''; $('mrInicio').value=hoy(); $('mrAlerta').value=7;
+  // extra field
+  let exHtml=document.getElementById('mrExtraWrap');
+  if(exHtml)exHtml.remove();
+  if(_retoActivo.extraField){
+    const wrap=document.createElement('div'); wrap.id='mrExtraWrap'; wrap.className='form-group';
+    wrap.innerHTML=`<label>${_retoActivo.extraLabel}</label><input type="number" id="mrExtra" value="${_retoActivo.extraDefault||6}" min="1" max="36"/>`;
+    $('mrMonto').closest('.form-grid').appendChild(wrap);
+  }
+  // cuenta select
+  const cs=$('mrCuenta'); cs.innerHTML='<option value="">— Seleccionar —</option>';
+  DB.cuentas.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=(c.icono||'')+' '+c.nombre;cs.appendChild(o);});
+  // preview
+  $('mrMonto').oninput=$('mrInicio').oninput=()=>updateModalPreview();
+  if(document.getElementById('mrExtra'))document.getElementById('mrExtra').oninput=updateModalPreview;
+  $('modalRetoCuota').style.display='none';
+  $('modalReto').style.display='flex';
+  $('btnConfirmarReto').onclick=confirmarReto;
+};
+window.cerrarModalReto=()=>{$('modalReto').style.display='none';};
+
+function updateModalPreview(){
+  const base=parseFloat($('mrMonto').value)||0;
+  const extra=document.getElementById('mrExtra')?parseFloat(document.getElementById('mrExtra').value)||6:null;
+  if(!base||!_retoActivo){$('modalRetoCuota').style.display='none';return;}
+  const total=_retoActivo.calcTotal(base,null,extra);
+  const dias=_retoActivo.calcDias?_retoActivo.calcDias(extra):_retoActivo.duracionDias;
+  const fin=addDays($('mrInicio').value||hoy(),dias-1);
+  $('modalCuotaVal').textContent=fmt(total);
+  $('modalCuotaLbl').textContent='Total proyectado al finalizar';
+  $('modalCuotaEnd').textContent='Hasta: '+formatFecha(fin);
+  $('modalRetoCuota').style.display='flex';
+}
+
+async function confirmarReto(){
+  const base=parseFloat($('mrMonto').value);
+  const inicio=$('mrInicio').value;
+  const cuenta=$('mrCuenta').value;
+  const alerta=parseInt($('mrAlerta').value)||7;
+  const extra=document.getElementById('mrExtra')?parseFloat(document.getElementById('mrExtra').value)||6:null;
+  if(!base||!inicio||!cuenta){showToast('Completa todos los campos.','error');return;}
+  const t=_retoActivo;
+  const dias=t.calcDias?t.calcDias(extra):t.duracionDias;
+  const cuota=t.tipo.includes('escalado')?null:t.calcCuota(base,null,extra);
+  const plan={
+    id:uid(),nombre:t.nombre,icono:t.icono,templateId:t.id,
+    tipo:t.tipo,base,cuota:cuota||base,
+    inicio,fin:addDays(inicio,dias-1),duracionDias:dias,
+    cuenta,alertaDias:alerta,pagados:{},creadoEn:hoy(),
+  };
+  await savePlan(plan);
+  cerrarModalReto();
+  renderSavDashboard();
+  showToast('¡Reto activado! 🚀','success');
+}
+
+// ── PERSONALIZADO ────────────────────────────────────────────
+function initPersonalizado(){
+  const cs=$('cpCuenta'); cs.innerHTML='<option value="">— Seleccionar —</option>';
+  DB.cuentas.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=(c.icono||'')+' '+c.nombre;cs.appendChild(o);});
+  $('cpInicio').value=hoy();
+  updateCpPreview();
+}
+function updateCpPreview(){
+  const obj=parseFloat($('cpObjetivo').value)||0;
+  const cuota=parseFloat($('cpCuota').value)||0;
+  const freq=$('cpFrecuencia').value;
+  const inicio=$('cpInicio').value||hoy();
+  if(!obj||!cuota){$('cpPreview').style.display='none';return;}
+  let aportesPorAnio={diario:365,semanal:52,quincenal:24,mensual:12}[freq]||12;
+  let diasHastaFin=Math.ceil(obj/cuota)*{diario:1,semanal:7,quincenal:15,mensual:30}[freq];
+  const fin=addDays(inicio,diasHastaFin);
+  $('cpPrevVal').textContent=fmt(obj);
+  $('cpPrevLbl').textContent='Meta total — '+aportesPorAnio*{diario:1,semanal:1,quincenal:1,mensual:1}[freq]+' aportes aprox.';
+  $('cpPrevEnd').textContent='Finalizaría: '+formatFecha(fin);
+  $('cpPreview').style.display='flex';
+}
+async function crearPlanPersonalizado(){
+  const nombre=$('cpNombre').value.trim();
+  const icono=$('cpIcono').value.trim()||'💰';
+  const objetivo=parseFloat($('cpObjetivo').value);
+  const freq=$('cpFrecuencia').value;
+  const cuota=parseFloat($('cpCuota').value);
+  const inicio=$('cpInicio').value;
+  const cuenta=$('cpCuenta').value;
+  const alerta=parseInt($('cpAlerta').value)||7;
+  if(!nombre||!objetivo||!cuota||!inicio||!cuenta){showToast('Completa todos los campos.','error');return;}
+  const diasPorAporte={diario:1,semanal:7,quincenal:15,mensual:30}[freq]||30;
+  const nAportes=Math.ceil(objetivo/cuota);
+  const duracionDias=nAportes*diasPorAporte;
+  const tipoMap={diario:'fijo_diario',semanal:'fijo_semanal',quincenal:'fijo_quincenal',mensual:'fijo_mensual'};
+  const plan={
+    id:uid(),nombre,icono,templateId:null,
+    tipo:tipoMap[freq],base:cuota,cuota,
+    inicio,fin:addDays(inicio,duracionDias-1),duracionDias,
+    cuenta,alertaDias:alerta,pagados:{},creadoEn:hoy(),
+  };
+  await savePlan(plan);
+  $('cpNombre').value='';$('cpObjetivo').value='';$('cpCuota').value='';$('cpPreview').style.display='none';
+  showToast('¡Plan creado! 💰','success');
+  renderSavDashboard();
+}
+
+// ── MODAL DETALLE PLAN ────────────────────────────────────────
+let _planActivo=null;
+window.abrirModalPlan=id=>{
+  _planActivo=getPlanesAhorro().find(p=>p.id===id); if(!_planActivo)return;
+  renderModalPlan();
+  $('modalPlan').style.display='flex';
+  $('btnEliminarPlan').onclick=async()=>{
+    if(!confirm('¿Eliminar este plan de ahorro?'))return;
+    await deletePlan(_planActivo.id);
+    cerrarModalPlan(); renderSavDashboard(); renderMisPlanes();
+    showToast('Plan eliminado.','success');
+  };
+  const hoyStr=hoy();
+  const est=getEstadoPlan(_planActivo);
+  const aporteHoy=est.aportes.find(a=>a.fecha===hoyStr);
+  $('btnRegistrarAporte').style.display=aporteHoy&&!est.pagados[hoyStr]?'':'none';
+  $('btnRegistrarAporte').onclick=async()=>{
+    if(!_planActivo)return;
+    const est2=getEstadoPlan(_planActivo);
+    const ah=est2.aportes.find(a=>a.fecha===hoyStr);
+    if(!ah)return;
+    // Registrar en pagados
+    if(!_planActivo.pagados)_planActivo.pagados={};
+    _planActivo.pagados[hoyStr]=true;
+    await savePlan(_planActivo);
+    // Crear movimiento automático en DB
+    const mov={id:uid(),fecha:hoyStr,tipo:'Ahorro',cat:'Ahorro',subcat:null,cuenta:_planActivo.cuenta,monto:ah.monto,descripcion:'Aporte: '+_planActivo.nombre};
+    await fsSet('movimientos',mov);
+    renderModalPlan();
+    renderSavDashboard();
+    $('btnRegistrarAporte').style.display='none';
+    showToast('Aporte registrado ✅','success');
+  };
+};
+window.cerrarModalPlan=()=>{$('modalPlan').style.display='none';_planActivo=null;};
+
+function renderModalPlan(){
+  if(!_planActivo)return;
+  const plan=_planActivo;
+  const est=getEstadoPlan(plan);
+  const pct=est.totalMontoPlan>0?Math.min(100,Math.round((est.totalMontoPagado/est.totalMontoPlan)*100)):0;
+  const color=est.completado?'#2563eb':est.vencido?'#dc2626':pct>=60?'#16a34a':'#d97706';
+  const hoyStr=hoy();
+
+  // Calendario de cuadrícula
+  const cols=Math.min(est.aportes.length,31);
+  const calCells=est.aportes.map(a=>{
+    let cls='pending';
+    if(est.pagados[a.fecha])cls='done';
+    else if(a.fecha<hoyStr)cls='vencido';
+    else if(a.fecha===hoyStr)cls='today';
+    return `<div class="cal-cell ${cls}" title="${formatFecha(a.fecha)}: ${fmt(a.monto)}"></div>`;
+  }).join('');
+
+  // Timeline (últimos + próximos)
+  const proximos=est.aportes.filter(a=>!est.pagados[a.fecha]).slice(0,8);
+  const recientes=est.aportes.filter(a=>est.pagados[a.fecha]).slice(-5).reverse();
+  const tlItems=[...recientes.map(a=>`<div class="tl-item"><div class="tl-dot done"></div><span>${formatFecha(a.fecha)}</span><span style="flex:1;color:var(--muted);font-size:.74rem">Completado</span><span class="tl-monto green">${fmt(a.monto)}</span></div>`),
+    ...proximos.map(a=>`<div class="tl-item"><div class="tl-dot ${a.fecha<hoyStr?'vencido':'pending'}"></div><span class="tl-fecha">${formatFecha(a.fecha)}</span><span style="flex:1;color:var(--muted);font-size:.74rem">${a.fecha<hoyStr?'⚠️ Vencido':'Pendiente'}</span><span class="tl-monto ${a.fecha<hoyStr?'red':''}">${fmt(a.monto)}</span></div>`)].join('');
+
+  $('modalPlanContent').innerHTML=`
+    <div class="modal-title">${plan.icono||'💰'} ${esc(plan.nombre)}</div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem">${formatFecha(plan.inicio)} → ${formatFecha(est.fin)} · ${est.completado?'<span style="color:var(--green);font-weight:700">🏆 Completado</span>':est.vencido?'<span style="color:var(--danger);font-weight:700">⏰ Vencido</span>':est.diasRestantes+' días restantes'}</div>
+    <div class="plan-progress-bar" style="margin-bottom:.3rem"><div class="plan-progress-fill" style="width:${pct}%;background:${color}"></div></div>
+    <div class="plan-progress-labels" style="margin-bottom:.8rem"><span>${fmt(est.totalMontoPagado)}</span><span>${pct}%</span><span>${fmt(est.totalMontoPlan)}</span></div>
+    <div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Mapa de aportes</div>
+    <div class="cal-grid" style="grid-template-columns:repeat(${Math.min(cols,20)},1fr);margin-bottom:.9rem" title="Verde=pagado, Gris=pendiente, Rojo=vencido">${calCells}</div>
+    <div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Historial y próximos</div>
+    <div class="timeline">${tlItems||'<div class="empty-state" style="padding:.8rem">Sin movimientos aún.</div>'}</div>`;
+}
+
+// ── Renderizado al cambiar a tab retos desde nav ─────────────
+// (ya integrado en refreshTab y en los listeners de initTabs)
 </script>
 </body>
 </html>
