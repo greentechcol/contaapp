@@ -262,6 +262,80 @@
     .cuota-highlight .ch-val{font-size:1.35rem;font-weight:900}
     .cuota-highlight .ch-lbl{font-size:.75rem;opacity:.88}
     @media(max-width:640px){.reto-grid{grid-template-columns:1fr}.sav-kpi-grid{grid-template-columns:1fr 1fr}}
+
+    /* ══════════════════════════════════════════
+       MÓDULO OBLIGACIONES / RECORDATORIOS
+    ══════════════════════════════════════════ */
+
+    /* KPIs reutilizados del módulo retos (.sav-kpi-grid, .sav-kpi, .kpi-*) */
+    .kpi-slate{background:linear-gradient(135deg,#0f172a,#475569);color:white}
+    .kpi-emerald{background:linear-gradient(135deg,#064e3b,#10b981);color:white}
+
+    /* ── Filtros ── */
+    .obl-filtros{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem}
+    .obl-fil-btn{padding:.32rem .75rem;border-radius:20px;border:2px solid var(--border);background:white;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+    .obl-fil-btn.active{border-color:var(--green);background:var(--green-l);color:var(--green)}
+
+    /* ── Obligación card ── */
+    .obl-list{display:flex;flex-direction:column;gap:.7rem}
+    .obl-card{border-radius:var(--radius);border:2px solid var(--border);background:white;padding:1rem 1.1rem;cursor:pointer;transition:box-shadow .18s,border-color .18s;position:relative;overflow:hidden}
+    .obl-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:4px 0 0 4px}
+    .obl-card.urg-vencida{border-color:#dc2626;background:#fff8f8}.obl-card.urg-vencida::before{background:#dc2626}
+    .obl-card.urg-critica{border-color:#f59e0b;background:#fffbeb}.obl-card.urg-critica::before{background:#f59e0b}
+    .obl-card.urg-pronto{border-color:#3b82f6;background:#eff6ff}.obl-card.urg-pronto::before{background:#3b82f6}
+    .obl-card.urg-ok{border-color:var(--border)}.obl-card.urg-ok::before{background:#cbd5e1}
+    .obl-card.pagada{border-color:var(--green);background:#f0fdf4;opacity:.75}.obl-card.pagada::before{background:var(--green)}
+    .obl-card:hover{box-shadow:var(--shadow)}
+    .obl-header{display:flex;align-items:flex-start;gap:.7rem}
+    .obl-icon{font-size:1.6rem;line-height:1;flex-shrink:0}
+    .obl-info{flex:1;min-width:0}
+    .obl-nombre{font-weight:800;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .obl-meta{font-size:.75rem;color:var(--muted);margin-top:.15rem}
+    .obl-right{display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;flex-shrink:0}
+    .obl-monto{font-weight:900;font-size:1.05rem;color:var(--text)}
+    .obl-badge{font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:20px;white-space:nowrap}
+    .ob-vencida{background:#fee2e2;color:#7f1d1d}
+    .ob-critica{background:#fef3c7;color:#78350f}
+    .ob-pronto{background:#dbeafe;color:#1d4ed8}
+    .ob-ok{background:#f1f5f9;color:#475569}
+    .ob-pagada{background:#dcfce7;color:#166534}
+    .obl-dias-bar{height:4px;border-radius:2px;background:var(--neutral-bg);margin-top:.6rem;overflow:hidden}
+    .obl-dias-fill{height:100%;border-radius:2px;transition:width .4s ease}
+    .obl-acciones{display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap}
+    .obl-btn{padding:.3rem .7rem;border-radius:var(--radius-sm);border:none;font-size:.75rem;font-weight:700;cursor:pointer;transition:opacity .15s}
+    .obl-btn:hover{opacity:.82}
+    .obl-btn-pagar{background:var(--green);color:white}
+    .obl-btn-editar{background:var(--neutral-bg);color:var(--text)}
+    .obl-btn-del{background:#fee2e2;color:#dc2626}
+    .obl-btn-reactivar{background:#dbeafe;color:#1d4ed8}
+
+    /* ── Próximos pagos mini-timeline ── */
+    .proximos-wrap{background:white;border-radius:var(--radius);border:2px solid var(--border);padding:.9rem 1rem;margin-bottom:.9rem}
+    .proximos-title{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.6rem}
+    .prox-item{display:flex;align-items:center;gap:.6rem;padding:.38rem 0;border-bottom:1px solid var(--border);font-size:.82rem}
+    .prox-item:last-child{border-bottom:none}
+    .prox-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .prox-fecha{color:var(--muted);font-size:.74rem;white-space:nowrap;min-width:70px}
+    .prox-nombre{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .prox-monto{font-weight:700;white-space:nowrap}
+
+    /* ── Modal obligación ── */
+    .obl-tipo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.5rem;margin-bottom:.8rem}
+    .obl-tipo-btn{border:2px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .4rem;text-align:center;cursor:pointer;font-size:.75rem;font-weight:700;transition:all .15s;background:white}
+    .obl-tipo-btn .oti{display:block;font-size:1.4rem;margin-bottom:.2rem}
+    .obl-tipo-btn.sel{border-color:var(--green);background:var(--green-l);color:var(--green-d)}
+    .obl-tipo-btn:hover:not(.sel){border-color:var(--green);background:var(--green-bg)}
+
+    /* ── Recurrencia selector ── */
+    .recur-btns{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem}
+    .recur-btn{padding:.28rem .65rem;border-radius:20px;border:2px solid var(--border);background:white;font-size:.74rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .14s}
+    .recur-btn.sel{border-color:var(--green);background:var(--green-l);color:var(--green)}
+
+    /* ── Notificación Web Push banner ── */
+    .push-banner{display:flex;align-items:center;gap:.7rem;background:#eff6ff;border:2px solid #3b82f6;border-radius:var(--radius);padding:.7rem 1rem;margin-bottom:.9rem;font-size:.82rem}
+    .push-banner button{margin-left:auto;background:#3b82f6;color:white;border:none;border-radius:var(--radius-sm);padding:.3rem .7rem;font-size:.74rem;font-weight:700;cursor:pointer;white-space:nowrap}
+
+    @media(max-width:640px){.obl-tipo-grid{grid-template-columns:repeat(3,1fr)}}
   </style>
 </head>
 <body>
@@ -573,6 +647,115 @@
   </div>
 </div>
 
+<!-- ══ OBLIGACIONES / RECORDATORIOS ══ -->
+<main class="tab-content hidden" id="tab-obligaciones">
+
+  <!-- Banner notificaciones push -->
+  <div id="oblPushBanner" class="push-banner" style="display:none">
+    <span>🔔 Activa notificaciones para recibir alertas de vencimiento en tu dispositivo.</span>
+    <button id="btnActivarPush">Activar</button>
+  </div>
+
+  <!-- Alarmas activas de obligaciones -->
+  <div id="oblAlarmas"></div>
+
+  <!-- KPIs -->
+  <div class="sav-kpi-grid" id="oblKpis"></div>
+
+  <!-- Próximos 7 días -->
+  <div class="proximos-wrap" id="oblProximos"></div>
+
+  <!-- Filtros -->
+  <div class="obl-filtros">
+    <button class="obl-fil-btn active" data-fil="todas">Todas</button>
+    <button class="obl-fil-btn" data-fil="vencida">🔴 Vencidas</button>
+    <button class="obl-fil-btn" data-fil="critica">🟡 Urgentes</button>
+    <button class="obl-fil-btn" data-fil="pronto">🔵 Próximas</button>
+    <button class="obl-fil-btn" data-fil="pagada">✅ Pagadas</button>
+  </div>
+
+  <!-- Lista obligaciones -->
+  <div class="obl-list" id="oblLista"></div>
+
+  <!-- FAB agregar -->
+  <button id="btnNuevaObl" style="position:fixed;bottom:76px;right:16px;z-index:100;background:var(--green);color:white;border:none;border-radius:50%;width:52px;height:52px;font-size:1.5rem;box-shadow:0 4px 16px rgba(22,163,74,.45);cursor:pointer;display:flex;align-items:center;justify-content:center" title="Nueva obligación">＋</button>
+</main>
+
+<!-- ── Modal nueva / editar obligación ── -->
+<div id="modalObl" style="display:none" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalOblTitulo">Nueva obligación</div>
+
+    <!-- Tipo de obligación -->
+    <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">Tipo</div>
+    <div class="obl-tipo-grid" id="oblTipoGrid"></div>
+
+    <div class="form-grid">
+      <div class="form-group form-group-wide">
+        <label>Nombre / Descripción *</label>
+        <input type="text" id="oblNombre" placeholder="Ej: Arriendo, Tarjeta Visa, Luz..." maxlength="80"/>
+      </div>
+      <div class="form-group">
+        <label>Monto *</label>
+        <input type="number" id="oblMonto" placeholder="0.00" step="0.01" min="0"/>
+      </div>
+      <div class="form-group">
+        <label>Próxima fecha de pago *</label>
+        <input type="date" id="oblFechaVence"/>
+      </div>
+      <div class="form-group">
+        <label>Cuenta a debitar</label>
+        <select id="oblCuenta"><option value="">— Seleccionar —</option></select>
+      </div>
+      <div class="form-group form-group-wide">
+        <label>Recurrencia</label>
+        <div class="recur-btns" id="oblRecurBtns"></div>
+      </div>
+      <div class="form-group form-group-wide" id="oblDiaFijoWrap" style="display:none">
+        <label>Día fijo del mes (1-31)</label>
+        <input type="number" id="oblDiaFijo" min="1" max="31" placeholder="15"/>
+      </div>
+      <div class="form-group">
+        <label>Alerta (días antes)</label>
+        <input type="number" id="oblAlerta" value="3" min="1" max="30"/>
+      </div>
+      <div class="form-group form-group-wide">
+        <label>Notas</label>
+        <input type="text" id="oblNotas" placeholder="Número de cuenta, referencia, URL de pago..." maxlength="120"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="btnGuardarObl">💾 Guardar</button>
+      <button class="btn-secondary" onclick="cerrarModalObl()">Cancelar</button>
+      <button class="btn-danger btn-sm" id="btnEliminarObl" style="display:none">🗑 Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal confirmar pago ── -->
+<div id="modalPagoObl" style="display:none" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✅ Registrar pago</div>
+    <p class="section-desc" id="pagoOblDesc" style="margin-bottom:.9rem"></p>
+    <div class="form-grid">
+      <div class="form-group"><label>Fecha de pago</label><input type="date" id="pagoOblFecha"/></div>
+      <div class="form-group"><label>Monto pagado</label><input type="number" id="pagoOblMonto" step="0.01" min="0"/></div>
+      <div class="form-group"><label>Cuenta</label><select id="pagoOblCuenta"><option value="">— Seleccionar —</option></select></div>
+      <div class="form-group form-group-wide"><label>Nota (opcional)</label><input type="text" id="pagoOblNota" placeholder="Referencia, comprobante..."/></div>
+    </div>
+    <div id="pagoOblRegistrarMov" style="display:flex;align-items:center;gap:.5rem;margin:.5rem 0;font-size:.83rem">
+      <input type="checkbox" id="chkRegistrarMov" checked style="width:16px;height:16px;accent-color:var(--green)"/>
+      <label for="chkRegistrarMov">Registrar automáticamente como movimiento de Gasto</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="btnConfirmarPagoObl">✅ Confirmar pago</button>
+      <button class="btn-secondary" onclick="cerrarModalPagoObl()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="bnb active" data-tab="resumen"><span class="bni">🏠</span>Resumen</button>
@@ -580,6 +763,7 @@
   <button class="bnb" data-tab="presupuesto"><span class="bni">📊</span>Presup.</button>
   <button class="bnb" data-tab="metas"><span class="bni">🎯</span>Metas</button>
   <button class="bnb" data-tab="retos"><span class="bni">🏆</span>Retos</button>
+  <button class="bnb" data-tab="obligaciones"><span class="bni">🔔</span>Pagos</button>
   <button class="bnb" data-tab="categorias"><span class="bni">🏷️</span>Categ.</button>
   <button class="bnb" data-tab="cuentas"><span class="bni">🏦</span>Cuentas</button>
 </nav>
@@ -760,7 +944,13 @@ function initTabs(){
 }
 function refreshTab(){
   const t=document.querySelector('.bnb.active')?.dataset?.tab;
-  const map={resumen:renderResumen,movimientos:renderMovimientos,presupuesto:renderPresupuesto,metas:renderMetas,categorias:renderCategorias,cuentas:renderCuentas,retos:()=>{if(typeof renderSavDashboard==='function')renderSavDashboard();}};
+  const map={
+    resumen:renderResumen,movimientos:renderMovimientos,
+    presupuesto:renderPresupuesto,metas:renderMetas,
+    categorias:renderCategorias,cuentas:renderCuentas,
+    retos:()=>{if(typeof renderSavDashboard==='function')renderSavDashboard();},
+    obligaciones:()=>{if(typeof renderObligaciones==='function')renderObligaciones();}
+  };
   if(t&&map[t])map[t]();
 }
 
@@ -1187,39 +1377,6 @@ function initAuth(){
   });
 }
 
-// ── INIT ─────────────────────────────────────────────────────────
-function initApp(){
-  const h=hoy(); $('movFecha').value=h;
-  initTabs(); populateCatSelect(''); populateCuentaSelect();
-  renderResumen(); renderMovimientos(); renderCategorias(); renderCuentas();
-}
-
-// Firebase ready
-new Promise(resolve=>{
-  if(window.__fbReady&&window.__FB){resolve(window.__FB);return;}
-  window.__fbResolve=resolve;
-  window.addEventListener('firebase-ready',()=>resolve(window.__FB),{once:true});
-  const t=setInterval(()=>{if(window.__FB){clearInterval(t);resolve(window.__FB);}},100);
-  setTimeout(()=>clearInterval(t),10000);
-}).then(fb=>{FB=fb;initAuth();});
-
-function initApp(){
-  const h=hoy(); $('movFecha').value=h; $('cpInicio').value=h; $('mrInicio').value=h;
-  initTabs(); populateCatSelect(''); populateCuentaSelect();
-  renderResumen(); renderMovimientos(); renderCategorias(); renderCuentas();
-  initSavModule();
-}
-
-// Firebase ready
-new Promise(resolve=>{
-  if(window.__fbReady&&window.__FB){resolve(window.__FB);return;}
-  window.__fbResolve=resolve;
-  window.addEventListener('firebase-ready',()=>resolve(window.__FB),{once:true});
-  const t=setInterval(()=>{if(window.__FB){clearInterval(t);resolve(window.__FB);}},100);
-  setTimeout(()=>clearInterval(t),10000);
-}).then(fb=>{FB=fb;initAuth();});
-
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
 // ════════════════════════════════════════════════════════════════
 //  MÓDULO DE RETOS Y PLANES DE AHORRO — ContaApp Personal
@@ -1720,6 +1877,482 @@ function renderModalPlan(){
 
 // ── Renderizado al cambiar a tab retos desde nav ─────────────
 // (ya integrado en refreshTab y en los listeners de initTabs)
+
+// ════════════════════════════════════════════════════════════════
+//  MÓDULO OBLIGACIONES / RECORDATORIOS DE PAGO
+//  Autor: ContaApp Senior — Finance + Engineering
+// ════════════════════════════════════════════════════════════════
+
+// ── Catálogo de tipos ─────────────────────────────────────────
+const OBL_TIPOS=[
+  {id:'arriendo',  icono:'🏠', nombre:'Arriendo'},
+  {id:'prestamo',  icono:'🏦', nombre:'Préstamo'},
+  {id:'tarjeta',   icono:'💳', nombre:'Tarjeta'},
+  {id:'servicios', icono:'⚡', nombre:'Servicios'},
+  {id:'internet',  icono:'📶', nombre:'Internet/TV'},
+  {id:'salud',     icono:'🏥', nombre:'Salud/EPS'},
+  {id:'seguro',    icono:'🛡️', nombre:'Seguro'},
+  {id:'impuesto',  icono:'📋', nombre:'Impuesto'},
+  {id:'celular',   icono:'📱', nombre:'Celular'},
+  {id:'educacion', icono:'📚', nombre:'Educación'},
+  {id:'vehiculo',  icono:'🚗', nombre:'Vehículo'},
+  {id:'otro',      icono:'📌', nombre:'Otro'},
+];
+
+const OBL_RECURRENCIAS=[
+  {id:'unica',    label:'Única vez'},
+  {id:'semanal',  label:'Semanal'},
+  {id:'quincenal',label:'Quincenal'},
+  {id:'mensual',  label:'Mensual'},
+  {id:'bimestral',label:'Bimestral'},
+  {id:'trimestral',label:'Trimestral'},
+  {id:'semestral',label:'Semestral'},
+  {id:'anual',    label:'Anual'},
+];
+
+// ── Helpers de fecha ─────────────────────────────────────────
+function oblAddMeses(dateStr, meses){
+  const d=new Date(dateStr+'T00:00:00');
+  d.setMonth(d.getMonth()+meses);
+  return d.toISOString().slice(0,10);
+}
+function oblSiguienteVence(obl){
+  // Calcula la próxima fecha de vencimiento a partir de hoy según recurrencia
+  const h=hoy();
+  if(!obl.recurrencia||obl.recurrencia==='unica') return obl.fechaVence;
+  let fecha=obl.fechaVence;
+  const map={semanal:7,quincenal:15};
+  const mmap={bimestral:2,trimestral:3,semestral:6,anual:12,mensual:1};
+  let iter=0;
+  while(fecha<h && iter<200){
+    iter++;
+    if(map[obl.recurrencia]) fecha=addDays(fecha,map[obl.recurrencia]);
+    else if(mmap[obl.recurrencia]) fecha=oblAddMeses(fecha,mmap[obl.recurrencia]);
+    else break;
+    // Si hay día fijo del mes, ajustar
+    if(obl.diaFijo && mmap[obl.recurrencia]){
+      const parts=fecha.split('-');
+      const dim=new Date(parseInt(parts[0]),parseInt(parts[1]),0).getDate();
+      parts[2]=String(Math.min(obl.diaFijo,dim)).padStart(2,'0');
+      fecha=parts.join('-');
+    }
+  }
+  return fecha;
+}
+function oblUrgencia(obl){
+  if(obl.pagada) return 'pagada';
+  const vence=oblSiguienteVence(obl);
+  const diff=diffDays(hoy(),vence);
+  if(diff<0)  return 'vencida';
+  if(diff<=3) return 'critica';
+  if(diff<=(obl.alertaDias||7)) return 'pronto';
+  return 'ok';
+}
+function oblDiffLabel(obl){
+  const vence=oblSiguienteVence(obl);
+  const diff=diffDays(hoy(),vence);
+  if(diff<0)  return `Venció hace ${Math.abs(diff)} día${Math.abs(diff)===1?'':'s'}`;
+  if(diff===0) return '¡Vence HOY!';
+  if(diff===1) return 'Vence mañana';
+  return `Vence en ${diff} días`;
+}
+function oblBadgeCls(urg){
+  return{vencida:'ob-vencida',critica:'ob-critica',pronto:'ob-pronto',ok:'ob-ok',pagada:'ob-pagada'}[urg]||'ob-ok';
+}
+function oblCardCls(urg){
+  return{vencida:'urg-vencida',critica:'urg-critica',pronto:'urg-pronto',ok:'urg-ok',pagada:'pagada'}[urg]||'urg-ok';
+}
+function oblIcono(obl){
+  return OBL_TIPOS.find(t=>t.id===obl.tipo)?.icono||'📌';
+}
+
+// ── Persistencia Firebase + localStorage ─────────────────────
+const OBL_LK='ca_obligaciones_v1';
+function getObligaciones(){return DB.obligaciones||(DB.obligaciones=[]);}
+function saveOblSnap(){try{localStorage.setItem(OBL_LK,JSON.stringify(DB.obligaciones||[]));}catch{}}
+function loadOblSnap(){try{const d=localStorage.getItem(OBL_LK);if(d)DB.obligaciones=JSON.parse(d);}catch{}if(!DB.obligaciones)DB.obligaciones=[];}
+function loadOblFirestore(){
+  if(!isOnline||!currentUser)return;
+  try{
+    FB.onSnapshot(FB.collection(FB.db,'users',currentUser.uid,'personal_obligaciones'),snap=>{
+      DB.obligaciones=snap.docs.map(d=>d.data());
+      saveOblSnap(); renderObligaciones();
+    },err=>console.warn('obligaciones onSnapshot:',err));
+  }catch(e){console.warn(e);}
+}
+async function saveObl(obl){
+  if(!DB.obligaciones)DB.obligaciones=[];
+  const i=DB.obligaciones.findIndex(o=>o.id===obl.id);
+  if(i>=0)DB.obligaciones[i]=obl; else DB.obligaciones.push(obl);
+  saveOblSnap();
+  if(isOnline&&currentUser){try{await FB.setDoc(FB.doc(FB.db,'users',currentUser.uid,'personal_obligaciones',obl.id),obl);return;}catch(e){console.warn(e);}}
+  qAdd('set','obligaciones',obl.id,obl);
+}
+async function deleteObl(id){
+  DB.obligaciones=(DB.obligaciones||[]).filter(o=>o.id!==id);
+  saveOblSnap();
+  if(isOnline&&currentUser){try{await FB.deleteDoc(FB.doc(FB.db,'users',currentUser.uid,'personal_obligaciones',id));return;}catch(e){console.warn(e);}}
+  qAdd('del','obligaciones',id);
+}
+
+// ── Estado del filtro activo ─────────────────────────────────
+let _oblFiltro='todas';
+let _oblEditing=null; // obligación en edición
+
+// ── INIT ─────────────────────────────────────────────────────
+function initObligaciones(){
+  loadOblSnap();
+  loadOblFirestore();
+  // Tipo grid
+  $('oblTipoGrid').innerHTML=OBL_TIPOS.map(t=>`
+    <div class="obl-tipo-btn" data-tipo="${t.id}" onclick="selOblTipo('${t.id}')">
+      <span class="oti">${t.icono}</span>${t.nombre}
+    </div>`).join('');
+  // Recurrencia btns
+  $('oblRecurBtns').innerHTML=OBL_RECURRENCIAS.map(r=>`
+    <button class="recur-btn${r.id==='mensual'?' sel':''}" data-rec="${r.id}" onclick="selOblRecur('${r.id}')">${r.label}</button>`).join('');
+  // Dia fijo toggle
+  $('oblRecurBtns').querySelectorAll('.recur-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const rec=b.dataset.rec;
+      $('oblDiaFijoWrap').style.display=['mensual','bimestral','trimestral','semestral','anual'].includes(rec)?'':'none';
+    });
+  });
+  // Filtros
+  document.querySelectorAll('.obl-fil-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.obl-fil-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      _oblFiltro=btn.dataset.fil;
+      renderOblLista();
+    };
+  });
+  // FAB
+  $('btnNuevaObl').onclick=()=>abrirModalObl(null);
+  // Push notifications
+  if('Notification' in window && Notification.permission==='default'){
+    $('oblPushBanner').style.display='flex';
+    $('btnActivarPush').onclick=async()=>{
+      const perm=await Notification.requestPermission();
+      $('oblPushBanner').style.display='none';
+      if(perm==='granted')showToast('🔔 Notificaciones activadas','success');
+    };
+  }
+  renderObligaciones();
+}
+
+// ── RENDER PRINCIPAL ─────────────────────────────────────────
+function renderObligaciones(){
+  renderOblAlarmas();
+  renderOblKpis();
+  renderOblProximos();
+  renderOblLista();
+}
+
+// ── ALARMAS BANNER ───────────────────────────────────────────
+function renderOblAlarmas(){
+  const cont=$('oblAlarmas'); if(!cont)return;
+  const hoyStr=hoy();
+  const obls=getObligaciones().filter(o=>!o.pagada);
+  const alarmas=[];
+  obls.forEach(o=>{
+    const vence=oblSiguienteVence(o);
+    const diff=diffDays(hoyStr,vence);
+    if(diff<0) alarmas.push({tipo:'danger',pulse:true,msg:`🚨 <strong>${esc(o.nombre)}</strong> venció el ${formatFecha(vence)} — ${fmt(o.monto)}`});
+    else if(diff===0) alarmas.push({tipo:'danger',pulse:true,msg:`🔴 <strong>${esc(o.nombre)}</strong> ¡vence HOY! — ${fmt(o.monto)}`});
+    else if(diff<=3) alarmas.push({tipo:'warn',pulse:false,msg:`⏰ <strong>${esc(o.nombre)}</strong> vence en ${diff} día${diff===1?'':'s'} (${formatFecha(vence)}) — ${fmt(o.monto)}`});
+  });
+  cont.innerHTML=alarmas.map(a=>`
+    <div class="alarm-banner alarm-${a.tipo}${a.pulse?' alarm-pulse':''}">
+      <span>${a.msg}</span>
+      <button class="alarm-dismiss" onclick="this.parentElement.remove()">✕</button>
+    </div>`).join('');
+  // Web Push nativa si hay vencidas hoy
+  if('Notification' in window && Notification.permission==='granted'){
+    obls.filter(o=>oblSiguienteVence(o)===hoyStr).forEach(o=>{
+      new Notification('📅 Pago pendiente hoy',{body:`${o.nombre} — ${fmt(o.monto)}`,icon:'/favicon.ico'});
+    });
+  }
+}
+
+// ── KPIs ─────────────────────────────────────────────────────
+function renderOblKpis(){
+  const cont=$('oblKpis'); if(!cont)return;
+  const obls=getObligaciones();
+  const hoyStr=hoy();
+  const pendientes=obls.filter(o=>!o.pagada);
+  const vencidas=pendientes.filter(o=>diffDays(hoyStr,oblSiguienteVence(o))<0);
+  const urgentes=pendientes.filter(o=>{const d=diffDays(hoyStr,oblSiguienteVence(o));return d>=0&&d<=3;});
+  const totalMes=pendientes.reduce((s,o)=>{
+    // Calcular cuántos pagos caen este mes
+    const vence=oblSiguienteVence(o);
+    const esMes=vence.slice(0,7)===hoyStr.slice(0,7);
+    return s+(esMes?o.monto:0);
+  },0);
+  cont.innerHTML=`
+    <div class="sav-kpi kpi-slate"><div class="sav-kpi-lbl">📋 Total obligaciones</div><div class="sav-kpi-val">${obls.length}</div><div class="sav-kpi-sub">${pendientes.length} activas</div></div>
+    <div class="sav-kpi kpi-rose"><div class="sav-kpi-lbl">🔴 Vencidas</div><div class="sav-kpi-val">${vencidas.length}</div><div class="sav-kpi-sub">${urgentes.length} críticas hoy</div></div>
+    <div class="sav-kpi kpi-amber"><div class="sav-kpi-lbl">💸 Pagos este mes</div><div class="sav-kpi-val">${fmt(totalMes)}</div><div class="sav-kpi-sub">compromisos del mes</div></div>
+    <div class="sav-kpi kpi-emerald"><div class="sav-kpi-lbl">✅ Pagadas</div><div class="sav-kpi-val">${obls.filter(o=>o.pagada).length}</div><div class="sav-kpi-sub">ciclo actual</div></div>`;
+}
+
+// ── PRÓXIMOS 10 DÍAS ─────────────────────────────────────────
+function renderOblProximos(){
+  const cont=$('oblProximos'); if(!cont)return;
+  const hoyStr=hoy();
+  const limite=addDays(hoyStr,10);
+  const items=getObligaciones()
+    .filter(o=>!o.pagada)
+    .map(o=>({...o,_vence:oblSiguienteVence(o)}))
+    .filter(o=>o._vence>=hoyStr && o._vence<=limite)
+    .sort((a,b)=>a._vence.localeCompare(b._vence));
+  if(!items.length){cont.innerHTML='<div class="proximos-title">📅 Próximos 10 días</div><div style="font-size:.82rem;color:var(--muted);padding:.4rem 0">Sin pagos en los próximos 10 días 🎉</div>';return;}
+  cont.innerHTML=`<div class="proximos-title">📅 Próximos 10 días — ${items.length} pago${items.length===1?'':'s'}</div>`+
+    items.map(o=>{
+      const diff=diffDays(hoyStr,o._vence);
+      const color=diff===0?'#dc2626':diff<=3?'#f59e0b':diff<=7?'#3b82f6':'#94a3b8';
+      return `<div class="prox-item">
+        <div class="prox-dot" style="background:${color}"></div>
+        <span class="prox-fecha">${diff===0?'HOY':diff===1?'Mañana':formatFecha(o._vence)}</span>
+        <span class="prox-nombre">${oblIcono(o)} ${esc(o.nombre)}</span>
+        <span class="prox-monto">${fmt(o.monto)}</span>
+      </div>`;
+    }).join('');
+}
+
+// ── LISTA ─────────────────────────────────────────────────────
+function renderOblLista(){
+  const cont=$('oblLista'); if(!cont)return;
+  let obls=[...getObligaciones()];
+  // Calcular urgencia para ordenar
+  obls=obls.map(o=>({...o,_urg:oblUrgencia(o),_vence:oblSiguienteVence(o)}));
+  // Filtro
+  if(_oblFiltro!=='todas') obls=obls.filter(o=>o._urg===_oblFiltro);
+  // Orden: vencidas primero, luego críticas, pronto, ok, pagadas
+  const urgOrd={vencida:0,critica:1,pronto:2,ok:3,pagada:4};
+  obls.sort((a,b)=>(urgOrd[a._urg]??5)-(urgOrd[b._urg]??5)||(a._vence||'').localeCompare(b._vence||''));
+  if(!obls.length){
+    cont.innerHTML=`<div class="empty-state">No hay obligaciones${_oblFiltro!=='todas'?' en este filtro':' registradas'}.<br>Toca <strong>＋</strong> para agregar.</div>`;
+    return;
+  }
+  cont.innerHTML=obls.map(o=>oblCardHTML(o)).join('');
+}
+
+function oblCardHTML(o){
+  const urg=o._urg||oblUrgencia(o);
+  const vence=o._vence||oblSiguienteVence(o);
+  const diff=diffDays(hoy(),vence);
+  const diffLabel=oblDiffLabel(o);
+  const recLabel=OBL_RECURRENCIAS.find(r=>r.id===o.recurrencia)?.label||'Única vez';
+  // Barra de tiempo: 100% = alerta días, llena = urgente
+  const alerta=o.alertaDias||7;
+  const pct=urg==='pagada'?100:urg==='vencida'?100:Math.max(0,Math.min(100,100-Math.round((diff/alerta)*100)));
+  const barColor={vencida:'#dc2626',critica:'#f59e0b',pronto:'#3b82f6',ok:'#94a3b8',pagada:'#16a34a'}[urg];
+  return `<div class="obl-card ${oblCardCls(urg)}" id="obl-${o.id}">
+    <div class="obl-header">
+      <div class="obl-icon">${oblIcono(o)}</div>
+      <div class="obl-info">
+        <div class="obl-nombre">${esc(o.nombre)}</div>
+        <div class="obl-meta">${recLabel}${o.notas?' · '+esc(o.notas.slice(0,40)):''}</div>
+        <div style="margin-top:.3rem"><span class="obl-badge ${oblBadgeCls(urg)}">${urg==='pagada'?'✅ Pagada':diffLabel}</span></div>
+      </div>
+      <div class="obl-right">
+        <span class="obl-monto">${fmt(o.monto)}</span>
+        <span style="font-size:.72rem;color:var(--muted)">${formatFecha(vence)}</span>
+      </div>
+    </div>
+    <div class="obl-dias-bar"><div class="obl-dias-fill" style="width:${pct}%;background:${barColor}"></div></div>
+    <div class="obl-acciones">
+      ${urg!=='pagada'?`<button class="obl-btn obl-btn-pagar" onclick="event.stopPropagation();abrirModalPagoObl('${o.id}')">✅ Registrar pago</button>`:''}
+      ${urg==='pagada'&&o.recurrencia&&o.recurrencia!=='unica'?`<button class="obl-btn obl-btn-reactivar" onclick="event.stopPropagation();reactivarObl('${o.id}')">🔄 Renovar ciclo</button>`:''}
+      <button class="obl-btn obl-btn-editar" onclick="event.stopPropagation();abrirModalObl('${o.id}')">✏️ Editar</button>
+      <button class="obl-btn obl-btn-del" onclick="event.stopPropagation();eliminarObl('${o.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+
+// ── MODAL NUEVA / EDITAR ─────────────────────────────────────
+window.abrirModalObl=id=>{
+  _oblEditing=id?getObligaciones().find(o=>o.id===id):null;
+  const o=_oblEditing;
+  $('modalOblTitulo').textContent=o?'✏️ Editar obligación':'Nueva obligación';
+  // Reset tipo
+  document.querySelectorAll('.obl-tipo-btn').forEach(b=>b.classList.remove('sel'));
+  if(o) document.querySelector(`.obl-tipo-btn[data-tipo="${o.tipo}"]`)?.classList.add('sel');
+  else document.querySelector('.obl-tipo-btn[data-tipo="otro"]')?.classList.add('sel');
+  // Campos
+  $('oblNombre').value=o?.nombre||'';
+  $('oblMonto').value=o?.monto||'';
+  $('oblFechaVence').value=o?.fechaVence||hoy();
+  $('oblAlerta').value=o?.alertaDias||3;
+  $('oblNotas').value=o?.notas||'';
+  // Cuenta select
+  const cs=$('oblCuenta'); cs.innerHTML='<option value="">— Seleccionar —</option>';
+  DB.cuentas.forEach(c=>{const op=document.createElement('option');op.value=c.id;op.textContent=(c.icono||'')+' '+c.nombre;if(o?.cuenta===c.id)op.selected=true;cs.appendChild(op);});
+  // Recurrencia
+  document.querySelectorAll('.recur-btn').forEach(b=>{
+    b.classList.toggle('sel',b.dataset.rec===(o?.recurrencia||'mensual'));
+  });
+  const rec=o?.recurrencia||'mensual';
+  $('oblDiaFijoWrap').style.display=['mensual','bimestral','trimestral','semestral','anual'].includes(rec)?'':'none';
+  $('oblDiaFijo').value=o?.diaFijo||'';
+  // Botón eliminar
+  $('btnEliminarObl').style.display=o?'':'none';
+  $('btnEliminarObl').onclick=()=>eliminarObl(o.id,true);
+  $('btnGuardarObl').onclick=guardarObl;
+  $('modalObl').style.display='flex';
+};
+window.cerrarModalObl=()=>{$('modalObl').style.display='none';_oblEditing=null;};
+window.selOblTipo=id=>{document.querySelectorAll('.obl-tipo-btn').forEach(b=>b.classList.toggle('sel',b.dataset.tipo===id));};
+window.selOblRecur=id=>{
+  document.querySelectorAll('.recur-btn').forEach(b=>b.classList.toggle('sel',b.dataset.rec===id));
+  $('oblDiaFijoWrap').style.display=['mensual','bimestral','trimestral','semestral','anual'].includes(id)?'':'none';
+};
+
+async function guardarObl(){
+  const tipo=document.querySelector('.obl-tipo-btn.sel')?.dataset?.tipo||'otro';
+  const nombre=$('oblNombre').value.trim();
+  const monto=parseFloat($('oblMonto').value);
+  const fechaVence=$('oblFechaVence').value;
+  const cuenta=$('oblCuenta').value;
+  const alerta=parseInt($('oblAlerta').value)||3;
+  const notas=$('oblNotas').value.trim();
+  const recurrencia=document.querySelector('.recur-btn.sel')?.dataset?.rec||'mensual';
+  const diaFijo=parseInt($('oblDiaFijo').value)||null;
+  if(!nombre||!monto||!fechaVence){showToast('Completa nombre, monto y fecha.','error');return;}
+  const obl={
+    id:_oblEditing?.id||uid(),
+    tipo,nombre,monto,fechaVence,cuenta,alertaDias:alerta,
+    notas,recurrencia,diaFijo,
+    pagada:_oblEditing?.pagada||false,
+    historial:_oblEditing?.historial||[],
+    creadoEn:_oblEditing?.creadoEn||hoy(),
+  };
+  await saveObl(obl);
+  cerrarModalObl();
+  renderObligaciones();
+  showToast((_oblEditing?'Obligación actualizada':'Obligación guardada')+' 💾','success');
+}
+
+window.eliminarObl=async(id,desdModal=false)=>{
+  if(!confirm('¿Eliminar esta obligación?'))return;
+  await deleteObl(id);
+  if(desdModal)cerrarModalObl();
+  renderObligaciones();
+  showToast('Obligación eliminada.','success');
+};
+
+// ── MODAL REGISTRAR PAGO ─────────────────────────────────────
+let _oblPagando=null;
+window.abrirModalPagoObl=id=>{
+  _oblPagando=getObligaciones().find(o=>o.id===id); if(!_oblPagando)return;
+  const vence=oblSiguienteVence(_oblPagando);
+  $('pagoOblDesc').textContent=`${oblIcono(_oblPagando)} ${_oblPagando.nombre} — vence ${formatFecha(vence)}`;
+  $('pagoOblFecha').value=hoy();
+  $('pagoOblMonto').value=_oblPagando.monto;
+  $('pagoOblNota').value='';
+  const cs=$('pagoOblCuenta'); cs.innerHTML='<option value="">— Seleccionar —</option>';
+  DB.cuentas.forEach(c=>{const op=document.createElement('option');op.value=c.id;op.textContent=(c.icono||'')+' '+c.nombre;if(_oblPagando.cuenta===c.id)op.selected=true;cs.appendChild(op);});
+  $('btnConfirmarPagoObl').onclick=confirmarPagoObl;
+  $('modalPagoObl').style.display='flex';
+};
+window.cerrarModalPagoObl=()=>{$('modalPagoObl').style.display='none';_oblPagando=null;};
+
+async function confirmarPagoObl(){
+  if(!_oblPagando)return;
+  const fechaPago=$('pagoOblFecha').value;
+  const montoPago=parseFloat($('pagoOblMonto').value)||_oblPagando.monto;
+  const cuentaPago=$('pagoOblCuenta').value||_oblPagando.cuenta;
+  const notaPago=$('pagoOblNota').value.trim();
+  const registrarMov=$('chkRegistrarMov').checked;
+  // Registrar en historial
+  const entrada={fecha:fechaPago,monto:montoPago,cuenta:cuentaPago,nota:notaPago};
+  if(!_oblPagando.historial)_oblPagando.historial=[];
+  _oblPagando.historial.push(entrada);
+  // Marcar pagada para este ciclo
+  _oblPagando.pagada=true;
+  await saveObl(_oblPagando);
+  // Registrar movimiento automático
+  if(registrarMov){
+    const mov={id:uid(),fecha:fechaPago,tipo:'Gasto',cat:'Obligaciones',subcat:_oblPagando.nombre,cuenta:cuentaPago,monto:montoPago,descripcion:'Pago: '+_oblPagando.nombre+(notaPago?' — '+notaPago:'')};
+    await fsSet('movimientos',mov);
+  }
+  cerrarModalPagoObl();
+  renderObligaciones();
+  showToast('¡Pago registrado! ✅','success');
+}
+
+// ── RENOVAR CICLO (para recurrentes ya pagados) ───────────────
+window.reactivarObl=async id=>{
+  const o=getObligaciones().find(o=>o.id===id); if(!o)return;
+  // Calcular siguiente fecha de vencimiento desde la fecha actual marcada como pagada
+  const anterior=o.fechaVence;
+  const map={semanal:7,quincenal:15};
+  const mmap={bimestral:2,trimestral:3,semestral:6,anual:12,mensual:1};
+  let nuevaFecha=anterior;
+  if(map[o.recurrencia]) nuevaFecha=addDays(anterior,map[o.recurrencia]);
+  else if(mmap[o.recurrencia]) nuevaFecha=oblAddMeses(anterior,mmap[o.recurrencia]);
+  if(o.diaFijo&&mmap[o.recurrencia]){
+    const parts=nuevaFecha.split('-');
+    const dim=new Date(parseInt(parts[0]),parseInt(parts[1]),0).getDate();
+    parts[2]=String(Math.min(o.diaFijo,dim)).padStart(2,'0');
+    nuevaFecha=parts.join('-');
+  }
+  o.fechaVence=nuevaFecha;
+  o.pagada=false;
+  await saveObl(o);
+  renderObligaciones();
+  showToast('Ciclo renovado para '+formatFecha(nuevaFecha)+' 🔄','success');
+};
+
+// ── BADGE de alertas en nav (punto rojo) ─────────────────────
+function updateOblNavBadge(){
+  const btn=document.querySelector('.bnb[data-tab="obligaciones"]');
+  if(!btn)return;
+  const urgentes=getObligaciones().filter(o=>{
+    if(o.pagada)return false;
+    const d=diffDays(hoy(),oblSiguienteVence(o));
+    return d<=(o.alertaDias||7);
+  }).length;
+  let badge=btn.querySelector('.obl-nav-badge');
+  if(urgentes>0){
+    if(!badge){badge=document.createElement('span');badge.className='obl-nav-badge';badge.style.cssText='position:absolute;top:2px;right:10px;background:#dc2626;color:white;border-radius:50%;width:14px;height:14px;font-size:.58rem;font-weight:900;display:flex;align-items:center;justify-content:center;line-height:1';btn.style.position='relative';btn.appendChild(badge);}
+    badge.textContent=urgentes>9?'9+':urgentes;
+  } else if(badge){badge.remove();}
+}
+
+// ── Integración con initApp ───────────────────────────────────
+const _origInitApp=initApp;
+
+// ══ initApp DEFINITIVO — único punto de arranque ══
+function initApp(){
+  const h=hoy();
+  $('movFecha').value=h;
+  if($('cpInicio'))$('cpInicio').value=h;
+  if($('mrInicio'))$('mrInicio').value=h;
+  initTabs();
+  populateCatSelect('');
+  populateCuentaSelect();
+  renderResumen();
+  renderMovimientos();
+  renderCategorias();
+  renderCuentas();
+  initSavModule();
+  initObligaciones();
+  updateOblNavBadge();
+  setInterval(updateOblNavBadge, 60000);
+}
+
+// Firebase ready (único)
+new Promise(resolve=>{
+  if(window.__fbReady&&window.__FB){resolve(window.__FB);return;}
+  window.__fbResolve=resolve;
+  window.addEventListener('firebase-ready',()=>resolve(window.__FB),{once:true});
+  const t=setInterval(()=>{if(window.__FB){clearInterval(t);resolve(window.__FB);}},100);
+  setTimeout(()=>clearInterval(t),10000);
+}).then(fb=>{FB=fb;initAuth();});
+
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body>
 </html>
