@@ -123,12 +123,71 @@
     .progress-fill{height:100%;border-radius:5px;transition:width .4s ease;background:var(--green)}
     .progress-pct{font-size:.78rem;font-weight:700;color:var(--green)}
 
-    /* ── PRESUPUESTO PERSONAL ── */
-    .pres-row{display:flex;align-items:center;gap:.6rem;padding:.55rem 0;border-bottom:1px solid var(--border)}
-    .pres-cat{flex:1;font-size:.87rem;font-weight:600}
-    .pres-nums{display:flex;gap:1rem;font-size:.82rem}
-    .pres-bar-wrap{flex:1;height:6px;background:var(--neutral-bg);border-radius:3px;min-width:60px}
-    .pres-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+    /* == PRESUPUESTO PERSONAL == */
+    .pres-banner{border-radius:var(--radius);background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);color:#fff;padding:1rem 1.1rem;margin-bottom:.9rem}
+    .pres-banner-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+    .pres-banner-title{font-size:.72rem;font-weight:700;opacity:.85;text-transform:uppercase;letter-spacing:.06em}
+    .pres-banner-dias{font-size:.7rem;opacity:.75;background:rgba(255,255,255,.15);padding:.18rem .6rem;border-radius:20px}
+    .pres-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.75rem}
+    .pres-kpi{background:rgba(255,255,255,.13);border-radius:8px;padding:.6rem .7rem}
+    .pres-kpi-lbl{font-size:.65rem;opacity:.8;text-transform:uppercase;letter-spacing:.05em}
+    .pres-kpi-val{font-size:1.15rem;font-weight:900;letter-spacing:-.02em;line-height:1.1;margin:.1rem 0}
+    .pres-kpi-sub{font-size:.65rem;opacity:.72}
+    .pres-ring-wrap{display:flex;align-items:center;gap:.7rem;background:rgba(255,255,255,.11);border-radius:8px;padding:.6rem .75rem}
+    .pres-ring-info{flex:1;min-width:0}
+    .pres-ring-title{font-size:.8rem;font-weight:600}
+    .pres-ring-sub{font-size:.7rem;opacity:.75;margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pres-tabs{display:flex;gap:.25rem;background:var(--neutral-bg);border-radius:var(--radius);padding:.25rem;margin-bottom:.9rem}
+    .pres-tab{flex:1;padding:.42rem .4rem;border:none;border-radius:var(--radius-sm);font-size:.75rem;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s;white-space:nowrap}
+    .pres-tab.active{background:white;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+    .pres-panel{display:none}.pres-panel.active{display:block}
+    .pres-grupo-lbl{display:flex;justify-content:space-between;align-items:center;margin:.85rem 0 .45rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+    .pc-card{border-radius:var(--radius);border:2px solid var(--border);padding:.85rem .95rem;margin-bottom:.5rem;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative;overflow:hidden}
+    .pc-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:2px 0 0 2px}
+    .pc-card.pc-over{border-color:#dc2626;background:#fff5f5}.pc-card.pc-over::before{background:#dc2626}
+    .pc-card.pc-warn{border-color:#f59e0b;background:#fffbeb}.pc-card.pc-warn::before{background:#f59e0b}
+    .pc-card.pc-ok{border-color:var(--border);background:white}.pc-card.pc-ok::before{background:#cbd5e1}
+    .pc-card.pc-noset{border-color:var(--border);background:var(--neutral-bg)}.pc-card.pc-noset::before{background:#e2e8f0}
+    .pc-card:hover{box-shadow:var(--shadow)}
+    .pc-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.55rem}
+    .pc-ico{font-size:1.3rem;width:24px;text-align:center;flex-shrink:0;line-height:1}
+    .pc-name{flex:1;font-size:.88rem;font-weight:700}
+    .pc-badge{font-size:.68rem;font-weight:700;padding:.18rem .55rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
+    .pb-over{background:#fee2e2;color:#7f1d1d}
+    .pb-warn{background:#fef3c7;color:#78350f}
+    .pb-ok{background:#dcfce7;color:#14532d}
+    .pb-noset{background:#f1f5f9;color:#64748b}
+    .pc-bar-t{height:8px;border-radius:4px;background:rgba(0,0,0,.07);overflow:hidden;margin-bottom:.45rem}
+    .pc-bar-f{height:100%;border-radius:4px;transition:width .45s ease}
+    .pc-nums{display:flex;justify-content:space-between;font-size:.75rem;gap:.3rem;flex-wrap:wrap}
+    .pc-real{font-weight:700;color:var(--text)}
+    .pc-lim{color:var(--muted)}
+    .pc-dif{font-weight:700}
+    .pc-subcats{padding:.5rem 0 .1rem 1.6rem;display:flex;flex-direction:column;gap:.35rem;border-top:1px solid rgba(0,0,0,.06);margin-top:.55rem}
+    .sc-row{display:flex;align-items:center;gap:.45rem}
+    .sc-name{font-size:.72rem;color:var(--muted);width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+    .sc-bar-t{flex:1;height:4px;border-radius:2px;background:rgba(0,0,0,.07);overflow:hidden}
+    .sc-bar-f{height:100%;border-radius:2px}
+    .sc-val{font-size:.72rem;font-weight:600;width:52px;text-align:right;white-space:nowrap}
+    .ritmo-banner{border-radius:var(--radius-sm);padding:.65rem .8rem;margin-bottom:.7rem;font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:.5rem;border-left:3px solid}
+    .ritmo-fast{background:#fff5f5;border-color:#dc2626;color:#7f1d1d}
+    .ritmo-ok{background:#f0fdf4;border-color:#16a34a;color:#14532d}
+    .ritmo-warn{background:#fffbeb;border-color:#f59e0b;color:#78350f}
+    .pl-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem}
+    .pl-card{border-radius:var(--radius);border:2px solid var(--border);background:var(--neutral-bg);padding:.85rem .8rem;cursor:pointer;transition:border-color .15s,transform .15s}
+    .pl-card:hover{border-color:var(--green);transform:translateY(-1px)}
+    .pl-card.pl-feat{border-color:var(--green);background:var(--green-l)}
+    .pl-ico{font-size:1.6rem;margin-bottom:.35rem;display:block}
+    .pl-name{font-size:.83rem;font-weight:800;margin-bottom:.2rem}
+    .pl-desc{font-size:.72rem;color:var(--muted);line-height:1.4}
+    .cfg-cat-list{display:flex;flex-direction:column;gap:.4rem;margin-top:.6rem}
+    .cfg-row{display:flex;align-items:center;gap:.5rem;padding:.5rem .65rem;border-radius:var(--radius-sm);background:var(--neutral-bg)}
+    .cfg-row-ico{font-size:1rem;width:22px;text-align:center;flex-shrink:0}
+    .cfg-row-name{flex:1;font-size:.83rem;font-weight:600}
+    .cfg-row-input{width:90px;padding:.28rem .45rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;text-align:right}
+    .cfg-row-del{background:none;border:none;cursor:pointer;color:var(--danger);font-size:.82rem;opacity:.6;padding:.1rem .2rem}
+    .cfg-row-del:hover{opacity:1}
+    .pc-cta{font-size:.75rem;color:var(--green);font-weight:700;margin-top:.3rem}
 
     /* ── BOTTOM NAV ── */
     .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:58px;background:white;border-top:1px solid var(--border);display:flex;align-items:center;z-index:90;box-shadow:0 -2px 8px rgba(0,0,0,.08);overflow-x:auto;scrollbar-width:none;padding:0 .25rem;gap:.1rem}
@@ -442,24 +501,100 @@
 
 <!-- ══ PRESUPUESTO ══ -->
 <main class="tab-content hidden" id="tab-presupuesto">
-  <section class="section-block">
-    <h2 class="section-title">Presupuesto Personal
-      <select id="mesPres" class="sel-inline"></select>
-      <select id="anioPres" class="sel-inline"></select>
-    </h2>
-    <p class="section-desc">Define cuánto puedes gastar en cada categoría este mes. Te alertaré cuando te acerques al límite.</p>
-    <form id="formPres" autocomplete="off">
-      <div class="form-grid">
-        <div class="form-group"><label>Categoría *</label><select id="presCat" required><option value="">— Seleccionar —</option></select></div>
-        <div class="form-group"><label>Límite mensual *</label><input type="number" id="presMonto" placeholder="0.00" step="0.01" min="0" required /></div>
+
+  <!-- Selectores mes/año ocultos — mantienen compatibilidad con JS -->
+  <select id="mesPres" style="display:none"></select>
+  <select id="anioPres" style="display:none"></select>
+
+  <div class="section-block" style="padding:.85rem 1rem">
+
+    <!-- BANNER RESUMEN GLOBAL -->
+    <div class="pres-banner" id="presBanner">
+      <div class="pres-banner-top">
+        <span class="pres-banner-title">Control del mes</span>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <select id="mesPres2" class="sel-inline" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:.75rem"></select>
+          <select id="anioPres2" class="sel-inline" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:.75rem"></select>
+        </div>
       </div>
-      <button type="submit" class="btn-primary">💾 Guardar límite</button>
-    </form>
-  </section>
-  <section class="section-block">
-    <h2 class="section-title">¿Cómo voy este mes?</h2>
-    <div id="presContent"><div class="empty-state">Define presupuestos arriba para ver el comparativo.</div></div>
-  </section>
+      <div class="pres-kpis" id="presKpis">
+        <div class="pres-kpi"><div class="pres-kpi-lbl">Presupuestado</div><div class="pres-kpi-val" id="pkTot">$0</div><div class="pres-kpi-sub" id="pkCats">0 categorías</div></div>
+        <div class="pres-kpi"><div class="pres-kpi-lbl">Gastado</div><div class="pres-kpi-val" id="pkGast" style="color:#fca5a5">$0</div><div class="pres-kpi-sub" id="pkPct">0% del total</div></div>
+        <div class="pres-kpi"><div class="pres-kpi-lbl">Disponible</div><div class="pres-kpi-val" id="pkDisp">$0</div><div class="pres-kpi-sub" id="pkPctDisp">100% restante</div></div>
+      </div>
+      <div class="pres-ring-wrap">
+        <svg id="presRingSvg" width="46" height="46" viewBox="0 0 46 46" role="img" aria-label="Progreso global del presupuesto">
+          <circle cx="23" cy="23" r="17" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="7"/>
+          <circle id="presRingFill" cx="23" cy="23" r="17" fill="none" stroke="#fff" stroke-width="7"
+            stroke-dasharray="107" stroke-dashoffset="107" stroke-linecap="round"
+            transform="rotate(-90 23 23)" style="transition:stroke-dashoffset .6s ease"/>
+          <text id="presRingTxt" x="23" y="27" text-anchor="middle" font-size="10" font-weight="800" fill="#fff">0%</text>
+        </svg>
+        <div class="pres-ring-info">
+          <div class="pres-ring-title" id="presRingTitle">Sin datos este mes</div>
+          <div class="pres-ring-sub" id="presRingSub">Define presupuestos para comenzar</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ritmo del mes -->
+    <div id="presRitmo" style="display:none"></div>
+
+    <!-- TABS -->
+    <div class="pres-tabs">
+      <button class="pres-tab active" data-pres="seguimiento">📋 Seguimiento</button>
+      <button class="pres-tab" data-pres="configurar">⚙️ Configurar</button>
+      <button class="pres-tab" data-pres="plantillas">📐 Plantillas</button>
+    </div>
+
+    <!-- PANEL: SEGUIMIENTO -->
+    <div class="pres-panel active" id="presp-seguimiento">
+      <div id="presContent"><div class="empty-state">Define presupuestos en "Configurar" para ver el seguimiento.</div></div>
+    </div>
+
+    <!-- PANEL: CONFIGURAR -->
+    <div class="pres-panel" id="presp-configurar">
+      <p class="section-desc" style="margin-bottom:.8rem">Define o edita el límite de gasto por categoría para el mes seleccionado.</p>
+      <form id="formPres" autocomplete="off">
+        <div class="form-grid">
+          <div class="form-group"><label>Categoría *</label><select id="presCat" required><option value="">— Seleccionar —</option></select></div>
+          <div class="form-group"><label>Límite mensual *</label><input type="number" id="presMonto" placeholder="0.00" step="0.01" min="0" required/></div>
+        </div>
+        <button type="submit" class="btn-primary">💾 Guardar límite</button>
+      </form>
+      <!-- Lista configurable -->
+      <div id="presCfgList" style="margin-top:.9rem"></div>
+    </div>
+
+    <!-- PANEL: PLANTILLAS -->
+    <div class="pres-panel" id="presp-plantillas">
+      <p class="section-desc" style="margin-bottom:.85rem">Elige una distribución base. Se aplicará al mes actual y podrás ajustarla después.</p>
+      <div class="pl-grid">
+        <div class="pl-card pl-feat" onclick="aplicarPlantilla('5030')">
+          <span class="pl-ico">⚖️</span>
+          <div class="pl-name">Regla 50/30/20</div>
+          <div class="pl-desc">50% necesidades · 30% deseos · 20% ahorro</div>
+        </div>
+        <div class="pl-card" onclick="copiarMesAnterior()">
+          <span class="pl-ico">📋</span>
+          <div class="pl-name">Copiar mes ant.</div>
+          <div class="pl-desc">Reutilizar los límites del mes pasado</div>
+        </div>
+        <div class="pl-card" onclick="aplicarPlantilla('austeridad')">
+          <span class="pl-ico">✂️</span>
+          <div class="pl-name">Austeridad</div>
+          <div class="pl-desc">Recortar gastos al mínimo esencial</div>
+        </div>
+        <div class="pl-card" onclick="aplicarPlantilla('ahorro40')">
+          <span class="pl-ico">🚀</span>
+          <div class="pl-name">Ahorro agresivo</div>
+          <div class="pl-desc">Maximizar ahorro hasta un 40%</div>
+        </div>
+      </div>
+      <div id="presPlantillaPreview"></div>
+    </div>
+
+  </div>
 </main>
 
 <!-- ══ METAS ══ -->
@@ -1155,66 +1290,280 @@ $('fTipo').addEventListener('change',renderMovimientos);
 $('fMes').addEventListener('change',renderMovimientos);
 $('btnLimpiar').onclick=()=>{$('fTexto').value='';$('fTipo').value='';$('fMes').value='';renderMovimientos();};
 
-// ── PRESUPUESTO ──────────────────────────────────────────────────
+// ══ PRESUPUESTO PERSONAL — REDISEÑO ══════════════════════════════
+
+// Sincronizar los selectores visibles (mesPres2/anioPres2) con los originales
+function syncPresSelects(){
+  const m2=$('mesPres2'), a2=$('anioPres2');
+  const m=$('mesPres'), a=$('anioPres');
+  if(!m2||!a2)return;
+  // Clonar opciones de los originales (llenos por fillMesAnio)
+  m2.innerHTML=m.innerHTML; a2.innerHTML=a.innerHTML;
+  m2.value=m.value; a2.value=a.value;
+  m2.onchange=()=>{m.value=m2.value;renderPresupuesto();};
+  a2.onchange=()=>{a.value=a2.value;renderPresupuesto();};
+}
+
+// Sub-tabs internos
+function initPresTabs(){
+  document.querySelectorAll('.pres-tab').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.pres-tab').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.pres-panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      $('presp-'+btn.dataset.pres).classList.add('active');
+      if(btn.dataset.pres==='configurar') renderPresCfgList();
+    };
+  });
+}
+
 $('formPres').onsubmit=async e=>{
   e.preventDefault();
-  const cat=$('presCat').value,monto=parseFloat($('presMonto').value);
-  const mes=parseInt($('mesPres').value),anio=parseInt($('anioPres').value);
+  const cat=$('presCat').value, monto=parseFloat($('presMonto').value);
+  const mes=parseInt($('mesPres').value), anio=parseInt($('anioPres').value);
   if(!cat||!monto){showToast('Completa los campos.','error');return;}
   if(!DB.presupuestos)DB.presupuestos={};
   const key=`${anio}-${String(mes).padStart(2,'0')}`;
   if(!DB.presupuestos[key])DB.presupuestos[key]={};
   DB.presupuestos[key][cat]=monto;
-  await saveConfig(); renderPresupuesto(); showToast('Presupuesto guardado.','success');
+  await saveConfig();
+  renderPresupuesto();
+  renderPresCfgList();
+  showToast('Presupuesto guardado.','success');
+  $('presMonto').value='';
 };
 
 function renderPresupuesto(){
   fillMesAnio($('mesPres'),$('anioPres'));
-  // Poblar selector de categorías de gasto
-  const sc=$('presCat'), pv=sc.value; sc.innerHTML='<option value="">— Seleccionar —</option>';
+  syncPresSelects();
+  initPresTabs();
+  // Poblar selector categorías
+  const sc=$('presCat'), pv=sc.value;
+  sc.innerHTML='<option value="">— Seleccionar —</option>';
   DB.categorias.filter(c=>c.tipo==='Gasto').forEach(c=>{
     const o=document.createElement('option');o.value=c.nombre;o.textContent=(c.icono||'')+' '+c.nombre;sc.appendChild(o);
-    if(c.subcats)c.subcats.forEach(s=>{const o2=document.createElement('option');o2.value=`${c.nombre}→${s.nombre}`;o2.textContent=`  ↳ ${s.nombre}`;sc.appendChild(o2);});
+    if(c.subcats)c.subcats.forEach(s=>{const o2=document.createElement('option');o2.value=`${c.nombre}\u2192${s.nombre}`;o2.textContent=`  \u21b3 ${s.nombre}`;sc.appendChild(o2);});
   });
   sc.value=pv;
-  const mes=parseInt($('mesPres').value),anio=parseInt($('anioPres').value);
+  const mes=parseInt($('mesPres').value), anio=parseInt($('anioPres').value);
   if(!mes||!anio)return;
   const key=`${anio}-${String(mes).padStart(2,'0')}`;
-  const pres=DB.presupuestos[key]||{};
+  const pres=DB.presupuestos?.[key]||{};
+
+  // Calcular gasto real por categoría y subcategoría
   const realCat={};
+  const realSubCat={}; // cat -> {subcat: monto}
   DB.movimientos.forEach(m=>{
     const d=new Date(m.fecha+'T00:00:00');
     if(d.getMonth()+1!==mes||d.getFullYear()!==anio||m.tipo!=='Gasto')return;
-    const k=m.subcat?`${m.cat}→${m.subcat}`:m.cat;
+    realCat[m.cat]=(realCat[m.cat]||0)+m.monto;
+    if(m.subcat){
+      if(!realSubCat[m.cat])realSubCat[m.cat]={};
+      realSubCat[m.cat][m.subcat]=(realSubCat[m.cat][m.subcat]||0)+m.monto;
+    }
+    const k=m.subcat?`${m.cat}\u2192${m.subcat}`:m.cat;
     realCat[k]=(realCat[k]||0)+m.monto;
-    realCat[m.cat]=(realCat[m.cat]||0)+m.monto; // acumular en padre también
   });
-  // Unir presupuestados + con real
-  const todas=new Set([...Object.keys(pres),...Object.keys(realCat)]);
-  if(!todas.size){$('presContent').innerHTML='<div class="empty-state">No hay datos para este mes.</div>';return;}
+
+  // KPIs globales
+  const totalPres=Object.values(pres).reduce((s,v)=>s+v,0);
+  const todasCats=new Set([...Object.keys(pres),...Object.keys(realCat).filter(k=>!k.includes('\u2192'))]);
+  const totalGast=Object.entries(realCat).filter(([k])=>!k.includes('\u2192')).reduce((s,[,v])=>s+v,0);
+  const disp=Math.max(0,totalPres-totalGast);
+  const pctGlobal=totalPres>0?Math.min(100,Math.round((totalGast/totalPres)*100)):0;
+
+  // Actualizar banner KPIs
+  $('pkTot').textContent=fmt(totalPres);
+  $('pkCats').textContent=Object.keys(pres).length+' categorías';
+  $('pkGast').textContent=fmt(totalGast);
+  $('pkPct').textContent=pctGlobal+'% del total';
+  $('pkDisp').textContent=fmt(disp);
+  $('pkPctDisp').textContent=(100-pctGlobal)+'% restante';
+
+  // Anillo SVG
+  const circ=107;
+  const offset=circ-(circ*pctGlobal/100);
+  const ring=$('presRingFill');
+  if(ring){ring.style.strokeDashoffset=offset;ring.style.stroke=pctGlobal>=100?'#fca5a5':pctGlobal>=80?'#fcd34d':'#fff';}
+  $('presRingTxt').textContent=pctGlobal+'%';
+  const nAlerta=[...todasCats].filter(c=>{const r=realCat[c]||0,p=pres[c]||0;return p>0&&(r>p||r/p>=0.8);}).length;
+  $('presRingTitle').textContent=nAlerta>0?`\u26a0 ${nAlerta} categor\u00eda${nAlerta>1?'s':''} en alerta`:'Todo bajo control';
+  $('presRingSub').textContent=nAlerta>0?[...todasCats].filter(c=>{const r=realCat[c]||0,p=pres[c]||0;return p>0&&(r>p||r/p>=0.8);}).slice(0,2).join(' \u00b7 '):'Vas bien este mes \u2705';
+
+  // Ritmo del mes
+  const hoyStr=hoy();
+  const primerDia=`${anio}-${String(mes).padStart(2,'0')}-01`;
+  const ultimoDia=new Date(anio,mes,0).getDate();
+  const diasTranscurridos=diffDays(primerDia,hoyStr)+1;
+  const pctMes=Math.round((Math.min(diasTranscurridos,ultimoDia)/ultimoDia)*100);
+  const ritmoEl=$('presRitmo');
+  if(totalPres>0&&pctMes>0&&diasTranscurridos>=1){
+    const diff=pctGlobal-pctMes;
+    let ritCls,ritMsg;
+    if(diff>15){ritCls='ritmo-fast';ritMsg=`\u26a0\ufe0f Vas ${Math.abs(diff)}% m\u00e1s r\u00e1pido de lo esperado. Llevas el ${pctMes}% del mes y ya consumiste el ${pctGlobal}% del presupuesto.`;}
+    else if(diff<-10){ritCls='ritmo-ok';ritMsg=`\u2705 Ritmo excelente. Con el ${pctMes}% del mes transcurrido solo has usado el ${pctGlobal}%. \u00a1Vas adelantado!`;}
+    else{ritCls='ritmo-warn';ritMsg=`\ud83d\udcca Ritmo normal. ${pctMes}% del mes \u2014 ${pctGlobal}% consumido.`;}
+    ritmoEl.innerHTML=`<div class="ritmo-banner ${ritCls}">\ud83d\udcc5 ${ritMsg}</div>`;
+    ritmoEl.style.display='';
+  } else { ritmoEl.style.display='none'; }
+
+  // Agrupar por urgencia para el panel Seguimiento
+  if(!todasCats.size){$('presContent').innerHTML='<div class="empty-state">No hay datos para este mes. Define presupuestos en la pestaña Configurar.</div>';return;}
+
+  const grupos={over:[],warn:[],ok:[],noset:[]};
+  [...todasCats].filter(c=>!c.includes('\u2192')).sort().forEach(cat=>{
+    const p=pres[cat]||0, r=realCat[cat]||0;
+    if(p===0) grupos.noset.push(cat);
+    else if(r>p) grupos.over.push(cat);
+    else if(r/p>=0.8) grupos.warn.push(cat);
+    else grupos.ok.push(cat);
+  });
+
   let html='';
-  [...todas].sort().forEach(cat=>{
-    const p=pres[cat]||0,r=realCat[cat]||0;
-    const pct=p>0?Math.min(100,Math.round((r/p)*100)):0;
-    const color=r>p?'#dc2626':r/p>=0.8?'#d97706':'#16a34a';
-    const dif=p-r;
-    html+=`<div class="pres-row">
-      <span class="pres-cat">${cat}</span>
-      <div class="pres-bar-wrap"><div class="pres-bar-fill" style="width:${pct}%;background:${color}"></div></div>
-      <div class="pres-nums">
-        <span class="monto-eg">${fmt(r)}</span>
-        <span style="color:var(--muted)">/ ${fmt(p)}</span>
-        <span class="${dif>=0?'monto-ing':'monto-eg'}">${dif>=0?'✅ '+fmt(dif)+' libre':'🔴 '+fmt(Math.abs(dif))+' exceso'}</span>
-      </div>
-      ${p>0?`<button class="btn-sm btn-danger" style="padding:.2rem .4rem" onclick="delPres('${key}','${cat}')">🗑</button>`:''}
-    </div>`;
-  });
-  $('presContent').innerHTML=html;
+  const renderGrupo=(lista,cls,badge,badgeCls,grupoLabel,grupoColor,sumaFn)=>{
+    if(!lista.length)return;
+    const suma=lista.reduce(sumaFn,0);
+    html+=`<div class="pres-grupo-lbl"><span style="color:${grupoColor}">${grupoLabel} (${lista.length})</span><span style="color:${grupoColor}">${suma!==null?fmt(Math.abs(suma)):''}</span></div>`;
+    lista.forEach(cat=>{
+      const p=pres[cat]||0, r=realCat[cat]||0;
+      const pct=p>0?Math.min(110,Math.round((r/p)*100)):0;
+      const barColor=cls==='pc-over'?'#dc2626':cls==='pc-warn'?'#f59e0b':cls==='pc-ok'?'#16a34a':'#cbd5e1';
+      const dif=p-r;
+      const catObj=DB.categorias.find(c=>c.nombre===cat);
+      const ico=catObj?.icono||'📌';
+      // Subcategorías
+      let subcatsHtml='';
+      const subs=realSubCat[cat];
+      if(subs&&Object.keys(subs).length){
+        subcatsHtml='<div class="pc-subcats">';
+        Object.entries(subs).sort((a,b)=>b[1]-a[1]).forEach(([sn,sv])=>{
+          const spct=r>0?Math.min(100,Math.round((sv/r)*100)):0;
+          subcatsHtml+=`<div class="sc-row"><span class="sc-name">${esc(sn)}</span><div class="sc-bar-t"><div class="sc-bar-f" style="width:${spct}%;background:${barColor}"></div></div><span class="sc-val">${fmt(sv)}</span></div>`;
+        });
+        subcatsHtml+='</div>';
+      }
+      html+=`<div class="pc-card ${cls}" onclick="presCardClick('${key}','${esc(cat)}')">
+        <div class="pc-top">
+          <span class="pc-ico">${ico}</span>
+          <span class="pc-name">${esc(cat)}</span>
+          <span class="pc-badge ${badgeCls}">${badge}</span>
+        </div>
+        ${p>0?`<div class="pc-bar-t"><div class="pc-bar-f" style="width:${Math.min(pct,100)}%;background:${barColor}"></div></div>`:''}
+        <div class="pc-nums">
+          <span class="pc-real">${fmt(r)} gastado</span>
+          ${p>0?`<span class="pc-lim">L\u00edmite ${fmt(p)}</span><span class="pc-dif" style="color:${dif>=0?'#16a34a':'#dc2626'}">${dif>=0?fmt(dif)+' libre':'+'+fmt(Math.abs(dif))+' exceso'}</span>`:'<span class="pc-cta">+ Toca para definir l\u00edmite</span>'}
+        </div>
+        ${subcatsHtml}
+      </div>`;
+    });
+  };
+
+  const overSum=grupos.over.reduce((s,c)=>{const p=pres[c]||0,r=realCat[c]||0;return s+(r-p);},0);
+  const warnSum=grupos.warn.reduce((s,c)=>{const p=pres[c]||0,r=realCat[c]||0;return s+(p-r);},0);
+  const okSum=grupos.ok.reduce((s,c)=>{const p=pres[c]||0,r=realCat[c]||0;return s+(p-r);},0);
+
+  renderGrupo(grupos.over,'pc-over','🔴 Excedida','pb-over','\ud83d\udd34 Excedidas','#dc2626',()=>overSum);
+  renderGrupo(grupos.warn,'pc-warn','⚠ Alerta','pb-warn','\ud83d\udfe1 En alerta','#d97706',()=>warnSum);
+  renderGrupo(grupos.ok,'pc-ok','✓ OK','pb-ok','\u2705 Bajo control','#16a34a',()=>okSum);
+  renderGrupo(grupos.noset,'pc-noset','Sin límite','pb-noset','\u2b1c Sin l\u00edmite','#94a3b8',()=>null);
+
+  $('presContent').innerHTML=html||'<div class="empty-state">Sin movimientos este mes.</div>';
 }
+
+// Click en card — abre configurar con esa categoría preseleccionada
+window.presCardClick=(key,cat)=>{
+  document.querySelector('.pres-tab[data-pres="configurar"]')?.click();
+  setTimeout(()=>{$('presCat').value=cat; $('presMonto').focus();},80);
+};
+
+// Lista de categorías configuradas en modo edición
+function renderPresCfgList(){
+  const mes=parseInt($('mesPres').value), anio=parseInt($('anioPres').value);
+  if(!mes||!anio)return;
+  const key=`${anio}-${String(mes).padStart(2,'0')}`;
+  const pres=DB.presupuestos?.[key]||{};
+  const cont=$('presCfgList'); if(!cont)return;
+  if(!Object.keys(pres).length){cont.innerHTML='<div class="empty-state" style="padding:1rem">No hay límites definidos para este mes.</div>';return;}
+  cont.innerHTML='<div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Límites configurados</div>'+
+    '<div class="cfg-cat-list">'+
+    Object.entries(pres).map(([cat,monto])=>{
+      const ico=DB.categorias.find(c=>c.nombre===cat||cat.startsWith(c.nombre+'\u2192'))?.icono||'📌';
+      return `<div class="cfg-row">
+        <span class="cfg-row-ico">${ico}</span>
+        <span class="cfg-row-name">${esc(cat)}</span>
+        <input class="cfg-row-input" type="number" value="${monto}" min="0" step="0.01"
+          onchange="actualizarLimite('${key}','${esc(cat)}',this.value)" />
+        <button class="cfg-row-del" onclick="delPres('${key}','${esc(cat)}')">🗑</button>
+      </div>`;
+    }).join('')+'</div>';
+}
+window.actualizarLimite=async(key,cat,val)=>{
+  const v=parseFloat(val); if(!v||v<=0)return;
+  if(!DB.presupuestos[key])DB.presupuestos[key]={};
+  DB.presupuestos[key][cat]=v;
+  await saveConfig(); renderPresupuesto();
+};
 window.delPres=async(key,cat)=>{
-  if(DB.presupuestos?.[key]){delete DB.presupuestos[key][cat];await saveConfig();renderPresupuesto();}
+  if(DB.presupuestos?.[key]){delete DB.presupuestos[key][cat];await saveConfig();renderPresupuesto();renderPresCfgList();}
 };
 $('mesPres').onchange=$('anioPres').onchange=renderPresupuesto;
+
+// ── PLANTILLAS ───────────────────────────────────────────────
+window.aplicarPlantilla=async tipo=>{
+  const mes=parseInt($('mesPres').value), anio=parseInt($('anioPres').value);
+  if(!mes||!anio){showToast('Selecciona un mes primero.','error');return;}
+  // Calcular ingreso del mes
+  const ingresoMes=DB.movimientos.filter(m=>{
+    const d=new Date(m.fecha+'T00:00:00');
+    return d.getMonth()+1===mes&&d.getFullYear()===anio&&m.tipo==='Ingreso';
+  }).reduce((s,m)=>s+m.monto,0);
+  if(!ingresoMes){showToast('No hay ingresos registrados este mes para calcular la distribución.','warn');return;}
+  const key=`${anio}-${String(mes).padStart(2,'0')}`;
+  if(!DB.presupuestos)DB.presupuestos={};
+  if(!DB.presupuestos[key])DB.presupuestos[key]={};
+  const cats=DB.categorias.filter(c=>c.tipo==='Gasto').map(c=>c.nombre);
+  if(!cats.length){showToast('Crea categorías de gasto primero.','error');return;}
+  let dist={};
+  if(tipo==='5030'){
+    // 50/30/20 — 50% necesidades, 30% deseos, 20% ahorro
+    // Distribución equitativa entre categorías de gasto (80% del ingreso)
+    const porCat=Math.round((ingresoMes*0.8)/cats.length);
+    cats.forEach(c=>{dist[c]=porCat;});
+    showToast(`Regla 50/30/20 aplicada sobre ${fmt(ingresoMes)} de ingreso \u2714`,'success');
+  } else if(tipo==='austeridad'){
+    // 60% del ingreso distribuido
+    const porCat=Math.round((ingresoMes*0.6)/cats.length);
+    cats.forEach(c=>{dist[c]=porCat;});
+    showToast('Modo austeridad aplicado (60% del ingreso) \u2702\ufe0f','success');
+  } else if(tipo==='ahorro40'){
+    // 60% para gastos
+    const porCat=Math.round((ingresoMes*0.6)/cats.length);
+    cats.forEach(c=>{dist[c]=porCat;});
+    showToast('Ahorro agresivo 40% aplicado \ud83d\ude80','success');
+  }
+  Object.assign(DB.presupuestos[key],dist);
+  await saveConfig();
+  renderPresupuesto();
+  document.querySelector('.pres-tab[data-pres="seguimiento"]')?.click();
+};
+
+window.copiarMesAnterior=async()=>{
+  const mes=parseInt($('mesPres').value), anio=parseInt($('anioPres').value);
+  if(!mes||!anio)return;
+  const keyActual=`${anio}-${String(mes).padStart(2,'0')}`;
+  // Mes anterior
+  const mesAnt=mes===1?12:mes-1;
+  const anioAnt=mes===1?anio-1:anio;
+  const keyAnt=`${anioAnt}-${String(mesAnt).padStart(2,'0')}`;
+  const presAnt=DB.presupuestos?.[keyAnt];
+  if(!presAnt||!Object.keys(presAnt).length){showToast('No hay presupuesto en el mes anterior.','warn');return;}
+  if(!DB.presupuestos)DB.presupuestos={};
+  DB.presupuestos[keyActual]={...presAnt};
+  await saveConfig();
+  renderPresupuesto();
+  document.querySelector('.pres-tab[data-pres="seguimiento"]')?.click();
+  showToast(`Presupuesto copiado de ${mesAnt}/${anioAnt} \u2705`,'success');
+};
 
 // ── METAS DE AHORRO ──────────────────────────────────────────────
 $('formMeta').onsubmit=async e=>{
