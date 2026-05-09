@@ -250,7 +250,10 @@
     .doi-name{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .doi-fecha{font-size:.7rem;color:var(--muted);white-space:nowrap}
     .doi-monto{font-weight:700;white-space:nowrap}
-    @media(max-width:400px){.dash-charts-row{grid-template-columns:1fr}}
+    @media(max-width:640px){
+      .dash-charts-row{grid-template-columns:1fr}
+      .dash-chart-card-flujo{display:none}
+    }
     .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:58px;background:white;border-top:1px solid var(--border);display:flex;align-items:center;z-index:90;box-shadow:0 -2px 8px rgba(0,0,0,.08);overflow-x:auto;scrollbar-width:none;padding:0 .25rem;gap:.1rem}
     .bottom-nav::-webkit-scrollbar{display:none}
     .bnb{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:58px;height:50px;padding:.2rem .3rem;background:none;border:none;cursor:pointer;border-radius:var(--radius-sm);color:var(--muted);font-size:.6rem;font-weight:600;gap:.15rem;transition:background .15s,color .15s;white-space:nowrap;text-decoration:none}
@@ -510,13 +513,12 @@
 
     <!-- ④ Gráficos — donut + sparkline side by side -->
     <div class="dash-charts-row">
-      <div class="dash-chart-card" id="dashDonutCard">
+      <div class="dash-chart-card dash-chart-card-donut" id="dashDonutCard">
         <div class="dash-chart-title">Gastos por categoría</div>
         <div style="position:relative;height:150px"><canvas id="chartDonut"></canvas></div>
         <div id="dashDonutLegend" class="dash-donut-legend"></div>
       </div>
-      <div class="dash-chart-card">
-        <div class="dash-chart-title">Flujo 6 meses</div>
+      <div class="dash-chart-card dash-chart-card-flujo">
         <div style="position:relative;height:150px"><canvas id="chartFlujo"></canvas></div>
         <div style="display:flex;gap:.7rem;margin-top:.4rem">
           <span style="display:flex;align-items:center;gap:3px;font-size:.68rem;color:var(--muted)"><span style="width:9px;height:9px;border-radius:2px;background:#16a34a;display:inline-block"></span>Ingresos</span>
@@ -691,6 +693,12 @@
         </div>
       </div>
       <div id="presPlantillaPreview"></div>
+      <div style="margin-top:.9rem;padding-top:.8rem;border-top:1px solid var(--border)">
+        <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Opciones adicionales</div>
+        <button onclick="limpiarPresupuestoMes()" style="width:100%;background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;border-radius:var(--radius-sm);padding:.5rem .8rem;font-size:.8rem;font-weight:700;cursor:pointer;text-align:left">
+          🗑 Limpiar presupuesto del mes — dejar todo sin límite
+        </button>
+      </div>
     </div>
 
   </div>
@@ -1813,19 +1821,62 @@ function renderPresCfgList(){
   const key=`${anio}-${String(mes).padStart(2,'0')}`;
   const pres=DB.presupuestos?.[key]||{};
   const cont=$('presCfgList'); if(!cont)return;
-  if(!Object.keys(pres).length){cont.innerHTML='<div class="empty-state" style="padding:1rem">No hay límites definidos para este mes.</div>';return;}
-  cont.innerHTML='<div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Límites configurados</div>'+
-    '<div class="cfg-cat-list">'+
-    Object.entries(pres).map(([cat,monto])=>{
+
+  // Categorías CON límite definido
+  const conLimite=Object.entries(pres);
+  // Categorías de gasto SIN límite (existen en DB pero no en presupuesto del mes)
+  const sinLimite=DB.categorias.filter(c=>c.tipo==='Gasto'&&!pres[c.nombre]).map(c=>c.nombre);
+
+  let html='';
+
+  if(!conLimite.length && !sinLimite.length){
+    cont.innerHTML='<div class="empty-state" style="padding:1rem">No hay categorías de gasto definidas.</div>';
+    return;
+  }
+
+  // Botón limpiar todo — solo visible si hay límites
+  if(conLimite.length){
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <span style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Límites configurados (${conLimite.length})</span>
+      <button onclick="limpiarPresupuestoMes()" style="background:#fee2e2;color:#dc2626;border:none;border-radius:var(--radius-sm);padding:.25rem .6rem;font-size:.72rem;font-weight:700;cursor:pointer">🗑 Limpiar todo</button>
+    </div>
+    <div class="cfg-cat-list">
+    ${conLimite.map(([cat,monto])=>{
       const ico=DB.categorias.find(c=>c.nombre===cat||cat.startsWith(c.nombre+'\u2192'))?.icono||'📌';
       return `<div class="cfg-row">
         <span class="cfg-row-ico">${ico}</span>
         <span class="cfg-row-name">${esc(cat)}</span>
         <input class="cfg-row-input" type="number" value="${monto}" min="0" step="0.01"
           onchange="actualizarLimite('${key}','${esc(cat)}',this.value)" />
-        <button class="cfg-row-del" onclick="delPres('${key}','${esc(cat)}')">🗑</button>
+        <button class="cfg-row-del" title="Quitar límite — quedará sin límite" onclick="delPres('${key}','${esc(cat)}')">🗑</button>
       </div>`;
-    }).join('')+'</div>';
+    }).join('')}
+    </div>`;
+  }
+
+  // Categorías SIN límite — sección informativa
+  if(sinLimite.length){
+    html+=`<div style="margin-top:.8rem">
+      <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.45rem">Sin límite definido (${sinLimite.length}) — gasto libre</div>
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+      ${sinLimite.map(cat=>{
+        const ico=DB.categorias.find(c=>c.nombre===cat)?.icono||'📌';
+        return `<div class="cfg-row" style="opacity:.7;cursor:default">
+          <span class="cfg-row-ico">${ico}</span>
+          <span class="cfg-row-name" style="color:var(--muted)">${esc(cat)}</span>
+          <span style="font-size:.72rem;color:var(--muted);margin-right:.4rem;flex-shrink:0">Sin límite</span>
+          <button onclick="presCardClick('${key}','${esc(cat)}')" style="background:var(--green-l);color:var(--green);border:none;border-radius:var(--radius-sm);padding:.22rem .5rem;font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap">+ Definir</button>
+        </div>`;
+      }).join('')}
+      </div>
+    </div>`;
+  }
+
+  if(!conLimite.length){
+    html=`<div class="empty-state" style="padding:.8rem;margin-bottom:.6rem">No hay límites definidos este mes. Las categorías están en modo libre.</div>`+html;
+  }
+
+  cont.innerHTML=html;
 }
 window.actualizarLimite=async(key,cat,val)=>{
   const v=parseFloat(val); if(!v||v<=0)return;
@@ -1839,60 +1890,134 @@ window.delPres=async(key,cat)=>{
 $('mesPres').onchange=$('anioPres').onchange=renderPresupuesto;
 
 // ── PLANTILLAS ───────────────────────────────────────────────
+
+// Backup para reversión — solo en memoria (no necesita persistir)
+const _presBackup={};
+
 window.aplicarPlantilla=async tipo=>{
   const mes=parseInt($('mesPres').value), anio=parseInt($('anioPres').value);
   if(!mes||!anio){showToast('Selecciona un mes primero.','error');return;}
-  // Calcular ingreso del mes
+
   const ingresoMes=DB.movimientos.filter(m=>{
     const d=new Date(m.fecha+'T00:00:00');
     return d.getMonth()+1===mes&&d.getFullYear()===anio&&m.tipo==='Ingreso';
   }).reduce((s,m)=>s+m.monto,0);
   if(!ingresoMes){showToast('No hay ingresos registrados este mes para calcular la distribución.','warn');return;}
+
   const key=`${anio}-${String(mes).padStart(2,'0')}`;
-  if(!DB.presupuestos)DB.presupuestos={};
-  if(!DB.presupuestos[key])DB.presupuestos[key]={};
   const cats=DB.categorias.filter(c=>c.tipo==='Gasto').map(c=>c.nombre);
   if(!cats.length){showToast('Crea categorías de gasto primero.','error');return;}
-  let dist={};
-  if(tipo==='5030'){
-    // 50/30/20 — 50% necesidades, 30% deseos, 20% ahorro
-    // Distribución equitativa entre categorías de gasto (80% del ingreso)
-    const porCat=Math.round((ingresoMes*0.8)/cats.length);
-    cats.forEach(c=>{dist[c]=porCat;});
-    showToast(`Regla 50/30/20 aplicada sobre ${fmt(ingresoMes)} de ingreso \u2714`,'success');
-  } else if(tipo==='austeridad'){
-    // 60% del ingreso distribuido
-    const porCat=Math.round((ingresoMes*0.6)/cats.length);
-    cats.forEach(c=>{dist[c]=porCat;});
-    showToast('Modo austeridad aplicado (60% del ingreso) \u2702\ufe0f','success');
-  } else if(tipo==='ahorro40'){
-    // 60% para gastos
-    const porCat=Math.round((ingresoMes*0.6)/cats.length);
-    cats.forEach(c=>{dist[c]=porCat;});
-    showToast('Ahorro agresivo 40% aplicado \ud83d\ude80','success');
+
+  // Confirmar — advertir si ya hay presupuesto definido
+  const presActual=DB.presupuestos?.[key]||{};
+  const tienePresupuesto=Object.keys(presActual).length>0;
+  if(tienePresupuesto){
+    if(!confirm(`Ya tienes ${Object.keys(presActual).length} límites definidos este mes.\n\n¿Deseas reemplazarlos con la plantilla?\n(Podrás revertir el cambio inmediatamente después.)`))return;
   }
-  Object.assign(DB.presupuestos[key],dist);
+
+  // Guardar backup ANTES de aplicar
+  if(!DB.presupuestos)DB.presupuestos={};
+  _presBackup[key]=JSON.parse(JSON.stringify(DB.presupuestos[key]||{}));
+
+  // Calcular distribución según tipo
+  // SOLO asigna a categorías que el usuario seleccione — las demás quedan sin límite
+  let dist={};
+  const nombres={
+    '5030':'Regla 50/30/20 — 80% del ingreso para gastos',
+    'austeridad':'Modo austeridad — 60% del ingreso',
+    'ahorro40':'Ahorro agresivo — 60% del ingreso'
+  };
+  const porcentajes={'5030':0.80,'austeridad':0.60,'ahorro40':0.60};
+  const pct=porcentajes[tipo]||0.80;
+  const porCat=Math.round((ingresoMes*pct)/cats.length);
+  cats.forEach(c=>{dist[c]=porCat;});
+
+  // Reemplazar (no mezclar) — solo las cats de gasto definidas por la plantilla
+  // Las categorías que el usuario tenía sin límite siguen sin límite
+  DB.presupuestos[key]={...dist};
+
   await saveConfig();
   renderPresupuesto();
+  renderPresCfgList();
   document.querySelector('.pres-tab[data-pres="seguimiento"]')?.click();
+
+  // Mostrar opción de revertir en toast persistente
+  const msgs={'5030':`Regla 50/30/20: ${fmt(porCat)} por categoría`,'austeridad':`Austeridad: ${fmt(porCat)} por categoría`,'ahorro40':`Ahorro agresivo: ${fmt(porCat)} por categoría`};
+  showToast(msgs[tipo]+' — aplicada ✔','success');
+
+  // Banner de reversión temporal (10 segundos)
+  _mostrarBannerRevertir(key, nombres[tipo]);
+};
+
+function _mostrarBannerRevertir(key, nombre){
+  // Eliminar banner anterior si existe
+  const prev=document.getElementById('presRevertBanner');
+  if(prev)prev.remove();
+  const banner=document.createElement('div');
+  banner.id='presRevertBanner';
+  banner.style.cssText='background:#1e3a5f;color:white;border-radius:var(--radius);padding:.7rem .9rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.6rem;font-size:.8rem;font-weight:600;animation:slideUp .2s ease';
+  banner.innerHTML=`<span style="flex:1">↩ Plantilla aplicada: <em style="font-weight:400;font-style:normal">${nombre}</em></span><button onclick="revertirPlantilla('${key}')" style="background:#dc2626;color:white;border:none;border-radius:var(--radius-sm);padding:.3rem .7rem;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap">Revertir</button><button onclick="document.getElementById('presRevertBanner').remove()" style="background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:1rem;padding:0 .2rem">✕</button>`;
+  // Insertar al inicio del panel configurar / arriba del todo
+  const panel=$('presp-plantillas');
+  if(panel) panel.insertAdjacentElement('afterbegin',banner);
+  // Auto-desaparecer en 30 segundos
+  setTimeout(()=>{if(document.getElementById('presRevertBanner'))document.getElementById('presRevertBanner').remove();},30000);
+}
+
+window.revertirPlantilla=async key=>{
+  if(!_presBackup[key]&&_presBackup[key]!==null){showToast('No hay backup disponible.','warn');return;}
+  if(!DB.presupuestos)DB.presupuestos={};
+  // Si el backup estaba vacío, limpiar todo el mes
+  if(!_presBackup[key]||Object.keys(_presBackup[key]).length===0){
+    delete DB.presupuestos[key];
+  } else {
+    DB.presupuestos[key]=JSON.parse(JSON.stringify(_presBackup[key]));
+  }
+  delete _presBackup[key];
+  await saveConfig();
+  renderPresupuesto();
+  renderPresCfgList();
+  document.getElementById('presRevertBanner')?.remove();
+  showToast('Presupuesto revertido al estado anterior ↩','success');
+};
+
+window.limpiarPresupuestoMes=async()=>{
+  const mes=parseInt($('mesPres').value), anio=parseInt($('anioPres').value);
+  if(!mes||!anio)return;
+  const key=`${anio}-${String(mes).padStart(2,'0')}`;
+  if(!confirm('¿Eliminar TODOS los límites de este mes?\nLas categorías quedarán sin límite definido.'))return;
+  // Guardar backup antes
+  _presBackup[key]=JSON.parse(JSON.stringify(DB.presupuestos?.[key]||{}));
+  if(DB.presupuestos) delete DB.presupuestos[key];
+  await saveConfig();
+  renderPresupuesto();
+  renderPresCfgList();
+  _mostrarBannerRevertir(key,'presupuesto limpiado');
+  showToast('Todos los límites eliminados. Categorías sin límite ✔','success');
 };
 
 window.copiarMesAnterior=async()=>{
   const mes=parseInt($('mesPres').value), anio=parseInt($('anioPres').value);
   if(!mes||!anio)return;
   const keyActual=`${anio}-${String(mes).padStart(2,'0')}`;
-  // Mes anterior
-  const mesAnt=mes===1?12:mes-1;
-  const anioAnt=mes===1?anio-1:anio;
+  const mesAnt=mes===1?12:mes-1, anioAnt=mes===1?anio-1:anio;
   const keyAnt=`${anioAnt}-${String(mesAnt).padStart(2,'0')}`;
   const presAnt=DB.presupuestos?.[keyAnt];
   if(!presAnt||!Object.keys(presAnt).length){showToast('No hay presupuesto en el mes anterior.','warn');return;}
+  const presActual=DB.presupuestos?.[keyActual]||{};
+  if(Object.keys(presActual).length>0){
+    if(!confirm(`Ya tienes ${Object.keys(presActual).length} límites definidos.\n¿Reemplazar con los del mes anterior?`))return;
+  }
+  // Backup
+  _presBackup[keyActual]=JSON.parse(JSON.stringify(presActual));
   if(!DB.presupuestos)DB.presupuestos={};
   DB.presupuestos[keyActual]={...presAnt};
   await saveConfig();
   renderPresupuesto();
+  renderPresCfgList();
   document.querySelector('.pres-tab[data-pres="seguimiento"]')?.click();
-  showToast(`Presupuesto copiado de ${mesAnt}/${anioAnt} \u2705`,'success');
+  _mostrarBannerRevertir(keyActual,`copiado de ${mesAnt}/${anioAnt}`);
+  showToast(`Presupuesto copiado de ${mesAnt}/${anioAnt} ✅`,'success');
 };
 
 // ── METAS DE AHORRO ──────────────────────────────────────────────
