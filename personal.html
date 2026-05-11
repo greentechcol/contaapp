@@ -459,6 +459,51 @@
     .push-banner button{margin-left:auto;background:#3b82f6;color:white;border:none;border-radius:var(--radius-sm);padding:.3rem .7rem;font-size:.74rem;font-weight:700;cursor:pointer;white-space:nowrap}
 
     @media(max-width:640px){.obl-tipo-grid{grid-template-columns:repeat(3,1fr)}}
+    /* ══ MOVIMIENTOS — VISTA AGRUPADA POR DÍA ══ */
+    /* Encabezado de día */
+    .dia-header{display:flex;align-items:center;justify-content:space-between;padding:.55rem .75rem;background:var(--neutral-bg);border-radius:var(--radius-sm);margin-bottom:.25rem;position:sticky;top:56px;z-index:10}
+    .dia-num-wrap{display:flex;align-items:baseline;gap:.4rem}
+    .dia-num{font-size:1.6rem;font-weight:900;letter-spacing:-.04em;color:var(--text);line-height:1}
+    .dia-tag{font-size:.68rem;font-weight:700;text-transform:uppercase;color:white;background:var(--muted);padding:.12rem .4rem;border-radius:4px;letter-spacing:.05em}
+    .dia-tag.hoy{background:var(--green)}
+    .dia-mes{font-size:.75rem;color:var(--muted);font-weight:600}
+    .dia-resumen{display:flex;gap:.85rem;align-items:center}
+    .dia-ing{font-size:.78rem;font-weight:700;color:#16a34a}
+    .dia-gas{font-size:.78rem;font-weight:700;color:#dc2626}
+    /* Grupo de día */
+    .dia-grupo{margin-bottom:.9rem}
+    .dia-items{border-radius:var(--radius);overflow:hidden;border:1.5px solid var(--border);background:white}
+    /* Ítem de movimiento */
+    .mov-item{display:flex;align-items:center;gap:.65rem;padding:.7rem .8rem;border-bottom:1px solid var(--border);position:relative;transition:background .15s}
+    .mov-item:last-child{border-bottom:none}
+    .mov-item:active{background:var(--neutral-bg)}
+    .mov-item-ico{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+    .ico-gasto{background:#fee2e2}
+    .ico-ingreso{background:#dcfce7}
+    .ico-ahorro{background:#dbeafe}
+    .mov-item-info{flex:1;min-width:0}
+    .mov-item-cat{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+    .mov-item-sub{font-size:.72rem;color:var(--muted);margin-top:.08rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .mov-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:.15rem;flex-shrink:0}
+    .mov-monto-ing{font-size:.95rem;font-weight:800;color:#16a34a}
+    .mov-monto-gas{font-size:.95rem;font-weight:800;color:#dc2626}
+    .mov-monto-aho{font-size:.95rem;font-weight:800;color:#2563eb}
+    .mov-cuenta-lbl{font-size:.68rem;color:var(--muted);font-weight:500}
+    /* Swipe actions (long press / tap botones) */
+    .mov-actions{display:none;position:absolute;right:0;top:0;bottom:0;align-items:center;gap:.2rem;padding:0 .5rem;background:white}
+    .mov-item.expanded .mov-actions{display:flex}
+    .mov-item.expanded .mov-item-right{opacity:0}
+    .mov-act-btn{width:32px;height:32px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:.85rem;cursor:pointer}
+    .mab-edit{background:#dbeafe;color:#1d4ed8}
+    .mab-del{background:#fee2e2;color:#dc2626}
+    /* Banda resumen período */
+    .mov-band{display:flex;justify-content:space-around;padding:.55rem .5rem;background:white;border-radius:var(--radius-sm);border:1.5px solid var(--border);margin:.5rem .5rem .3rem;font-size:.78rem;text-align:center}
+    .mb-item{display:flex;flex-direction:column;gap:.1rem}
+    .mb-lbl{font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .mb-val{font-weight:800}
+    /* Formulario colapsable */
+    #formMovBody{overflow:hidden;transition:max-height .28s ease}
+    #formMovBody.collapsed{max-height:0!important;padding:0}
   </style>
 </head>
 <body>
@@ -538,66 +583,71 @@
 
 <!-- ══ MOVIMIENTOS ══ -->
 <main class="tab-content hidden" id="tab-movimientos">
-  <section class="section-block">
-    <h2 class="section-title">Registrar Movimiento</h2>
-    <form id="formMov" autocomplete="off">
-      <div class="form-grid">
-        <div class="form-group"><label>Fecha *</label><input type="date" id="movFecha" required /></div>
-        <div class="form-group">
-          <label>Tipo *</label>
-          <select id="movTipo" required>
-            <option value="">— Seleccionar —</option>
-            <option value="Ingreso">💰 Ingreso / Salario</option>
-            <option value="Gasto">💸 Gasto</option>
-            <option value="Ahorro">🏦 Aporte a meta de ahorro</option>
-          </select>
+
+  <!-- Formulario de registro — colapsable -->
+  <section class="section-block" id="formMovSection">
+    <div id="formMovToggle" onclick="toggleFormMov()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:.1rem 0;margin-bottom:.5rem">
+      <h2 class="section-title" style="margin:0">➕ Registrar movimiento</h2>
+      <span id="formMovArrow" style="font-size:1.1rem;color:var(--muted);transition:transform .2s">▲</span>
+    </div>
+    <div id="formMovBody">
+      <form id="formMov" autocomplete="off">
+        <div class="form-grid">
+          <div class="form-group"><label>Fecha *</label><input type="date" id="movFecha" required /></div>
+          <div class="form-group">
+            <label>Tipo *</label>
+            <select id="movTipo" required>
+              <option value="">— Seleccionar —</option>
+              <option value="Ingreso">💰 Ingreso / Salario</option>
+              <option value="Gasto">💸 Gasto</option>
+              <option value="Ahorro">🏦 Aporte a meta de ahorro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Categoría *</label>
+            <select id="movCat" required><option value="">— Seleccionar —</option></select>
+          </div>
+          <div class="form-group" id="grpSubcat" style="display:none">
+            <label>Subcategoría</label>
+            <select id="movSubcat"><option value="">— Sin subcategoría —</option></select>
+          </div>
+          <div class="form-group">
+            <label>Cuenta *</label>
+            <select id="movCuenta" required><option value="">— Seleccionar —</option></select>
+          </div>
+          <div class="form-group"><label>Monto *</label><input type="number" id="movMonto" placeholder="0.00" step="0.01" min="0.01" required /></div>
+          <div class="form-group form-group-wide"><label>Descripción</label><input type="text" id="movDesc" placeholder="¿En qué se gastó?" maxlength="200" /></div>
         </div>
-        <div class="form-group">
-          <label>Categoría *</label>
-          <select id="movCat" required><option value="">— Seleccionar —</option></select>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">💾 Guardar</button>
+          <button type="button" class="btn-secondary" id="btnCancelarMov" style="display:none">✖ Cancelar</button>
         </div>
-        <div class="form-group" id="grpSubcat" style="display:none">
-          <label>Subcategoría</label>
-          <select id="movSubcat"><option value="">— Sin subcategoría —</option></select>
-        </div>
-        <div class="form-group">
-          <label>Cuenta *</label>
-          <select id="movCuenta" required><option value="">— Seleccionar —</option></select>
-        </div>
-        <div class="form-group"><label>Monto *</label><input type="number" id="movMonto" placeholder="0.00" step="0.01" min="0.01" required /></div>
-        <div class="form-group form-group-wide"><label>Descripción</label><input type="text" id="movDesc" placeholder="¿En qué se gastó?" maxlength="200" /></div>
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="btn-primary">➕ Guardar</button>
-        <button type="button" class="btn-secondary" id="btnCancelarMov" style="display:none">✖ Cancelar</button>
-      </div>
-    </form>
+      </form>
+    </div>
   </section>
 
-  <section class="section-block">
-    <h2 class="section-title">Mis movimientos</h2>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.85rem">
-      <input type="text"  id="fTexto" placeholder="🔍 Buscar..." style="flex:1;min-width:130px;padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.85rem"/>
-      <select id="fTipo" style="min-width:120px;padding:.5rem .6rem;border:1.5px solid var(--border);border-radius:var(--radius-sm)">
+  <!-- Filtros -->
+  <section class="section-block" style="padding:.65rem 1rem">
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+      <input type="text" id="fTexto" placeholder="🔍 Buscar..." style="flex:1;min-width:110px;padding:.45rem .65rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.83rem"/>
+      <select id="fTipo" style="padding:.45rem .55rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem">
         <option value="">Todos</option>
-        <option value="Ingreso">Ingresos</option>
-        <option value="Gasto">Gastos</option>
-        <option value="Ahorro">Ahorros</option>
+        <option value="Ingreso">💰 Ingresos</option>
+        <option value="Gasto">💸 Gastos</option>
+        <option value="Ahorro">🏦 Ahorros</option>
       </select>
-      <select id="fMes" style="min-width:130px;padding:.5rem .6rem;border:1.5px solid var(--border);border-radius:var(--radius-sm)"></select>
-      <button class="btn-secondary btn-sm" id="btnLimpiar">✖</button>
+      <select id="fMes" style="padding:.45rem .55rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem"></select>
+      <button class="btn-secondary btn-sm" id="btnLimpiar" title="Limpiar filtros">✖</button>
     </div>
-    <div class="table-responsive">
-      <table class="data-table">
-        <thead><tr>
-          <th>Fecha</th><th>Tipo</th><th>Categoría</th>
-          <th>Descripción</th><th>Cuenta</th><th>Monto</th><th></th>
-        </tr></thead>
-        <tbody id="tbodyMov"></tbody>
-      </table>
-    </div>
-    <div id="emptyMov" class="empty-state">Sin movimientos registrados aún.</div>
   </section>
+
+  <!-- Resumen del período filtrado -->
+  <div id="movResumenBand" style="display:none"></div>
+
+  <!-- Lista agrupada por día -->
+  <div id="movListaDias" style="padding:0 .5rem .5rem"></div>
+  <div id="emptyMov" class="empty-state">Sin movimientos registrados aún.</div>
+
 </main>
 
 <!-- ══ PRESUPUESTO ══ -->
@@ -1576,38 +1626,151 @@ $('formMov').onsubmit=async e=>{
 
 $('btnCancelarMov').onclick=()=>{editandoId=null;$('formMov').reset();$('grpSubcat').style.display='none';$('btnCancelarMov').style.display='none';};
 
+// ── Toggle formulario colapsable ─────────────────────────────
+window.toggleFormMov=()=>{
+  const body=$('formMovBody'), arrow=$('formMovArrow');
+  const isOpen=!body.classList.contains('collapsed');
+  if(isOpen){
+    body.style.maxHeight=body.scrollHeight+'px';
+    requestAnimationFrame(()=>{body.style.maxHeight='0px';body.classList.add('collapsed');});
+    arrow.style.transform='rotate(180deg)';
+  } else {
+    body.classList.remove('collapsed');
+    body.style.maxHeight=body.scrollHeight+'px';
+    setTimeout(()=>body.style.maxHeight='',300);
+    arrow.style.transform='rotate(0deg)';
+  }
+};
+
+// ── RENDER MOVIMIENTOS — VISTA AGRUPADA POR DÍA ──────────────
+const DIAS_ES=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MESES_CORTO=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
 function renderMovimientos(){
   populateCatSelect($('movTipo').value);
   populateCuentaSelect();
-  const txt=$('fTexto').value.toLowerCase(), tipo=$('fTipo').value, mes=$('fMes').value;
-  // Rebuild fMes
-  const MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  // Rebuild selector de meses
   const prevM=$('fMes').value;
   $('fMes').innerHTML='<option value="">Todos los meses</option>';
-  const ym=new Set(); DB.movimientos.forEach(m=>{const d=new Date(m.fecha+'T00:00:00');ym.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);});
-  [...ym].sort().reverse().forEach(v=>{const[y,mo]=v.split('-');const o=document.createElement('option');o.value=v;o.textContent=`${MN[parseInt(mo)-1]} ${y}`;$('fMes').appendChild(o);});
-  $('fMes').value=prevM;
-  let lista=[...DB.movimientos];
-  if(txt)lista=lista.filter(m=>(m.descripcion||'').toLowerCase().includes(txt)||(m.cat||'').toLowerCase().includes(txt)||(m.subcat||'').toLowerCase().includes(txt));
-  if(tipo)lista=lista.filter(m=>m.tipo===tipo);
-  if(mes)lista=lista.filter(m=>m.fecha.startsWith(mes));
-  lista.sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  const tbody=$('tbodyMov'); tbody.innerHTML='';
-  lista.forEach(m=>{
-    const cn=DB.cuentas.find(c=>c.id===m.cuenta)?.nombre||m.cuenta;
-    const isIng=m.tipo==='Ingreso';
-    const badgeCls=m.tipo==='Ingreso'?'badge-ing':m.tipo==='Ahorro'?'badge-sal':'badge-gas';
-    const catLabel=m.subcat?`${m.cat}<span class="subcat-indent">↳ ${m.subcat}</span>`:m.cat;
-    const tr=document.createElement('tr'); tr.className='row-new';
-    tr.innerHTML=`<td>${m.fecha}</td><td><span class="badge ${badgeCls}">${m.tipo}</span></td><td>${catLabel}</td><td>${m.descripcion||'—'}</td><td>${cn}</td><td class="${isIng?'monto-ing':'monto-eg'}">${isIng?'+':'-'}${fmt(m.monto)}</td>
-      <td><div class="action-btns">
-        <button class="btn-sm btn-secondary" data-id="${m.id}" onclick="editarMov('${m.id}')">✏️</button>
-        <button class="btn-sm btn-danger" data-id="${m.id}" onclick="eliminarMov('${m.id}')">🗑</button>
-      </div></td>`;
-    setTimeout(()=>tr.classList.remove('row-new'),1600); tbody.appendChild(tr);
+  const ym=new Set();
+  DB.movimientos.forEach(m=>{const d=new Date(m.fecha+'T00:00:00');ym.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);});
+  [...ym].sort().reverse().forEach(v=>{
+    const[y,mo]=v.split('-');
+    const o=document.createElement('option');o.value=v;
+    o.textContent=`${['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(mo)-1]} ${y}`;
+    $('fMes').appendChild(o);
   });
+  $('fMes').value=prevM;
+
+  // Filtrar
+  const txt=$('fTexto').value.toLowerCase();
+  const tipo=$('fTipo').value;
+  const mes=$('fMes').value;
+  let lista=[...DB.movimientos];
+  if(txt) lista=lista.filter(m=>(m.descripcion||'').toLowerCase().includes(txt)||(m.cat||'').toLowerCase().includes(txt)||(m.subcat||'').toLowerCase().includes(txt));
+  if(tipo) lista=lista.filter(m=>m.tipo===tipo);
+  if(mes)  lista=lista.filter(m=>m.fecha.startsWith(mes));
+  lista.sort((a,b)=>b.fecha.localeCompare(a.fecha)||b.id.localeCompare(a.id));
+
   $('emptyMov').style.display=lista.length?'none':'block';
+
+  // Banda resumen período
+  const band=$('movResumenBand');
+  if(lista.length){
+    const totIng=lista.filter(m=>m.tipo==='Ingreso').reduce((s,m)=>s+m.monto,0);
+    const totGas=lista.filter(m=>m.tipo==='Gasto').reduce((s,m)=>s+m.monto,0);
+    const totAho=lista.filter(m=>m.tipo==='Ahorro').reduce((s,m)=>s+m.monto,0);
+    band.style.display='';
+    band.innerHTML=`<div class="mov-band">
+      <div class="mb-item"><span class="mb-lbl">Ingresos</span><span class="mb-val" style="color:#16a34a">+${fmt(totIng)}</span></div>
+      <div class="mb-item"><span class="mb-lbl">Gastos</span><span class="mb-val" style="color:#dc2626">-${fmt(totGas)}</span></div>
+      <div class="mb-item"><span class="mb-lbl">Ahorros</span><span class="mb-val" style="color:#2563eb">-${fmt(totAho)}</span></div>
+      <div class="mb-item"><span class="mb-lbl">Balance</span><span class="mb-val" style="color:${totIng-totGas-totAho>=0?'#16a34a':'#dc2626'}">${totIng-totGas-totAho>=0?'+':''}${fmt(totIng-totGas-totAho)}</span></div>
+    </div>`;
+  } else { band.style.display='none'; }
+
+  // Agrupar por fecha
+  const grupos={};
+  lista.forEach(m=>{
+    if(!grupos[m.fecha]) grupos[m.fecha]=[];
+    grupos[m.fecha].push(m);
+  });
+
+  const hoyStr=hoy();
+  const cont=$('movListaDias');
+  cont.innerHTML='';
+
+  Object.keys(grupos).sort().reverse().forEach(fecha=>{
+    const movsDia=grupos[fecha];
+    const d=new Date(fecha+'T00:00:00');
+    const numDia=d.getDate();
+    const diaSem=DIAS_ES[d.getDay()];
+    const mesStr=MESES_CORTO[d.getMonth()];
+    const anioStr=d.getFullYear();
+    const esHoy=fecha===hoyStr;
+
+    // Totales del día
+    const ingDia=movsDia.filter(m=>m.tipo==='Ingreso').reduce((s,m)=>s+m.monto,0);
+    const gasDia=movsDia.filter(m=>m.tipo==='Gasto').reduce((s,m)=>s+m.monto,0);
+
+    // Encabezado del día
+    let headerHtml=`<div class="dia-grupo">
+      <div class="dia-header">
+        <div class="dia-num-wrap">
+          <span class="dia-num">${String(numDia).padStart(2,'0')}</span>
+          <span class="dia-tag${esHoy?' hoy':''}">${diaSem}</span>
+          <span class="dia-mes">${mesStr} ${anioStr}</span>
+        </div>
+        <div class="dia-resumen">
+          ${ingDia>0?`<span class="dia-ing">+${fmt(ingDia)}</span>`:''}
+          ${gasDia>0?`<span class="dia-gas">-${fmt(gasDia)}</span>`:''}
+        </div>
+      </div>
+      <div class="dia-items">`;
+
+    // Ítems del día
+    let itemsHtml='';
+    movsDia.forEach(m=>{
+      const cn=DB.cuentas.find(c=>c.id===m.cuenta)?.nombre||m.cuenta||'';
+      const catObj=DB.categorias.find(c=>c.nombre===m.cat);
+      const ico=catObj?.icono||(m.tipo==='Ingreso'?'💰':m.tipo==='Ahorro'?'🏦':'💸');
+      const icoBg=m.tipo==='Ingreso'?'ico-ingreso':m.tipo==='Ahorro'?'ico-ahorro':'ico-gasto';
+      const montoCls=m.tipo==='Ingreso'?'mov-monto-ing':m.tipo==='Ahorro'?'mov-monto-aho':'mov-monto-gas';
+      const signo=m.tipo==='Ingreso'?'+':'-';
+      const desc=m.descripcion||m.subcat||'';
+      const subLinea=[m.subcat?`↳ ${m.subcat}`:'',cn].filter(Boolean).join(' · ');
+
+      itemsHtml+=`<div class="mov-item" id="mitem-${m.id}" onclick="toggleMovActions('${m.id}')">
+        <div class="mov-item-ico ${icoBg}">${ico}</div>
+        <div class="mov-item-info">
+          <div class="mov-item-cat">${esc(m.cat||'Sin categoría')}${desc?` <span style="font-weight:400;color:var(--muted);font-size:.8rem">— ${esc(desc)}</span>`:''}</div>
+          ${subLinea?`<div class="mov-item-sub">${esc(subLinea)}</div>`:''}
+        </div>
+        <div class="mov-item-right">
+          <span class="${montoCls}">${signo}${fmt(m.monto)}</span>
+          ${cn?`<span class="mov-cuenta-lbl">${esc(cn)}</span>`:''}
+        </div>
+        <div class="mov-actions">
+          <button class="mov-act-btn mab-edit" onclick="event.stopPropagation();editarMov('${m.id}')">✏️</button>
+          <button class="mov-act-btn mab-del" onclick="event.stopPropagation();eliminarMov('${m.id}')">🗑</button>
+        </div>
+      </div>`;
+    });
+
+    cont.innerHTML+=headerHtml+itemsHtml+'</div></div>';
+  });
 }
+
+// Expandir/colapsar acciones de un ítem al tocarlo
+window.toggleMovActions=id=>{
+  const el=document.getElementById('mitem-'+id);
+  if(!el)return;
+  const wasOpen=el.classList.contains('expanded');
+  // Cerrar todos los abiertos
+  document.querySelectorAll('.mov-item.expanded').forEach(e=>e.classList.remove('expanded'));
+  if(!wasOpen) el.classList.add('expanded');
+};
 
 window.editarMov=id=>{
   const m=DB.movimientos.find(x=>x.id===id);if(!m)return;
@@ -1616,7 +1779,12 @@ window.editarMov=id=>{
   $('movCat').dispatchEvent(new Event('change')); $('movSubcat').value=m.subcat||'';
   populateCuentaSelect(); $('movCuenta').value=m.cuenta;
   $('movMonto').value=m.monto; $('movDesc').value=m.descripcion||'';
-  $('btnCancelarMov').style.display=''; document.querySelector('[data-tab="movimientos"]').click();
+  $('btnCancelarMov').style.display='';
+  // Abrir formulario si está colapsado
+  const body=$('formMovBody');
+  if(body.classList.contains('collapsed')) toggleFormMov();
+  document.querySelector('[data-tab="movimientos"]').click();
+  setTimeout(()=>$('movFecha').scrollIntoView({behavior:'smooth',block:'start'}),120);
 };
 window.eliminarMov=async id=>{
   if(!confirm('¿Eliminar este movimiento?'))return;
