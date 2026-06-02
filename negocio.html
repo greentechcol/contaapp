@@ -1923,12 +1923,13 @@ function renderMovimientos(){
       const montoCls=esIngreso?'mov-monto-ing':'mov-monto-gas';
       const signo=esIngreso?'+':'-';
       const desc=m.descripcion||'';
-      const nota=m.nota?` · ${m.nota}':'';
+      const nota=m.nota?` · ${m.nota}`:'';
+
       
       itemsHtml+=`<div class="mov-item" id="mitem-${m.id}" onclick="toggleMovActions('${m.id}')">
         <div class="mov-item-ico ${icoBg}">💰</div>
         <div class="mov-item-info">
-          <div class="mov-item-cat">${m.cat||'Sin categoría'}${desc?` <span style="font-weight:400;color:var(--muted);font-size:.8rem"> — ${desc}</span>':''}</div>
+          <div class="mov-item-cat">${m.categoria||'Sin categoría'}${desc?` <span style="font-weight:400;color:var(--muted);font-size:.8rem"> — ${desc}</span>`:''}</div>
           ${cn?`<div class="mov-item-sub">${cn}${nota}</div>`:''}
         </div>
         <div class="mov-item-right">
