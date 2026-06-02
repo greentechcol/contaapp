@@ -775,6 +775,64 @@
   </section>
 </main>
 
+<!-- ══ PRIVACIDAD Y DATOS ══ -->
+<main class="tab-content hidden" id="tab-privacidad">
+  <section class="section-block">
+    <h2 class="section-title">🔒 Privacidad y Datos</h2>
+    <p class="section-desc">Opciones de datos sensibles. Todas las acciones aquí son IRREVERSIBLES.</p>
+    
+    <div style="display:flex;flex-direction:column;gap:.8rem;margin-top:1rem">
+      <div style="border:1.5px solid #fee2e2;border-radius:var(--radius);padding:1rem;background:#fff8f8">
+        <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem">
+          <span style="font-size:1.4rem">🗑</span>
+          <div>
+            <strong style="font-size:.95rem">Limpiar movimientos</strong>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:.2rem">Borra TODOS los movimientos, ahorros, categorías personalizadas y metas. Las cuentas se conservan.</p>
+          </div>
+        </div>
+        <button class="btn-danger" id="btnLimpiarMovPersonal" style="width:100%">🗑 Limpiar movimientos</button>
+      </div>
+      
+      <div style="border:1.5px solid #fee2e2;border-radius:var(--radius);padding:1rem;background:#fff8f8">
+        <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem">
+          <span style="font-size:1.4rem">💣</span>
+          <div>
+            <strong style="font-size:.95rem">Restablecer completamente</strong>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:.2rem">Borra ABSOLUTAMENTE TODO: movimientos, cuentas, categorías, metas, obligaciones. La app vuelve al estado inicial.</p>
+          </div>
+        </div>
+        <button class="btn-danger" id="btnRestablecerTodoPersonal" style="width:100%">💣 Restablecer todo</button>
+      </div>
+    </div>
+  </section>
+  
+  <section class="section-block">
+    <h2 class="section-title">📊 Información de Datos</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;font-size:.85rem">
+      <div style="background:var(--green-bg);padding:.8rem;border-radius:var(--radius-sm);border-left:4px solid var(--green)">
+        <div style="font-weight:700;color:var(--green);margin-bottom:.3rem">Movimientos</div>
+        <div id="dpMovimientos" style="font-size:1.2rem;font-weight:800">0</div>
+      </div>
+      <div style="background:#dbeafe;padding:.8rem;border-radius:var(--radius-sm);border-left:4px solid #1d4ed8">
+        <div style="font-weight:700;color:#1d4ed8;margin-bottom:.3rem">Metas</div>
+        <div id="dpMetas" style="font-size:1.2rem;font-weight:800">0</div>
+      </div>
+      <div style="background:#f3e8ff;padding:.8rem;border-radius:var(--radius-sm);border-left:4px solid #7c3aed">
+        <div style="font-weight:700;color:#7c3aed;margin-bottom:.3rem">Obligaciones</div>
+        <div id="dpObligaciones" style="font-size:1.2rem;font-weight:800">0</div>
+      </div>
+      <div style="background:#fef3c7;padding:.8rem;border-radius:var(--radius-sm);border-left:4px solid #d97706">
+        <div style="font-weight:700;color:#d97706;margin-bottom:.3rem">Cuentas</div>
+        <div id="dpCuentas" style="font-size:1.2rem;font-weight:800">0</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;padding:1rem;background:var(--neutral-bg);border-radius:var(--radius-sm);font-size:.8rem">
+      <strong>Última sincronización:</strong> <span id="lastSync">—</span><br>
+      <strong>Almacenamiento usado:</strong> <span id="storageUsed">—</span>
+    </div>
+  </section>
+</main>
+
 <!-- ══ CATEGORÍAS ══ -->
 <main class="tab-content hidden" id="tab-categorias">
   <section class="section-block">
@@ -1058,6 +1116,7 @@
   <button class="bnb" data-tab="obligaciones"><span class="bni">🔔</span>Pagos</button>
   <button class="bnb" data-tab="categorias"><span class="bni">🏷️</span>Categ.</button>
   <button class="bnb" data-tab="cuentas"><span class="bni">🏦</span>Cuentas</button>
+  <button class="bnb" data-tab="privacidad"><span class="bni">🔒</span>Privacidad</button>
 </nav>
 
 <script>
@@ -2331,7 +2390,7 @@ window.delCuenta=async id=>{
 $('toggleSI').onclick=()=>$('siForm').classList.toggle('hidden');
 $('btnSI').onclick=async()=>{
   DB.cuentas.forEach(c=>{const i=$('si_'+c.id);if(i)DB.saldosIniciales[c.id]=parseFloat(i.value)||0;});
-  await saveConfig(); renderCuentas(); renderResumen(); showToast('Saldos guardados.','success');
+  await saveConfig(); renderCuentas(); renderResumen(); updateDataPoints(); showToast('Saldos guardados.','success');
 };
 
 // ── AUTH ─────────────────────────────────────────────────────────
@@ -3305,7 +3364,7 @@ function initApp(){
   initTabs();
   populateCatSelect('');
   populateCuentaSelect();
-  renderResumen();
+  renderResumen(); updateDataPoints();
   renderMovimientos();
   renderCategorias();
   renderCuentas();
@@ -3323,6 +3382,83 @@ new Promise(resolve=>{
   const t=setInterval(()=>{if(window.__FB){clearInterval(t);resolve(window.__FB);}},100);
   setTimeout(()=>clearInterval(t),10000);
 }).then(fb=>{FB=fb;initAuth();});
+
+
+// ── PRIVACIDAD Y BORRADO DE DATOS ──────────────────────────────────
+function updateDataPoints(){
+  $('dpMovimientos').textContent=DB.movimientos.length;
+  $('dpMetas').textContent=DB.metas?.length||0;
+  $('dpObligaciones').textContent=DB.obligaciones?.length||0;
+  $('dpCuentas').textContent=DB.cuentas.length;
+  $('lastSync').textContent=new Date().toLocaleTimeString('es-CO');
+  const aprox=JSON.stringify(DB).length;
+  $('storageUsed').textContent=(aprox/1024).toFixed(1)+' KB';
+}
+
+function openConfirmDialog(titulo,msg,callback){
+  const r=confirm(titulo+'\n\n'+msg+'\n\n¿Confirmar?');
+  if(r) callback();
+}
+
+$('btnLimpiarMovPersonal').onclick=()=>{
+  openConfirmDialog(
+    '⚠️ Limpiar movimientos',
+    'Se borrarán TODOS los movimientos, ahorros y metas (pero se conservan las cuentas y obligaciones).',
+    async()=>{
+      showToast('Limpiando...','info');
+      const cols=['movimientos','metas'];
+      if(isOnline && currentUser){
+        try{
+          for(const col of cols){
+            const items=[...(DB[col]||[])];
+            const batch=FB.writeBatch(FB.db);
+            items.forEach(item=>batch.delete(userDoc(col,item.id)));
+            if(items.length) await batch.commit();
+          }
+        }catch(e){console.warn('Error limpiando Firebase:',e);}
+      }
+      cols.forEach(col=>{ DB[col]=[]; });
+      saveSnap();
+      renderResumen(); updateDataPoints();
+      renderMovimientos();
+      updateDataPoints();
+      showToast('✅ Movimientos y metas eliminados','success');
+    }
+  );
+};
+
+$('btnRestablecerTodoPersonal').onclick=()=>{
+  openConfirmDialog(
+    '💣 RESTABLECER TODO',
+    'Se borrará ABSOLUTAMENTE TODO: movimientos, cuentas, categorías, metas y obligaciones. No se puede deshacer.',
+    async()=>{
+      showToast('Restableciendo...','info');
+      const todasLasCols=['movimientos','metas','obligaciones'];
+      if(isOnline && currentUser){
+        try{
+          for(const col of todasLasCols){
+            const items=[...(DB[col]||[])];
+            const batch=FB.writeBatch(FB.db);
+            items.forEach(item=>batch.delete(userDoc(col,item.id)));
+            if(items.length) await batch.commit();
+          }
+          await FB.setDoc(configDoc(),{cuentas:DEFAULT_CUENTAS,categorias:DEFAULT_CATS,saldosIniciales:{},updatedAt:Date.now()});
+        }catch(e){console.warn('Error restableciendo:',e);}
+      }
+      DB.movimientos=[];
+      DB.metas=[];
+      DB.obligaciones=[];
+      DB.cuentas=[...DEFAULT_CUENTAS];
+      DB.categorias=[...DEFAULT_CATS];
+      DB.saldosIniciales={};
+      saveSnap();
+      renderResumen(); updateDataPoints();
+      updateDataPoints();
+      showToast('✅ Sistema restablecido al estado inicial','success');
+      setTimeout(()=>location.reload(),1500);
+    }
+  );
+};
 
 if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
