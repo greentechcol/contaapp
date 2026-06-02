@@ -39,6 +39,93 @@
   <style>
     .home-link { font-size:1.4rem; text-decoration:none; cursor:pointer; transition:transform .2s; display:inline-block; }
     .home-link:hover { transform:scale(1.15); }
+
+    /* ── VISTA AGRUPADA POR DÍA ── */
+    .dia-grupo { margin-bottom:1.2rem; }
+    .dia-header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:.7rem .9rem; background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      color:white; border-radius:10px 10px 0 0;
+      border-bottom:2px solid #1e40af;
+    }
+    .dia-num-wrap {
+      display:flex; align-items:center; gap:.6rem;
+    }
+    .dia-num {
+      font-size:1.8rem; font-weight:900; line-height:1;
+    }
+    .dia-tag {
+      font-size:.75rem; font-weight:700; text-transform:uppercase;
+      opacity:.85; letter-spacing:.02em;
+    }
+    .dia-tag.hoy {
+      background:rgba(255,255,255,.25); padding:.15rem .45rem; border-radius:12px;
+    }
+    .dia-mes { font-size:.75rem; opacity:.75; }
+    .dia-resumen {
+      display:flex; gap:.8rem; font-weight:700;
+    }
+    .dia-ing { color:#dcfce7; }
+    .dia-gas { color:#fca5a5; }
+    .dia-items {
+      border:1px solid #e2e8f0; border-top:none; background:white;
+      border-radius:0 0 10px 10px; overflow:hidden;
+    }
+    
+    .mov-item {
+      display:flex; align-items:center; padding:.75rem .9rem;
+      border-bottom:1px solid #f1f5f9; cursor:pointer;
+      transition:background .15s; position:relative;
+    }
+    .mov-item:last-child { border-bottom:none; }
+    .mov-item:hover { background:#f8fafc; }
+    .mov-item.expanded { background:#f0fdf4; }
+    
+    .mov-item-ico {
+      font-size:1.5rem; width:38px; height:38px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:50%; margin-right:.7rem; flex-shrink:0;
+    }
+    .ico-ingreso { background:#dcfce7; color:#15803d; }
+    .ico-gasto { background:#fee2e2; color:#dc2626; }
+    .ico-compra { background:#dbeafe; color:#1d4ed8; }
+    
+    .mov-item-info { flex:1; min-width:0; }
+    .mov-item-cat {
+      font-weight:700; font-size:.9rem; color:#1e293b;
+      overflow:hidden; text-overflow:ellipsis;
+    }
+    .mov-item-sub {
+      font-size:.78rem; color:#64748b; margin-top:.15rem;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    
+    .mov-item-right {
+      display:flex; flex-direction:column; align-items:flex-end;
+      gap:.25rem; margin-left:.7rem;
+    }
+    .mov-monto-ing { color:#15803d; font-weight:700; font-size:.95rem; }
+    .mov-monto-gas { color:#dc2626; font-weight:700; font-size:.95rem; }
+    .mov-cuenta-lbl {
+      font-size:.75rem; color:#64748b; font-weight:600;
+      text-transform:uppercase; letter-spacing:.02em;
+    }
+    
+    .mov-actions {
+      display:none; position:absolute; right:.5rem; top:50%;
+      transform:translateY(-50%); gap:.3rem;
+    }
+    .mov-item.expanded .mov-actions { display:flex; }
+    .mov-act-btn {
+      background:white; border:1px solid #e2e8f0;
+      width:32px; height:32px; border-radius:6px;
+      cursor:pointer; font-size:.8rem; display:flex;
+      align-items:center; justify-content:center;
+      transition:all .15s;
+    }
+    .mov-act-btn:hover { background:#2563eb; color:white; border-color:#2563eb; }
+    .mab-del:hover { background:#dc2626 !important; border-color:#dc2626 !important; }
+
   </style>
 </head>
 <body>
@@ -1755,13 +1842,143 @@ $('formMovimiento').onsubmit=withLock(async e=>{
 $('btnCancelarEdicion').onclick=()=>{editandoId=null;$('formMovimiento').reset();$('grupoAnticipo').style.display='none';$('btnCancelarEdicion').style.display='none';$('grupoMetodoPago').style.display='';$('grupoSubcat').style.display='none';};
 
 function renderMovimientos(){
-  // ── 1. Leer los valores de los filtros ANTES de tocar los selects ──
-  const txt    = $('filtroTexto').value.toLowerCase();
-  const tipo   = $('filtroTipo').value;
-  const met    = $('filtroMetodo').value;
-  const mes    = $('filtroMes').value;
-  const monMin = parseFloat($('filtroMontoMin').value)||0;
-  const monMax = parseFloat($('filtroMontoMax').value)||Infinity;
+  populateMovMetodos();
+  
+  // Filtrar
+  const txt=($('filtroTexto')||{value:''}).value.toLowerCase();
+  const tipo=($('filtroTipo')||{value:''}).value;
+  const metodo=($('filtroMetodo')||{value:''}).value;
+  const mes=($('filtroMes')||{value:''}).value;
+  let lista=[...DB.movimientos];
+  
+  if(txt) lista=lista.filter(m=>(m.descripcion||'').toLowerCase().includes(txt)||(m.cat||'').toLowerCase().includes(txt)||(m.nota||'').toLowerCase().includes(txt));
+  if(tipo) lista=lista.filter(m=>m.tipo===tipo);
+  if(metodo) lista=lista.filter(m=>m.metodo===metodo);
+  if(mes) lista=lista.filter(m=>m.fecha.startsWith(mes));
+  
+  lista.sort((a,b)=>b.fecha.localeCompare(a.fecha)||b.id.localeCompare(a.id));
+  
+  const $emptyState=$('emptyState');
+  if($emptyState) $emptyState.style.display=lista.length?'none':'block';
+  
+  // Mostrar total filtrado
+  const $totalFiltrado=$('totalFiltrado');
+  if($totalFiltrado){
+    const totalIng=lista.filter(m=>['Ingreso','Ingreso Crédito'].includes(m.tipo)).reduce((s,m)=>s+m.monto,0);
+    const totalGas=lista.filter(m=>['Gasto','Compra','Compra Crédito'].includes(m.tipo)).reduce((s,m)=>s+m.monto,0);
+    const neto=totalIng-totalGas;
+    $totalFiltrado.textContent='<strong>'+fmt(neto)+'</strong>';
+  }
+  
+  // Agrupar por fecha
+  const grupos={};
+  lista.forEach(m=>{
+    if(!grupos[m.fecha]) grupos[m.fecha]=[];
+    grupos[m.fecha].push(m);
+  });
+  
+  const hoyStr=hoy();
+  const cont=$('movListaDias');
+  if(!cont) return; // Si no existe el contenedor, salir
+  
+  cont.innerHTML='';
+  
+  const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  
+  Object.keys(grupos).sort().reverse().forEach(fecha=>{
+    const movsDia=grupos[fecha];
+    const d=new Date(fecha+'T00:00:00');
+    const numDia=d.getDate();
+    const diaSem=DIAS[d.getDay()];
+    const mesStr=MESES[d.getMonth()];
+    const anioStr=d.getFullYear();
+    const esHoy=fecha===hoyStr;
+    
+    const ingDia=movsDia.filter(m=>['Ingreso','Ingreso Crédito'].includes(m.tipo)).reduce((s,m)=>s+m.monto,0);
+    const gasDia=movsDia.filter(m=>['Gasto','Compra','Compra Crédito'].includes(m.tipo)).reduce((s,m)=>s+m.monto,0);
+    
+    let headerHtml=`<div class="dia-grupo">
+      <div class="dia-header">
+        <div class="dia-num-wrap">
+          <span class="dia-num">${String(numDia).padStart(2,'0')}</span>
+          <div>
+            <span class="dia-tag${esHoy?' hoy':''}">${diaSem}</span>
+            <span class="dia-mes">${mesStr} ${anioStr}</span>
+          </div>
+        </div>
+        <div class="dia-resumen">
+          ${ingDia>0?`<span class="dia-ing">+${fmt(ingDia)}</span>`:''}
+          ${gasDia>0?`<span class="dia-gas">-${fmt(gasDia)}</span>`:''}
+        </div>
+      </div>
+      <div class="dia-items">`;
+    
+    let itemsHtml='';
+    movsDia.forEach(m=>{
+      const cn=DB.cuentas?.find(c=>c.id===m.metodo)?.nombre||m.metodo||'';
+      const esIngreso=['Ingreso','Ingreso Crédito'].includes(m.tipo);
+      const esCompra=m.tipo.includes('Compra');
+      const icoBg=esIngreso?'ico-ingreso':esCompra?'ico-compra':'ico-gasto';
+      const montoCls=esIngreso?'mov-monto-ing':'mov-monto-gas';
+      const signo=esIngreso?'+':'-';
+      const desc=m.descripcion||'';
+      const nota=m.nota?` · ${m.nota}`:'';
+
+      
+      itemsHtml+=`<div class="mov-item" id="mitem-${m.id}" onclick="toggleMovActions('${m.id}')">
+        <div class="mov-item-ico ${icoBg}">💰</div>
+        <div class="mov-item-info">
+          <div class="mov-item-cat">${m.categoria||'Sin categoría'}${desc?` <span style="font-weight:400;color:var(--muted);font-size:.8rem"> — ${desc}</span>`:''}</div>
+          ${cn?`<div class="mov-item-sub">${cn}${nota}</div>`:''}
+        </div>
+        <div class="mov-item-right">
+          <span class="${montoCls}">${signo}${fmt(m.monto)}</span>
+        </div>
+        <div class="mov-actions">
+          <button class="mov-act-btn mab-edit" onclick="event.stopPropagation();editarMov('${m.id}')">✏️</button>
+          <button class="mov-act-btn mab-del" onclick="event.stopPropagation();if(confirm('¿Eliminar?'))eliminarMov('${m.id}')">🗑</button>
+        </div>
+      </div>`;
+    });
+    
+    cont.innerHTML+=headerHtml+itemsHtml+'</div></div>';
+  });
+}
+
+// Expandir/colapsar acciones de un ítem
+window.toggleMovActions=id=>{
+  const el=document.getElementById('mitem-'+id);
+  if(!el)return;
+  const wasOpen=el.classList.contains('expanded');
+  document.querySelectorAll('.mov-item.expanded').forEach(e=>e.classList.remove('expanded'));
+  if(!wasOpen) el.classList.add('expanded');
+};
+
+window.editarMov=id=>{
+  const m=DB.movimientos.find(x=>x.id===id);if(!m)return;
+  editandoId=id; $('movFecha').value=m.fecha; $('movTipo').value=m.tipo;
+  $('movTipo').dispatchEvent(new Event('change'));
+  populateMovMetodos(); 
+  $('movMetodo').value=m.metodo;
+  $('movDescripcion').value=m.descripcion||'';
+  $('movMonto').value=m.monto;
+  $('movNota').value=m.nota||'';
+  $('btnCancelarEdicion').style.display='';
+  document.querySelector('[data-tab="movimientos"]').click();
+  setTimeout(()=>$('movFecha').scrollIntoView({behavior:'smooth',block:'start'}),100);
+};
+
+window.eliminarMov=async id=>{
+  if(!confirm('¿Eliminar este movimiento?'))return;
+  try{
+    await FB.deleteDoc(userDoc('movimientos',id));
+    showToast('Movimiento eliminado','success');
+  }catch(e){
+    showToast('Error al eliminar','error');
+  }
+};
+
 
   // ── 2. Reconstruir solo los selects de FORMULARIO (no los filtros) ──
   populateMovCats();
@@ -3075,13 +3292,17 @@ fbPromise.then(fb=>{FB=fb;initAuth();});
 
 // ── APP INIT ─────────────────────────────────────────────────────
 function initApp(){
-  const h=hoy(); $('movFecha').value=h; $('antFecha').value=h; $('trFecha').value=h;
+  const h=hoy(); 
+  $('movFecha').value=h; $('antFecha').value=h; $('trFecha').value=h;
   $('devFecha').value=h; $('cxcFecha').value=h; $('cxpFecha').value=h;
   $('preFecha').value=h; $('pcFecha').value=h; $('crdFecha').value=h;
-  initTabs(); populateMovMetodos(); populateTrCuentas();
-  renderResumen(); renderMovimientos(); renderCategorias();
+  initTabs(); 
+  populateMovMetodos(); 
+  populateTrCuentas();
+  renderResumen(); 
+  renderMovimientos(); // <--- Aquí llama de forma segura a tu nueva función agrupada
+  renderCategorias();
 }
-
 
 // Recordatorio semanal de exportar datos
 (function checkBackupReminder(){
@@ -3097,12 +3318,19 @@ function initApp(){
     }
   }catch{}
 })();
+
 // ── SERVICE WORKER ───────────────────────────────────────────────
-if('serviceWorker'in navigator){
+if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js')
-      .then(reg=>{reg.addEventListener('updatefound',()=>{const nw=reg.installing;nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller)showToast('Nueva versión disponible — recarga 🔄');});});})
-      .catch(e=>console.warn('SW:',e));
+      .then(reg=>{
+        reg.addEventListener('updatefound',()=>{
+          const nw=reg.installing;
+          nw.addEventListener('statechange',()=>{
+            // Manejo de actualización del SW
+          });
+        });
+      });
   });
 }
 </script>
