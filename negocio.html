@@ -39,94 +39,41 @@
   <style>
     .home-link { font-size:1.4rem; text-decoration:none; cursor:pointer; transition:transform .2s; display:inline-block; }
     .home-link:hover { transform:scale(1.15); }
-
-    /* ── VISTA AGRUPADA POR DÍA ── */
-    .dia-grupo { margin-bottom:1.2rem; }
-    .dia-header {
-      display:flex; justify-content:space-between; align-items:center;
-      padding:.7rem .9rem; background:linear-gradient(135deg,#2563eb,#1d4ed8);
-      color:white; border-radius:10px 10px 0 0;
-      border-bottom:2px solid #1e40af;
-    }
-    .dia-num-wrap {
-      display:flex; align-items:center; gap:.6rem;
-    }
-    .dia-num {
-      font-size:1.8rem; font-weight:900; line-height:1;
-    }
-    .dia-tag {
-      font-size:.75rem; font-weight:700; text-transform:uppercase;
-      opacity:.85; letter-spacing:.02em;
-    }
-    .dia-tag.hoy {
-      background:rgba(255,255,255,.25); padding:.15rem .45rem; border-radius:12px;
-    }
-    .dia-mes { font-size:.75rem; opacity:.75; }
-    .dia-resumen {
-      display:flex; gap:.8rem; font-weight:700;
-    }
-    .dia-ing { color:#dcfce7; }
-    .dia-gas { color:#fca5a5; }
-    .dia-items {
-      border:1px solid #e2e8f0; border-top:none; background:white;
-      border-radius:0 0 10px 10px; overflow:hidden;
-    }
-    
-    .mov-item {
-      display:flex; align-items:center; padding:.75rem .9rem;
-      border-bottom:1px solid #f1f5f9; cursor:pointer;
-      transition:background .15s; position:relative;
-    }
-    .mov-item:last-child { border-bottom:none; }
-    .mov-item:hover { background:#f8fafc; }
-    .mov-item.expanded { background:#f0fdf4; }
-    
-    .mov-item-ico {
-      font-size:1.5rem; width:38px; height:38px;
-      display:flex; align-items:center; justify-content:center;
-      border-radius:50%; margin-right:.7rem; flex-shrink:0;
-    }
-    .ico-ingreso { background:#dcfce7; color:#15803d; }
-    .ico-gasto { background:#fee2e2; color:#dc2626; }
-    .ico-compra { background:#dbeafe; color:#1d4ed8; }
-    
-    .mov-item-info { flex:1; min-width:0; }
-    .mov-item-cat {
-      font-weight:700; font-size:.9rem; color:#1e293b;
-      overflow:hidden; text-overflow:ellipsis;
-    }
-    .mov-item-sub {
-      font-size:.78rem; color:#64748b; margin-top:.15rem;
-      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    }
-    
-    .mov-item-right {
-      display:flex; flex-direction:column; align-items:flex-end;
-      gap:.25rem; margin-left:.7rem;
-    }
-    .mov-monto-ing { color:#15803d; font-weight:700; font-size:.95rem; }
-    .mov-monto-gas { color:#dc2626; font-weight:700; font-size:.95rem; }
-    .mov-cuenta-lbl {
-      font-size:.75rem; color:#64748b; font-weight:600;
-      text-transform:uppercase; letter-spacing:.02em;
-    }
-    
-    .mov-actions {
-      display:none; position:absolute; right:.5rem; top:50%;
-      transform:translateY(-50%); gap:.3rem;
-    }
-    .mov-item.expanded .mov-actions { display:flex; }
-    .mov-act-btn {
-      background:white; border:1px solid #e2e8f0;
-      width:32px; height:32px; border-radius:6px;
-      cursor:pointer; font-size:.8rem; display:flex;
-      align-items:center; justify-content:center;
-      transition:all .15s;
-    }
-    .mov-act-btn:hover { background:#2563eb; color:white; border-color:#2563eb; }
-    .mab-del:hover { background:#dc2626 !important; border-color:#dc2626 !important; }
-
-  </style>
+  
+    /* ── Vista agrupada por día (igual que personal) ── */
+    .dia-header{display:flex;align-items:center;justify-content:space-between;padding:.55rem .75rem;background:var(--neutral-bg);border-radius:var(--radius-sm);margin-bottom:.25rem;position:sticky;top:56px;z-index:10}
+    .dia-num-wrap{display:flex;align-items:baseline;gap:.4rem}
+    .dia-num{font-size:1.6rem;font-weight:900;letter-spacing:-.04em;color:var(--text);line-height:1}
+    .dia-tag{font-size:.68rem;font-weight:700;text-transform:uppercase;color:white;background:var(--muted);padding:.12rem .4rem;border-radius:4px;letter-spacing:.05em}
+    .dia-tag.hoy{background:#16a34a}
+    .dia-mes{font-size:.75rem;color:var(--muted);font-weight:600}
+    .dia-resumen{display:flex;gap:.85rem;align-items:center}
+    .dia-ing{font-size:.78rem;font-weight:700;color:#16a34a}
+    .dia-gas{font-size:.78rem;font-weight:700;color:#dc2626}
+    .dia-grupo{margin-bottom:.9rem}
+    .dia-items{border-radius:var(--radius);overflow:hidden;border:1.5px solid var(--border);background:white}
+    .mov-item{display:flex;align-items:center;gap:.65rem;padding:.7rem .8rem;border-bottom:1px solid var(--border);position:relative;transition:background .15s}
+    .mov-item:last-child{border-bottom:none}
+    .mov-item:active{background:var(--neutral-bg)}
+    .mov-item-ico{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+    .ico-ingreso{background:#dcfce7}.ico-compra{background:#fee2e2}.ico-gasto{background:#fee2e2}.ico-credito{background:#fef3c7}
+    .mov-item-info{flex:1;min-width:0}
+    .mov-item-cat{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+    .mov-item-sub{font-size:.72rem;color:var(--muted);margin-top:.08rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .mov-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:.15rem;flex-shrink:0}
+    .mov-monto-ing{font-size:.95rem;font-weight:800;color:#16a34a}
+    .mov-monto-gas{font-size:.95rem;font-weight:800;color:#dc2626}
+    .mov-cuenta-lbl{font-size:.68rem;color:var(--muted);font-weight:500}
+    .mov-actions{display:none;position:absolute;right:0;top:0;bottom:0;align-items:center;gap:.2rem;padding:0 .5rem;background:white}
+    .mov-item.expanded .mov-actions{display:flex}
+    .mov-item.expanded .mov-item-right{opacity:0}
+    .mov-act-btn{width:32px;height:32px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:.85rem;cursor:pointer}
+    .mab-edit{background:#eff6ff;color:#2563eb}.mab-del{background:#fef2f2;color:#dc2626}.mab-copy{background:#f0fdf4;color:#16a34a}
+    .mov-band{display:flex;justify-content:space-around;padding:.55rem .5rem;background:white;border-radius:var(--radius-sm);border:1.5px solid var(--border);margin:.5rem .5rem .3rem;font-size:.78rem;text-align:center}
+    .mb-item{display:flex;flex-direction:column;gap:.1rem}
+    .mb-lbl{font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .mb-val{font-weight:800}
+</style>
 </head>
 <body>
 
@@ -316,18 +263,9 @@
       <input type="number" id="filtroMontoMax" placeholder="$ Máx" class="filtro-input" style="max-width:90px" step="0.01" min="0" />
       <button class="btn-secondary" id="btnLimpiarFiltros">✖ Limpiar</button>
     </div>
-    <div class="table-responsive">
-      <table class="data-table" id="tablaMovimientos" role="table" aria-label="Registro de movimientos">
-        <thead><tr>
-          <th data-sort="fecha">Fecha ↕</th><th data-sort="tipo">Tipo ↕</th>
-          <th data-sort="categoria">Categoría ↕</th><th>Tercero/Desc./Nota</th>
-          <th data-sort="metodo">Cuenta ↕</th><th data-sort="monto">Monto ↕</th><th>Acciones</th>
-        </tr></thead>
-        <tbody id="tbodyMovimientos"></tbody>
-        <tfoot><tr class="tfoot-totals"><td colspan="5"><strong>TOTALES FILTRADOS</strong></td><td id="totalFiltrado" class="text-right"><strong>$0.00</strong></td><td></td></tr></tfoot>
-      </table>
-    </div>
-    <div id="emptyState" class="empty-state">No hay movimientos registrados aún.</div>
+    <div id="movResumenBand"></div>
+    <div id="movListaDias"></div>
+    <div id="emptyState" class="empty-state" style="display:none">No hay movimientos registrados aún.</div>
   </section>
 </main>
 
@@ -1842,70 +1780,84 @@ $('formMovimiento').onsubmit=withLock(async e=>{
 $('btnCancelarEdicion').onclick=()=>{editandoId=null;$('formMovimiento').reset();$('grupoAnticipo').style.display='none';$('btnCancelarEdicion').style.display='none';$('grupoMetodoPago').style.display='';$('grupoSubcat').style.display='none';};
 
 function renderMovimientos(){
-  populateMovMetodos();
-  
-  // Filtrar
-  const txt=($('filtroTexto')||{value:''}).value.toLowerCase();
-  const tipo=($('filtroTipo')||{value:''}).value;
-  const metodo=($('filtroMetodo')||{value:''}).value;
-  const mes=($('filtroMes')||{value:''}).value;
-  let lista=[...DB.movimientos];
-  
-  if(txt) lista=lista.filter(m=>(m.descripcion||'').toLowerCase().includes(txt)||(m.cat||'').toLowerCase().includes(txt)||(m.nota||'').toLowerCase().includes(txt));
-  if(tipo) lista=lista.filter(m=>m.tipo===tipo);
-  if(metodo) lista=lista.filter(m=>m.metodo===metodo);
-  if(mes) lista=lista.filter(m=>m.fecha.startsWith(mes));
-  
-  lista.sort((a,b)=>b.fecha.localeCompare(a.fecha)||b.id.localeCompare(a.id));
-  
-  const $emptyState=$('emptyState');
-  if($emptyState) $emptyState.style.display=lista.length?'none':'block';
-  
-  // Mostrar total filtrado
-  const $totalFiltrado=$('totalFiltrado');
-  if($totalFiltrado){
-    const totalIng=lista.filter(m=>['Ingreso','Ingreso Crédito'].includes(m.tipo)).reduce((s,m)=>s+m.monto,0);
-    const totalGas=lista.filter(m=>['Gasto','Compra','Compra Crédito'].includes(m.tipo)).reduce((s,m)=>s+m.monto,0);
-    const neto=totalIng-totalGas;
-    $totalFiltrado.textContent='<strong>'+fmt(neto)+'</strong>';
-  }
-  
-  // Agrupar por fecha
-  const grupos={};
-  lista.forEach(m=>{
-    if(!grupos[m.fecha]) grupos[m.fecha]=[];
-    grupos[m.fecha].push(m);
+  const DIAS_ES=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const MESES_CORTO=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const hoyStr=new Date().toISOString().slice(0,10);
+
+  // ── Leer filtros ANTES de reconstruir selects ──
+  const txt    = $('filtroTexto').value.toLowerCase();
+  const tipo   = $('filtroTipo').value;
+  const met    = $('filtroMetodo').value;
+  const mes    = $('filtroMes').value;
+  const monMin = parseFloat($('filtroMontoMin').value)||0;
+  const monMax = parseFloat($('filtroMontoMax').value)||Infinity;
+
+  // ── Reconstruir select de categorías y cuentas ──
+  populateMovCats();
+
+  // ── Reconstruir filtroMetodo conservando selección ──
+  const fm=$('filtroMetodo'); const fmPrev=fm.value;
+  fm.innerHTML='<option value="">Todos los métodos</option>';
+  DB.cuentas.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.nombre;fm.appendChild(o);});
+  fm.value=fmPrev;
+
+  // ── Reconstruir filtroMes conservando selección ──
+  const MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  $('filtroMes').innerHTML='<option value="">Todos los meses</option>';
+  const ym=new Set();
+  DB.movimientos.forEach(m=>{const d=new Date(m.fecha+'T00:00:00');ym.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);});
+  [...ym].sort().reverse().forEach(v=>{
+    const[y,mo]=v.split('-');const o=document.createElement('option');o.value=v;
+    o.textContent=`${MN[parseInt(mo)-1]} ${y}`;$('filtroMes').appendChild(o);
   });
-  
-  const hoyStr=hoy();
+  $('filtroMes').value=mes;
+
+  // ── Filtrar ──
+  let lista=[...DB.movimientos];
+  if(txt)  lista=lista.filter(m=>(m.descripcion||'').toLowerCase().includes(txt)||(m.categoria||'').toLowerCase().includes(txt)||(m.tercero||'').toLowerCase().includes(txt));
+  if(tipo) lista=lista.filter(m=>m.tipo===tipo);
+  if(met)  lista=lista.filter(m=>m.metodo===met);
+  if(mes)  lista=lista.filter(m=>m.fecha.startsWith(mes));
+  if(monMin>0)        lista=lista.filter(m=>m.monto>=monMin);
+  if(monMax<Infinity) lista=lista.filter(m=>m.monto<=monMax);
+  lista.sort((a,b)=>b.fecha.localeCompare(a.fecha)||b.id.localeCompare(a.id));
+
+  $('emptyState').style.display=lista.length?'none':'block';
+
+  // ── Banda resumen período ──
+  const band=$('movResumenBand');
+  if(lista.length){
+    const totIng=lista.filter(m=>m.tipo==='Ingreso'||m.tipo==='Ingreso Crédito').reduce((s,m)=>s+m.monto,0);
+    const totGas=lista.filter(m=>m.tipo==='Gasto'||m.tipo==='Compra'||m.tipo==='Compra Crédito').reduce((s,m)=>s+m.monto,0);
+    band.style.display='';
+    band.innerHTML=`<div class="mov-band">
+      <div class="mb-item"><span class="mb-lbl">Ingresos</span><span class="mb-val" style="color:#16a34a">+${fmt(totIng)}</span></div>
+      <div class="mb-item"><span class="mb-lbl">Egresos</span><span class="mb-val" style="color:#dc2626">-${fmt(totGas)}</span></div>
+      <div class="mb-item"><span class="mb-lbl">Balance</span><span class="mb-val" style="color:${totIng-totGas>=0?'#16a34a':'#dc2626'}">${totIng-totGas>=0?'+':''}${fmt(totIng-totGas)}</span></div>
+    </div>`;
+  } else { band.style.display='none'; }
+
+  // ── Agrupar por fecha ──
+  const grupos={};
+  lista.forEach(m=>{if(!grupos[m.fecha])grupos[m.fecha]=[];grupos[m.fecha].push(m);});
+
   const cont=$('movListaDias');
-  if(!cont) return; // Si no existe el contenedor, salir
-  
   cont.innerHTML='';
-  
-  const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  
+
   Object.keys(grupos).sort().reverse().forEach(fecha=>{
     const movsDia=grupos[fecha];
     const d=new Date(fecha+'T00:00:00');
-    const numDia=d.getDate();
-    const diaSem=DIAS[d.getDay()];
-    const mesStr=MESES[d.getMonth()];
-    const anioStr=d.getFullYear();
     const esHoy=fecha===hoyStr;
-    
-    const ingDia=movsDia.filter(m=>['Ingreso','Ingreso Crédito'].includes(m.tipo)).reduce((s,m)=>s+m.monto,0);
-    const gasDia=movsDia.filter(m=>['Gasto','Compra','Compra Crédito'].includes(m.tipo)).reduce((s,m)=>s+m.monto,0);
-    
-    let headerHtml=`<div class="dia-grupo">
+
+    const ingDia=movsDia.filter(m=>m.tipo==='Ingreso'||m.tipo==='Ingreso Crédito').reduce((s,m)=>s+m.monto,0);
+    const gasDia=movsDia.filter(m=>m.tipo==='Gasto'||m.tipo==='Compra'||m.tipo==='Compra Crédito').reduce((s,m)=>s+m.monto,0);
+
+    let html=`<div class="dia-grupo">
       <div class="dia-header">
         <div class="dia-num-wrap">
-          <span class="dia-num">${String(numDia).padStart(2,'0')}</span>
-          <div>
-            <span class="dia-tag${esHoy?' hoy':''}">${diaSem}</span>
-            <span class="dia-mes">${mesStr} ${anioStr}</span>
-          </div>
+          <span class="dia-num">${String(d.getDate()).padStart(2,'0')}</span>
+          <span class="dia-tag${esHoy?' hoy':''}">${DIAS_ES[d.getDay()]}</span>
+          <span class="dia-mes">${MESES_CORTO[d.getMonth()]} ${d.getFullYear()}</span>
         </div>
         <div class="dia-resumen">
           ${ingDia>0?`<span class="dia-ing">+${fmt(ingDia)}</span>`:''}
@@ -1913,74 +1865,50 @@ function renderMovimientos(){
         </div>
       </div>
       <div class="dia-items">`;
-    
-    let itemsHtml='';
-    movsDia.forEach(m=>{
-      const cn=DB.cuentas?.find(c=>c.id===m.metodo)?.nombre||m.metodo||'';
-      const esIngreso=['Ingreso','Ingreso Crédito'].includes(m.tipo);
-      const esCompra=m.tipo.includes('Compra');
-      const icoBg=esIngreso?'ico-ingreso':esCompra?'ico-compra':'ico-gasto';
-      const montoCls=esIngreso?'mov-monto-ing':'mov-monto-gas';
-      const signo=esIngreso?'+':'-';
-      const desc=m.descripcion||'';
-      const nota=m.nota?` · ${m.nota}`:'';
 
-      
-      itemsHtml+=`<div class="mov-item" id="mitem-${m.id}" onclick="toggleMovActions('${m.id}')">
-        <div class="mov-item-ico ${icoBg}">💰</div>
+    movsDia.forEach(m=>{
+      const cn=DB.cuentas.find(c=>c.id===m.metodo)?.nombre||m.metodo||'';
+      const catObj=DB.categorias?.find(c=>c.nombre===m.categoria);
+      const esIng=m.tipo==='Ingreso'||m.tipo==='Ingreso Crédito';
+      const esCred=m.tipo==='Ingreso Crédito'||m.tipo==='Compra Crédito';
+      const ico=catObj?.icono||(esIng?'💰':esCred?'💳':'💸');
+      const icoBg=esIng?'ico-ingreso':esCred?'ico-credito':'ico-gasto';
+      const montoCls=esIng?'mov-monto-ing':'mov-monto-gas';
+      const signo=esIng?'+':'-';
+      const desc=m.descripcion||m.tercero||'';
+      const subLinea=[m.subcategoria?`↳ ${m.subcategoria}`:'',cn,m.nota].filter(Boolean).join(' · ');
+      const ant=m.anticipoAplicadoMonto?` <span style="font-size:.7rem;color:#d97706">-${fmt(m.anticipoAplicadoMonto)} anticipo</span>`:'';
+
+      html+=`<div class="mov-item" id="mitem-${m.id}" onclick="toggleMovActionsNeg('${m.id}')">
+        <div class="mov-item-ico ${icoBg}">${ico}</div>
         <div class="mov-item-info">
-          <div class="mov-item-cat">${m.categoria||'Sin categoría'}${desc?` <span style="font-weight:400;color:var(--muted);font-size:.8rem"> — ${desc}</span>`:''}</div>
-          ${cn?`<div class="mov-item-sub">${cn}${nota}</div>`:''}
+          <div class="mov-item-cat">${esc(m.categoria||'Sin categoría')}${desc?` <span style="font-weight:400;color:var(--muted);font-size:.8rem">— ${esc(desc)}</span>`:''}</div>
+          ${subLinea?`<div class="mov-item-sub">${esc(subLinea)}</div>`:''}
         </div>
         <div class="mov-item-right">
-          <span class="${montoCls}">${signo}${fmt(m.monto)}</span>
+          <span class="${montoCls}">${signo}${fmt(m.monto)}${ant}</span>
+          ${cn?`<span class="mov-cuenta-lbl">${esc(cn)}</span>`:''}
         </div>
         <div class="mov-actions">
           <button class="mov-act-btn mab-edit" onclick="event.stopPropagation();editarMov('${m.id}')">✏️</button>
-          <button class="mov-act-btn mab-del" onclick="event.stopPropagation();if(confirm('¿Eliminar?'))eliminarMov('${m.id}')">🗑</button>
+          <button class="mov-act-btn mab-copy" onclick="event.stopPropagation();copiarMovimiento('${m.id}')">📋</button>
+          <button class="mov-act-btn mab-del" onclick="event.stopPropagation();eliminarMov('${m.id}')">🗑</button>
         </div>
       </div>`;
     });
-    
-    cont.innerHTML+=headerHtml+itemsHtml+'</div></div>';
+
+    html+='</div></div>';
+    cont.innerHTML+=html;
   });
 }
 
-// Expandir/colapsar acciones de un ítem
-window.toggleMovActions=id=>{
+window.toggleMovActionsNeg=id=>{
   const el=document.getElementById('mitem-'+id);
   if(!el)return;
   const wasOpen=el.classList.contains('expanded');
   document.querySelectorAll('.mov-item.expanded').forEach(e=>e.classList.remove('expanded'));
-  if(!wasOpen) el.classList.add('expanded');
+  if(!wasOpen)el.classList.add('expanded');
 };
-
-window.editarMov=id=>{
-  const m=DB.movimientos.find(x=>x.id===id);if(!m)return;
-  editandoId=id; $('movFecha').value=m.fecha; $('movTipo').value=m.tipo;
-  $('movTipo').dispatchEvent(new Event('change'));
-  populateMovMetodos(); 
-  $('movMetodo').value=m.metodo;
-  $('movDescripcion').value=m.descripcion||'';
-  $('movMonto').value=m.monto;
-  $('movNota').value=m.nota||'';
-  $('btnCancelarEdicion').style.display='';
-  document.querySelector('[data-tab="movimientos"]').click();
-  setTimeout(()=>$('movFecha').scrollIntoView({behavior:'smooth',block:'start'}),100);
-};
-
-window.eliminarMov=async id=>{
-  if(!confirm('¿Eliminar este movimiento?'))return;
-  try{
-    await FB.deleteDoc(userDoc('movimientos',id));
-    showToast('Movimiento eliminado','success');
-  }catch(e){
-    showToast('Error al eliminar','error');
-  }
-};
-
-
-
 
 function editarMov(id){
   const m=DB.movimientos.find(x=>x.id===id); if(!m) return;
